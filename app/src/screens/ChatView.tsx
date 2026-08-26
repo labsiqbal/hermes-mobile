@@ -106,12 +106,12 @@ function roomForSession(sessionId: string): Room | null {
 
 type ToolStatus = "running" | "done" | "error";
 
-export type RenderMode = "cards" | "cli";
+type RenderMode = "cards" | "cli";
 
 const RENDER_MODE_KEY = "hermes-mobile.render-mode";
 const TOOL_COLLAPSE_KEY = "hermes-mobile.tool-collapse";
 
-export function getRenderMode(): RenderMode {
+function getRenderMode(): RenderMode {
   try {
     return (localStorage.getItem(RENDER_MODE_KEY) as RenderMode) || "cards";
   } catch {
@@ -119,7 +119,7 @@ export function getRenderMode(): RenderMode {
   }
 }
 
-export function setRenderMode(mode: RenderMode): void {
+function setRenderMode(mode: RenderMode): void {
   try {
     localStorage.setItem(RENDER_MODE_KEY, mode);
   } catch {
@@ -128,7 +128,7 @@ export function setRenderMode(mode: RenderMode): void {
 }
 
 /** Per-tool collapse state: true = expanded, false = collapsed (default). */
-export function getToolExpanded(toolId: string): boolean {
+function getToolExpanded(toolId: string): boolean {
   try {
     const raw = localStorage.getItem(TOOL_COLLAPSE_KEY);
     const map = raw ? JSON.parse(raw) : {};
@@ -138,7 +138,7 @@ export function getToolExpanded(toolId: string): boolean {
   }
 }
 
-export function setToolExpanded(toolId: string, expanded: boolean): void {
+function setToolExpanded(toolId: string, expanded: boolean): void {
   try {
     const raw = localStorage.getItem(TOOL_COLLAPSE_KEY);
     const map = raw ? JSON.parse(raw) : {};

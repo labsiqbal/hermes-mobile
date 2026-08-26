@@ -626,7 +626,12 @@ export class HermesConnection {
       this.reconnectTimer = null;
       if (this.stopped) return;
       this.openSocket().catch(() => {
-        /* state already flipped; next backoff tick retries */
+        // Re-authentication can fail before a WebSocket exists, so there is
+        // no close event to schedule the next attempt. Keep the retry loop
+        // alive for both HTTP/auth failures and socket-handshake failures.
+        if (this.stopped) return;
+        this.setState("error");
+        this.scheduleReconnect();
       });
     }, delay);
   }

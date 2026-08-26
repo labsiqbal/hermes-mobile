@@ -30,7 +30,7 @@ const LONG_PRESS_MS = 500;
 /** Gerakan pointer di atas ini (px) membatalkan long-press (user sedang scroll). */
 const LONG_PRESS_MOVE_TOLERANCE = 10;
 
-export default function ChatList({ client, onOpenChat }: Props) {
+export default function ChatList({ conn, client, onOpenChat }: Props) {
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");

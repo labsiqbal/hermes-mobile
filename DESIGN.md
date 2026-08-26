@@ -152,7 +152,7 @@ Palet gelap beraksen tunggal: satu keluarga netral nyaris-hitam di bawah, enam w
 ### Hierarchy
 - **Display** (700, 17px, -0.015em): judul appbar layar utama ("Chats", "Bots").
 - **Title** (600–700, 13.5–14px, -0.01em): nama device/sesi, judul sheet, judul appbar dalam.
-- **Body** (400, 11.5–12.5px, 1.5–1.55): isi pesan, deskripsi bot, hint line.
+- **Body** (400, 11.5–12.5px, 1.5–1.55): deskripsi bot dan hint line. Isi pesan dan composer memakai 13px secara default, dapat diatur 11–16px dari Settings.
 - **Label** (600, 9.5–11px mono): handle, chip, metadata, section header (uppercase, letter-spacing .08em), timestamp.
 
 ### Named Rules
@@ -162,7 +162,7 @@ Palet gelap beraksen tunggal: satu keluarga netral nyaris-hitam di bawah, enam w
 
 ## Layout
 
-Setiap layar hidup dalam phone frame 340×720px (radius 34px) dengan struktur vertikal tetap: statusbar (34px) → appbar → body scroll → composer/tabbar. Appbar membawa judul + aksi ikon, dan untuk layar dalam selalu menampilkan subtitle mono `profile · model · device` — konteks mesin tidak pernah hilang.
+Setiap layar hidup dalam phone frame 340×720px (radius 34px) dengan struktur vertikal tetap: statusbar (34px) → appbar → body scroll → composer/tabbar. Appbar layar dalam selalu menjaga konteks mesin. Pada ChatView, appbar membawa tombol kembali, judul, chip model, subtitle mesin atau room, aksi chat baru, dan menu opsi chat.
 
 Body memakai padding 16px, gap antar elemen 8–14px, dan pola penumpukan yang sama di semua layar: section header mono uppercase → kartu → kartu → hint line. Daftar selalu berbasis kartu penuh (bukan divider list). Sheet approval menempel di bawah sebagai overlay absolut dengan dim gelap di atas seluruh layar.
 
@@ -208,7 +208,7 @@ Border selalu hairline 1px translusen putih; tidak ada border opaque abu-abu, ti
 
 ### Tool Cards (signature)
 - **Character:** bukti eksekusi, tampil inline di dalam bubble bot sebagai kartu sunken.
-- **Structure:** header (ikon terminal + nama tool + durasi + chip status) → blok perintah (mono amber di tint amber 6%, border amber 12%, ellipsis) → output (mono faint 9.5px, baris sukses hijau).
+- **Structure:** header (ikon terminal + nama tool + durasi + chip status) → blok perintah (mono amber di tint amber 6%, border amber 12%, ellipsis) → output (mono faint 9.5px, baris sukses hijau). Tool terlihat secara default tetapi detailnya collapsed; menu chat mengatur show/hide, expand/collapse all, dan pilihan card atau CLI. Pilihan visibilitas, mode, dan ekspansi per tool disimpan lokal.
 
 ### Relay Cards (signature)
 - **Character:** amplop Bot Mode yang divisualkan — route, bukan sekadar status.
@@ -223,8 +223,10 @@ Border selalu hairline 1px translusen putih; tidak ada border opaque abu-abu, ti
 - **Structure:** grab pill 36×4px → judul 14px/700 + ikon warning amber → subjudul (device ditandai tebal) → blok perintah mono amber di surface `#101012` → dua aksi sejajar: Tolak (destructive outline) + Approve (primary blue).
 
 ### Inputs / Composer
-- **Style:** field = Card + border `line`, radius 12px, placeholder faint; tombol send = kotak 38px fill Deep Action Blue; saat streaming, tombol stop 38px tint merah 14% + border merah 30% menggantikan/mendampingi send.
-- **Focus:** belum divisualkan di mockup — saat implementasi, naikkan border ke `line` (bukan glow).
+- **Chat composer:** pill mengambang dengan input satu baris dan aksi bundar di kanan. Aksi berubah dari kirim menjadi stop selama turn aktif; tidak ada kontrol voice sampai fitur itu benar-benar tersedia.
+- **Sizing:** teks pesan dan composer mengikuti ukuran chat dari Settings (11–16px, default 13px); label, metadata, dan isi tool tetap memakai skala tetap agar hierarki tidak berubah.
+- **Style:** surface Card + border `line-soft`, radius 24px, placeholder faint; tombol send = lingkaran 36px fill Deep Action Blue. Saat streaming, tombol stop 36px tint merah 20% + border merah 30% menggantikan send.
+- **Focus:** pertahankan batas hairline tanpa glow; fokus keyboard tidak boleh mengubah geometri composer.
 
 ### Navigation
 - **Tabbar:** tinggi 58px, background Sidebar, border-top `line-soft`. Tab = ikon 19px + label 10px/600; default faint, aktif Signal Blue (tanpa indikator tambahan). Badge notifikasi: pill warm 7px dengan angka mono 8.5px, menempel di sudut ikon.
