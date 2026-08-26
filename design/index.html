@@ -1,0 +1,1072 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hermes Mobile — Design Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --chrome: #0d0d0e;
+    --page: #070708;
+    --sidebar: #0a0a0b;
+    --card: #161618;
+    --elevated: #1c1c1f;
+    --fg: #f2f2f3;
+    --fg-dim: #a7a7ad;
+    --fg-faint: #7a7a82;
+    --line: rgba(255,255,255,.08);
+    --line-soft: rgba(255,255,255,.05);
+    --blue: #4f8cff;
+    --blue-deep: #0053fd;
+    --warm: #cf806d;
+    --amber: #ffd24a;
+    --green: #55a583;
+    --red: #e75e78;
+    --cyan: #6f9ba6;
+    --sans: 'Segoe WPC', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { background: var(--page); }
+  body {
+    font-family: var(--sans);
+    color: var(--fg);
+    padding: 56px 48px 80px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page-head { max-width: 1460px; margin: 0 auto 40px; }
+  .page-head h1 {
+    font-size: 28px; font-weight: 700; letter-spacing: -0.02em;
+  }
+  .page-head h1 span { color: var(--warm); }
+  .page-head p { color: var(--fg-dim); font-size: 14px; margin-top: 8px; max-width: 62ch; line-height: 1.55; }
+  .page-head .meta {
+    margin-top: 14px; font-family: var(--mono); font-size: 11px; color: var(--fg-faint);
+    display: flex; gap: 18px; flex-wrap: wrap;
+  }
+  .page-head .meta b { color: var(--cyan); font-weight: 500; }
+
+  .board {
+    max-width: 1460px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 44px 36px;
+  }
+
+  .screen { display: flex; flex-direction: column; gap: 14px; }
+  .screen > .label {
+    font-family: var(--mono); font-size: 11px; color: var(--fg-faint);
+    letter-spacing: .02em;
+  }
+  .screen > .label b { color: var(--fg-dim); font-weight: 600; }
+
+  .phone {
+    width: 340px; height: 720px;
+    background: var(--chrome);
+    border-radius: 34px;
+    border: 1px solid rgba(255,255,255,.09);
+    box-shadow: 0 24px 60px rgba(0,0,0,.55), 0 2px 8px rgba(0,0,0,.4);
+    overflow: hidden;
+    position: relative;
+    display: flex; flex-direction: column;
+  }
+
+  /* status bar */
+  .statusbar {
+    height: 34px; flex: none;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 22px;
+    font-size: 11.5px; font-weight: 600; color: var(--fg);
+  }
+  .statusbar .sicons { display: flex; gap: 5px; align-items: center; color: var(--fg-dim); }
+  .statusbar svg { display: block; }
+
+  .appbar {
+    flex: none;
+    padding: 10px 18px 14px;
+    border-bottom: 1px solid var(--line-soft);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .appbar .title { font-size: 17px; font-weight: 700; letter-spacing: -0.015em; }
+  .appbar .spacer { flex: 1; }
+  .iconbtn {
+    width: 32px; height: 32px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--card); border: 1px solid var(--line-soft);
+    color: var(--fg-dim);
+  }
+
+  .body { flex: 1; overflow: hidden; padding: 16px 16px 12px; display: flex; flex-direction: column; gap: 10px; }
+
+  /* ---------- shared atoms ---------- */
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .dot.on { background: var(--green); }
+  .dot.off { background: #4a4a50; }
+  .dot.busy { background: var(--amber); }
+  .dot.wait { background: var(--warm); animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line-soft);
+    border-radius: 14px;
+    padding: 13px 14px;
+  }
+
+  .btn-primary {
+    background: var(--blue-deep); color: #fff;
+    border-radius: 12px; padding: 12px;
+    text-align: center; font-size: 13.5px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn-ghost {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 12px; padding: 12px;
+    text-align: center; font-size: 13.5px; font-weight: 600; color: var(--fg-dim);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+
+  .tabbar {
+    flex: none; height: 58px;
+    border-top: 1px solid var(--line-soft);
+    background: var(--sidebar);
+    display: flex;
+  }
+  .tab {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    color: var(--fg-faint); font-size: 10px; font-weight: 600;
+  }
+  .tab.active { color: var(--blue); }
+  .tab .badge {
+    position: absolute; top: -3px; right: -9px;
+    background: var(--warm); color: #17110e;
+    font-size: 8.5px; font-weight: 700; font-family: var(--mono);
+    border-radius: 7px; padding: 1px 5px;
+  }
+  .tab .tabicon { position: relative; }
+
+  .handle { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--cyan); }
+  .chip {
+    font-family: var(--mono); font-size: 9.5px; font-weight: 500;
+    padding: 2.5px 7px; border-radius: 6px;
+    background: rgba(111,155,166,.12); color: var(--cyan);
+    border: 1px solid rgba(111,155,166,.2);
+    white-space: nowrap;
+  }
+  .chip.warm { background: rgba(207,128,109,.12); color: var(--warm); border-color: rgba(207,128,109,.22); }
+  .chip.blue { background: rgba(79,140,255,.12); color: var(--blue); border-color: rgba(79,140,255,.22); }
+  .chip.green { background: rgba(85,165,131,.12); color: var(--green); border-color: rgba(85,165,131,.22); }
+
+  /* ---------- 1. connections ---------- */
+  .conn-row {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .conn-row .glyph {
+    width: 38px; height: 38px; border-radius: 11px; flex: none;
+    background: var(--elevated); border: 1px solid var(--line-soft);
+    display: flex; align-items: center; justify-content: center; color: var(--fg-dim);
+  }
+  .conn-row .nm { font-size: 14px; font-weight: 600; letter-spacing: -0.01em; display:flex; align-items:center; gap:8px; }
+  .conn-row .ip { font-family: var(--mono); font-size: 10.5px; color: var(--fg-faint); margin-top: 3px; white-space: nowrap; }
+  .conn-row .right { margin-left: auto; text-align: right; white-space: nowrap; flex: none; }
+  .conn-row .st { font-size: 10.5px; font-weight: 600; }
+  .conn-row .st.on { color: var(--green); }
+  .conn-row .st.off { color: var(--fg-faint); }
+  .conn-row .sub { font-family: var(--mono); font-size: 9.5px; color: var(--fg-faint); margin-top: 3px; }
+  .conn-row.off .nm, .conn-row.off .ip { opacity: .45; }
+
+  /* ---------- 2. chat list ---------- */
+  .deviceswitch {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--card); border: 1px solid var(--line-soft);
+    border-radius: 10px; padding: 8px 12px;
+    font-size: 12.5px; font-weight: 600;
+  }
+  .deviceswitch .ip { font-family: var(--mono); font-size: 10px; color: var(--fg-faint); font-weight: 400; }
+  .sess-row { display: flex; gap: 11px; align-items: flex-start; }
+  .sess-row .avatar {
+    width: 36px; height: 36px; border-radius: 10px; flex: none;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+  }
+  .sess-row .mid { min-width: 0; flex: 1; }
+  .sess-row .t1 { display: flex; align-items: baseline; gap: 8px; }
+  .sess-row .t1 .name { font-size: 13.5px; font-weight: 600; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sess-row .t1 .time { margin-left: auto; font-family: var(--mono); font-size: 9.5px; color: var(--fg-faint); flex: none; }
+  .sess-row .pv { font-size: 11.5px; color: var(--fg-dim); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sess-row .pv .mono { font-family: var(--mono); font-size: 10px; color: var(--cyan); }
+
+  /* ---------- 3. chat view ---------- */
+  .chatscroll { flex: 1; overflow: hidden; display: flex; flex-direction: column; gap: 12px; padding: 14px 14px 8px; }
+  .msg { max-width: 86%; font-size: 12.5px; line-height: 1.5; }
+  .msg.user {
+    align-self: flex-end;
+    background: rgba(79,140,255,.16);
+    border: 1px solid rgba(79,140,255,.22);
+    border-radius: 14px 14px 5px 14px;
+    padding: 9px 12px;
+  }
+  .msg.bot { align-self: flex-start; max-width: 94%; }
+  .msg.bot .txt { padding: 2px 2px 0; }
+  .msg .who { font-family: var(--mono); font-size: 9.5px; color: var(--fg-faint); margin-bottom: 5px; display: flex; gap: 6px; align-items: center; }
+
+  .toolcard {
+    margin-top: 8px;
+    background: color-mix(in srgb, var(--card) 88%, #000);
+    border: 1px solid var(--line-soft);
+    border-radius: 12px;
+    padding: 10px 12px;
+  }
+  .toolcard .tc-head { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; color: var(--fg-dim); }
+  .toolcard .cmd {
+    font-family: var(--mono); font-size: 10.5px; color: var(--amber);
+    margin-top: 7px; background: rgba(255,210,74,.06);
+    border: 1px solid rgba(255,210,74,.12);
+    border-radius: 8px; padding: 7px 9px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .toolcard .out {
+    font-family: var(--mono); font-size: 9.5px; color: var(--fg-faint);
+    margin-top: 7px; line-height: 1.55;
+  }
+  .toolcard .out .ok { color: var(--green); }
+
+  .cursor {
+    display: inline-block; width: 7px; height: 13px;
+    background: var(--blue); border-radius: 2px;
+    vertical-align: -2px; margin-left: 2px;
+    animation: blink 1s steps(2) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .composer {
+    flex: none; padding: 10px 14px 14px;
+    border-top: 1px solid var(--line-soft);
+    display: flex; gap: 9px; align-items: center;
+  }
+  .composer .field {
+    flex: 1; background: var(--card); border: 1px solid var(--line);
+    border-radius: 12px; padding: 10px 13px;
+    font-size: 12.5px; color: var(--fg-faint);
+  }
+  .composer .send {
+    width: 38px; height: 38px; border-radius: 12px; flex: none;
+    background: var(--blue-deep); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .composer .stop {
+    width: 38px; height: 38px; border-radius: 12px; flex: none;
+    background: rgba(231,94,120,.14); border: 1px solid rgba(231,94,120,.3); color: var(--red);
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* approval sheet */
+  .sheet-wrap { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end; }
+  .sheet-dim { position: absolute; inset: 0; background: rgba(4,4,5,.55); }
+  .sheet {
+    position: relative;
+    background: var(--elevated);
+    border-top: 1px solid var(--line);
+    border-radius: 20px 20px 0 0;
+    padding: 10px 18px 22px;
+  }
+  .sheet .grab { width: 36px; height: 4px; border-radius: 2px; background: rgba(255,255,255,.16); margin: 2px auto 14px; }
+  .sheet .sh-title { font-size: 14px; font-weight: 700; letter-spacing: -0.01em; display: flex; gap: 9px; align-items: center; }
+  .sheet .sh-sub { font-size: 11.5px; color: var(--fg-dim); margin-top: 6px; line-height: 1.5; }
+  .sheet .sh-cmd {
+    font-family: var(--mono); font-size: 11px; color: var(--amber);
+    background: #101012; border: 1px solid var(--line-soft);
+    border-radius: 10px; padding: 10px 12px; margin-top: 12px;
+  }
+  .sheet .sh-actions { display: flex; gap: 10px; margin-top: 16px; }
+  .sheet .approve {
+    flex: 1; background: var(--blue-deep); color: #fff; border-radius: 12px;
+    padding: 12px; text-align: center; font-size: 13px; font-weight: 700;
+  }
+  .sheet .reject {
+    flex: 1; background: transparent; border: 1px solid rgba(231,94,120,.4); color: var(--red);
+    border-radius: 12px; padding: 12px; text-align: center; font-size: 13px; font-weight: 700;
+  }
+
+  /* ---------- 4. bots roster ---------- */
+  .section-h {
+    font-family: var(--mono); font-size: 10px; font-weight: 600;
+    color: var(--fg-faint); letter-spacing: .08em; text-transform: uppercase;
+    margin: 6px 2px 0;
+  }
+  .bot-row { display: flex; gap: 11px; align-items: center; }
+  .bot-row .botavatar {
+    width: 38px; height: 38px; border-radius: 11px; flex: none;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 12px; font-weight: 600;
+    position: relative;
+  }
+  .bot-row .botavatar .dot { position: absolute; right: -2px; bottom: -2px; border: 2px solid var(--card); }
+  .bot-row .mid { min-width: 0; flex: 1; }
+  .bot-row .desc { font-size: 11px; color: var(--fg-dim); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bot-row .arrow { color: var(--fg-faint); flex: none; }
+
+  /* ---------- 5. bot compose ---------- */
+  .target-card {
+    display: flex; align-items: center; gap: 12px;
+    border: 1px solid rgba(79,140,255,.3);
+    background: rgba(79,140,255,.07);
+    border-radius: 14px; padding: 13px 14px;
+  }
+  .compose-area {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 14px; padding: 13px 14px;
+    font-size: 12.5px; line-height: 1.55; color: var(--fg);
+    min-height: 128px;
+  }
+  .compose-area .ph { color: var(--fg-faint); }
+  .hint-line { font-size: 10.5px; color: var(--fg-faint); line-height: 1.5; padding: 0 3px; }
+  .hint-line b { color: var(--fg-dim); font-weight: 600; }
+
+  /* ---------- 6. bot chat thread ---------- */
+  .relay-card {
+    background: color-mix(in srgb, var(--card) 88%, #000);
+    border: 1px solid var(--line-soft);
+    border-radius: 12px; padding: 11px 12px;
+    margin-top: 8px;
+  }
+  .relay-card .rc-head { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; color: var(--fg-dim); }
+  .relay-route {
+    margin-top: 9px; display: flex; align-items: center; gap: 7px;
+    font-family: var(--mono); font-size: 10.5px;
+  }
+  .relay-route .node {
+    background: var(--elevated); border: 1px solid var(--line-soft);
+    border-radius: 7px; padding: 4px 8px; color: var(--cyan);
+  }
+  .relay-route .hop { color: var(--fg-faint); display: flex; align-items: center; }
+  .relay-status { margin-top: 9px; display: flex; align-items: center; gap: 7px; font-size: 10.5px; color: var(--fg-dim); }
+  .relay-status .mono { font-family: var(--mono); font-size: 9.5px; color: var(--fg-faint); }
+
+  .reply-card {
+    border: 1px solid rgba(85,165,131,.28);
+    background: rgba(85,165,131,.07);
+    border-radius: 12px; padding: 11px 12px; margin-top: 8px;
+  }
+  .reply-card .rc-head { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; color: var(--green); }
+  .reply-card .rc-body { font-size: 11.5px; color: var(--fg); line-height: 1.55; margin-top: 7px; }
+  .reply-card .rc-body .mono { font-family: var(--mono); font-size: 10px; color: var(--cyan); }
+
+  .turn-divider {
+    display: flex; align-items: center; gap: 9px;
+    font-family: var(--mono); font-size: 9px; color: var(--fg-faint);
+    letter-spacing: .06em; text-transform: uppercase;
+  }
+  .turn-divider::before, .turn-divider::after {
+    content: ""; flex: 1; height: 1px; background: var(--line-soft);
+  }
+
+  /* ---------- 7-8. group chat ---------- */
+  .gavatar-stack { display: flex; align-items: center; }
+  .gavatar-stack .ga {
+    width: 26px; height: 26px; border-radius: 8px;
+    border: 2px solid var(--chrome);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 9px; font-weight: 600;
+    margin-left: -7px;
+  }
+  .gavatar-stack .ga:first-child { margin-left: 0; }
+
+  .gmsg { align-self: flex-start; max-width: 94%; }
+  .gmsg .sender { font-size: 11px; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 7px; }
+  .gmsg .sender .dev { font-family: var(--mono); font-size: 9px; font-weight: 400; color: var(--fg-faint); }
+  .gmsg .bubble {
+    background: var(--card); border: 1px solid var(--line-soft);
+    border-radius: 5px 14px 14px 14px;
+    padding: 9px 12px; font-size: 12.5px; line-height: 1.55;
+  }
+  .gmsg .gm-time { font-family: var(--mono); font-size: 9px; color: var(--fg-faint); margin-top: 5px; padding-left: 2px; }
+
+  .fanout-card {
+    background: color-mix(in srgb, var(--card) 88%, #000);
+    border: 1px solid var(--line-soft);
+    border-radius: 12px; padding: 11px 12px; margin-top: 8px;
+  }
+  .fanout-card .fc-head { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; color: var(--fg-dim); }
+  .fanout-row { display: flex; align-items: center; gap: 8px; margin-top: 9px; font-size: 11px; }
+  .fanout-row .st { margin-left: auto; font-family: var(--mono); font-size: 9px; color: var(--fg-faint); white-space: nowrap; }
+
+  .mention-row {
+    flex: none; display: flex; gap: 7px; padding: 8px 14px 0;
+    border-top: 1px solid var(--line-soft);
+  }
+  .mention-chip {
+    display: flex; align-items: center; gap: 6px;
+    font-family: var(--mono); font-size: 10.5px; font-weight: 600;
+    padding: 5px 9px; border-radius: 8px;
+    background: rgba(85,165,131,.12); color: var(--green);
+    border: 1px solid rgba(85,165,131,.25);
+  }
+  .mention-chip.b2 { background: rgba(79,140,255,.12); color: var(--blue); border-color: rgba(79,140,255,.25); }
+  .mention-chip .x { opacity: .6; display: flex; }
+
+  /* group info */
+  .group-hero { display: flex; flex-direction: column; align-items: center; gap: 9px; padding: 8px 0 4px; }
+  .group-hero .gava {
+    width: 64px; height: 64px; border-radius: 18px;
+    background: var(--elevated);
+    border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--fg-dim);
+  }
+  .group-hero .gname { font-size: 16px; font-weight: 700; letter-spacing: -0.015em; }
+  .group-hero .gsub { font-family: var(--mono); font-size: 10px; color: var(--fg-faint); }
+
+  .member-row { display: flex; align-items: center; gap: 11px; padding: 11px 0; border-bottom: 1px solid var(--line-soft); }
+  .member-row:last-child { border-bottom: none; }
+  .member-row .role { font-size: 10px; color: var(--fg-faint); margin-top: 2px; }
+  .member-row .mright { margin-left: auto; display: flex; align-items: center; gap: 7px; }
+
+  .settings-row {
+    display: flex; align-items: center; gap: 11px;
+    padding: 12px 2px; font-size: 12.5px; font-weight: 600;
+    border-bottom: 1px solid var(--line-soft); color: var(--fg);
+  }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-row .sicon { width: 30px; height: 30px; border-radius: 9px; background: var(--elevated); border: 1px solid var(--line-soft); display: flex; align-items: center; justify-content: center; color: var(--fg-dim); flex: none; }
+  .settings-row.danger { color: var(--red); }
+  .settings-row.danger .sicon { color: var(--red); background: rgba(231,94,120,.1); border-color: rgba(231,94,120,.2); }
+  .settings-row .val { margin-left: auto; font-size: 11px; font-weight: 400; color: var(--fg-faint); display: flex; align-items: center; gap: 6px; }
+
+  .note-strip {
+    max-width: 1460px; margin: 48px auto 0;
+    border-top: 1px solid var(--line-soft);
+    padding-top: 22px;
+    display: flex; gap: 40px; flex-wrap: wrap;
+  }
+  .note-strip .note { max-width: 40ch; }
+  .note-strip .note h3 { font-size: 12.5px; font-weight: 700; color: var(--fg); margin-bottom: 7px; }
+  .note-strip .note p { font-size: 11.5px; color: var(--fg-dim); line-height: 1.6; }
+  .note-strip .note .mono { font-family: var(--mono); font-size: 10px; color: var(--cyan); }
+</style>
+</head>
+<body>
+<!--
+THESIS: Hermes Mobile adalah layar tipis ke agent self-hosted — plumbing agent (tool calls, approval, delegasi bot) adalah konten utama, bukan disembunyikan di balik bubble chat. Menolak default kategori "chatbot bubble polos".
+OWN-WORLD: dunia Hermes Desktop — chrome nyaris-hitam #0d0d0e, kartu #161618, biru primer #0053fd, aksen hangat #cf806d, amber #ffd24a untuk data/pilihan; JetBrains Mono untuk handle, perintah, dan status (data, bukan kostum); sans system stack Desktop (Segoe/SF Pro) untuk teks.
+STORY: user membuka app, memilih mesin di tailnet, lanjut ngobrol dengan agent-nya, dan — bagian yang tak bisa ditiru produk lain — mendelegasikan tugas ke bot di mesin lain lalu menerima reply async-nya.
+FIRST VIEWPORT: enam frame HP dalam grid; urutan baca Connections → Chats → Chat → Bots → Compose → Bot Chat, dengan layar Bot Chat sebagai klimaks yang membuktikan mekanisme relay.
+FORM: pinned oleh user ("kayak Hermes Desktop") — arah user mengalahkan roll; multi-screen static board, satu file HTML.
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
+-->
+
+<div class="page-head">
+  <h1>Hermes <span>Mobile</span> · mockup v1</h1>
+  <p>Client tipis untuk Hermes agent di mesin sendiri, lewat Tailscale. Semua sesi tersimpan di gateway, jadi HP dan Desktop melihat hal yang sama. Fokus: <b style="color:var(--fg)">Bot Mode</b>, delegasi agent-to-agent antar device.</p>
+  <div class="meta">
+    <span>backend <b>hermes serve · /api/ws</b></span>
+    <span>auth <b>ws ticket + secure storage</b></span>
+    <span>relay <b>bot_relay daemon · outbox drain 30s</b></span>
+    <span>data demo <b>sintetis</b></span>
+  </div>
+</div>
+
+<div class="board">
+
+  <!-- ══════════ 1. CONNECTIONS ══════════ -->
+  <div class="screen">
+    <div class="label"><b>01 · Connections</b> · pilih device di tailnet</div>
+    <div class="phone">
+      <div class="statusbar">
+        <span>09.41</span>
+        <span class="sicons">
+          <svg width="15" height="11" viewBox="0 0 15 11" fill="currentColor"><rect x="0" y="7" width="2.5" height="4" rx="0.5"/><rect x="4" y="5" width="2.5" height="6" rx="0.5"/><rect x="8" y="2.5" width="2.5" height="8.5" rx="0.5"/><rect x="12" y="0" width="2.5" height="11" rx="0.5"/></svg>
+          <svg width="22" height="11" viewBox="0 0 22 11" fill="none" stroke="currentColor"><rect x="0.5" y="0.5" width="18" height="10" rx="2.5"/><rect x="2.5" y="2.5" width="12" height="6" rx="1" fill="currentColor" stroke="none"/><path d="M20.5 3.5v4" stroke-linecap="round"/></svg>
+        </span>
+      </div>
+      <div class="appbar">
+        <div class="title">Hermes</div>
+        <div class="spacer"></div>
+        <div class="iconbtn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
+      </div>
+      <div class="body">
+        <div class="section-h">Tailnet · 3 device</div>
+
+        <div class="card conn-row">
+          <div class="glyph"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+          <div>
+            <div class="nm">T14 <span class="chip green">default</span></div>
+            <div class="ip">100.64.0.14 · hermes 0.20.5</div>
+          </div>
+          <div class="right">
+            <div class="st on">online</div>
+            <div class="sub">4 profiles</div>
+          </div>
+        </div>
+
+        <div class="card conn-row">
+          <div class="glyph"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="3" y="3" width="18" height="8" rx="2"/><rect x="3" y="13" width="18" height="8" rx="2"/><path d="M7 7h.01M7 17h.01"/></svg></div>
+          <div>
+            <div class="nm">linc-nuc</div>
+            <div class="ip">100.64.0.8 · hermes 0.20.5</div>
+          </div>
+          <div class="right">
+            <div class="st on">online</div>
+            <div class="sub">2 profiles</div>
+          </div>
+        </div>
+
+        <div class="card conn-row off">
+          <div class="glyph"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg></div>
+          <div>
+            <div class="nm">x360</div>
+            <div class="ip">100.64.0.89</div>
+          </div>
+          <div class="right">
+            <div class="st off">offline</div>
+            <div class="sub">last 2h ago</div>
+          </div>
+        </div>
+
+        <div style="flex:1"></div>
+        <div class="btn-ghost">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          Tambah device
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ 2. CHAT LIST ══════════ -->
+  <div class="screen">
+    <div class="label"><b>02 · Chats</b> · sesi tersimpan di gateway, sync dgn Desktop</div>
+    <div class="phone">
+      <div class="statusbar">
+        <span>09.41</span>
+        <span class="sicons">
+          <svg width="15" height="11" viewBox="0 0 15 11" fill="currentColor"><rect x="0" y="7" width="2.5" height="4" rx="0.5"/><rect x="4" y="5" width="2.5" height="6" rx="0.5"/><rect x="8" y="2.5" width="2.5" height="8.5" rx="0.5"/><rect x="12" y="0" width="2.5" height="11" rx="0.5"/></svg>
+          <svg width="22" height="11" viewBox="0 0 22 11" fill="none" stroke="currentColor"><rect x="0.5" y="0.5" width="18" height="10" rx="2.5"/><rect x="2.5" y="2.5" width="12" height="6" rx="1" fill="currentColor" stroke="none"/><path d="M20.5 3.5v4" stroke-linecap="round"/></svg>
+        </span>
+      </div>
+      <div class="appbar">
+        <div class="title">Chats</div>
+        <div class="spacer"></div>
+        <div class="iconbtn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M12 7v6M9 10h6"/></svg>
+        </div>
+      </div>
+      <div class="body">
+        <div class="deviceswitch">
+          <span class="dot on"></span>
+          T14
+          <span class="ip">100.64.0.14</span>
+          <span style="margin-left:auto;color:var(--fg-faint)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+          </span>
+        </div>
+
+        <div class="card sess-row">
+          <div class="avatar" style="background:rgba(207,128,109,.14);color:var(--warm)">B</div>
+          <div class="mid">
+            <div class="t1"><span class="name">Bot Chat</span><span class="chip warm">relay</span><span class="time">09.38</span></div>
+            <div class="pv"><span class="mono">@minarflow</span> membalas: rangkuman analytics semalam…</div>
+          </div>
+        </div>
+
+        <div class="card sess-row">
+          <div class="avatar" style="background:rgba(79,140,255,.13);color:var(--blue)">L</div>
+          <div class="mid">
+            <div class="t1"><span class="name">Landing page briefsip</span><span class="time">08.12</span></div>
+            <div class="pv">Hero copy udah jadi 3 varian, tinggal pilih…</div>
+          </div>
+        </div>
+
+        <div class="card sess-row">
+          <div class="avatar" style="background:rgba(85,165,131,.13);color:var(--green)">C</div>
+          <div class="mid">
+            <div class="t1"><span class="name">Cron audit mingguan</span><span class="time">Kem</span></div>
+            <div class="pv"><span class="mono">$ hermes cron list</span> · 2 job gagal, 1 butuh…</div>
+          </div>
+        </div>
+
+        <div class="card sess-row">
+          <div class="avatar" style="background:rgba(111,155,166,.13);color:var(--cyan)">D</div>
+          <div class="mid">
+            <div class="t1"><span class="name">Deploy alur v0.4</span><span class="time">Sen</span></div>
+            <div class="pv">Rollback selesai, root cause di migrasi…</div>
+          </div>
+        </div>
+
+        <div style="flex:1"></div>
+      </div>
+      <div class="tabbar">
+        <div class="tab active">
+          <span class="tabicon"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+          Chats
+        </div>
+        <div class="tab">
+          <span class="tabicon">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="5" y="8" width="14" height="11" rx="2.5"/><path d="M12 8V5M12 5h.01M8 13h.01M16 13h.01M9 16.5h6"/><circle cx="12" cy="5" r="1.4"/></svg>
+            <span class="badge">1</span>
+          </span>
+          Bots
+        </div>
+        <div class="tab">
+          <span class="tabicon"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2.5"/></svg></span>
+          Runs
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ 3. CHAT VIEW ══════════ -->
+  <div class="screen">
+    <div class="label"><b>03 · Chat</b> · streaming, tool cards, approval sheet</div>
+    <div class="phone">
+      <div class="statusbar">
+        <span>09.41</span>
+        <span class="sicons">
+          <svg width="15" height="11" viewBox="0 0 15 11" fill="currentColor"><rect x="0" y="7" width="2.5" height="4" rx="0.5"/><rect x="4" y="5" width="2.5" height="6" rx="0.5"/><rect x="8" y="2.5" width="2.5" height="8.5" rx="0.5"/><rect x="12" y="0" width="2.5" height="11" rx="0.5"/></svg>
+          <svg width="22" height="11" viewBox="0 0 22 11" fill="none" stroke="currentColor"><rect x="0.5" y="0.5" width="18" height="10" rx="2.5"/><rect x="2.5" y="2.5" width="12" height="6" rx="1" fill="currentColor" stroke="none"/><path d="M20.5 3.5v4" stroke-linecap="round"/></svg>
+        </span>
+      </div>
+      <div class="appbar">
+        <div class="iconbtn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></div>
+        <div>
+          <div class="title" style="font-size:14px">Landing page briefsip</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--fg-faint);margin-top:2px">default · kimi-k2 · T14</div>
+        </div>
+        <div class="spacer"></div>
+        <div class="iconbtn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="5" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/><circle cx="12" cy="19" r="1.4" fill="currentColor"/></svg></div>
+      </div>
+
+      <div class="chatscroll">
+        <div class="msg user">Rapiin copy hero-nya, terus jalanin build buat mastiin ga ada yang rusak</div>
+        <div class="msg bot">
+          <div class="who"><span style="width:5px;height:5px;border-radius:50%;background:var(--blue)"></span>hermes · default</div>
+          <div class="txt">Oke, hero copy udah gue rapikan: headline dipendekin, subhead dibuat lebih konkret. Sekarang jalanin build dulu:</div>
+          <div class="toolcard">
+            <div class="tc-head">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 17l6-5-6-5M12 19h8"/></svg>
+              terminal · selesai 4.2s
+              <span class="chip green" style="margin-left:auto">exit 0</span>
+            </div>
+            <div class="cmd">npm run build</div>
+            <div class="out">✓ 184 modules transformed<br><span class="ok">✓ built in 3.9s · no errors</span></div>
+          </div>
+          <div class="txt" style="margin-top:8px">Build aman. Mau sekalian gue commit?<span class="cursor"></span></div>
+        </div>
+      </div>
+
+      <div class="composer">
+        <div class="stop"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg></div>
+        <div class="field">Ketik pesan…</div>
+        <div class="send"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></div>
+      </div>
+
+      <!-- approval sheet -->
+      <div class="sheet-wrap">
+        <div class="sheet-dim"></div>
+        <div class="sheet">
+          <div class="grab"></div>
+          <div class="sh-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="1.8" stroke-linecap="round"><path d="M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+            Approval needed
+          </div>
+          <div class="sh-sub">Agent mau jalanin perintah terminal di <b style="color:var(--fg)">T14</b>:</div>
+          <div class="sh-cmd">git add -A && git commit -m "hero copy"</div>
+          <div class="sh-actions">
+            <div class="reject">Tolak</div>
+            <div class="approve">Approve</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ 4. BOTS ROSTER ══════════ -->
+  <div class="screen">
+    <div class="label"><b>04 · Bots</b> · roster union semua koneksi (bot_relay)</div>
+    <div class="phone">
+      <div class="statusbar">
+        <span>09.41</span>
+        <span class="sicons">
+          <svg width="15" height="11" viewBox="0 0 15 11" fill="currentColor"><rect x="0" y="7" width="2.5" height="4" rx="0.5"/><rect x="4" y="5" width="2.5" height="6" rx="0.5"/><rect x="8" y="2.5" width="2.5" height="8.5" rx="0.5"/><rect x="12" y="0" width="2.5" height="11" rx="0.5"/></svg>
+          <svg width="22" height="11" viewBox="0 0 22 11" fill="none" stroke="currentColor"><rect x="0.5" y="0.5" width="18" height="10" rx="2.5"/><rect x="2.5" y="2.5" width="12" height="6" rx="1" fill="currentColor" stroke="none"/><path d="M20.5 3.5v4" stroke-linecap="round"/></svg>
+        </span>
+      </div>
+      <div class="appbar">
+        <div class="title">Bots</div>
+        <div class="spacer"></div>
+        <div class="chip">roster sync 60s</div>
+      </div>
+      <div class="body">
+        <div class="section-h">Device ini · T14</div>
+
+        <div class="card bot-row">
+          <div class="botavatar" style="background:rgba(207,128,109,.14);color:var(--warm)">he<span class="dot on"></span></div>
+          <div class="mid">
+            <div class="handle">@hermes</div>
+            <div class="desc">Generalist, profile default</div>
+          </div>
+          <div class="arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg></div>
+        </div>
+
+        <div class="card bot-row">
+          <div class="botavatar" style="background:rgba(79,140,255,.13);color:var(--blue)">br<span class="dot busy"></span></div>
+          <div class="mid">
+            <div class="handle">@briefsip</div>
+            <div class="desc">Copywriter produk · lagi ngerjain landing</div>
+          </div>
+          <div class="arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg></div>
+        </div>
+
+        <div class="section-h">linc-nuc · 100.64.0.8</div>
+
+        <div class="card bot-row">
+          <div class="botavatar" style="background:rgba(85,165,131,.13);color:var(--green)">mi<span class="dot on"></span></div>
+          <div class="mid">
+            <div class="handle">@minarflow</div>
+            <div class="desc">Analytics & reporting worker</div>
+          </div>
+          <div class="arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg></div>
+        </div>
+
+        <div class="card bot-row" style="opacity:.5">
+          <div class="botavatar" style="background:var(--elevated);color:var(--fg-faint)">al<span class="dot off"></span></div>
+          <div class="mid">
+            <div class="handle">@alur</div>
+            <div class="desc">Infra/deploy · device offline</div>
+          </div>
+          <div class="arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg></div>
+        </div>
+
+        <div style="flex:1"></div>
+        <div class="hint-line">Roster digabung dari semua koneksi oleh <b>relay daemon</b>, di-push ke tiap gateway tiap 60 detik. Bot offline = fail-fast, tugas tidak diantrekan.</div>
+      </div>
+      <div class="tabbar">
+        <div class="tab">
+          <span class="tabicon"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+          Chats
+        </div>
+        <div class="tab active">
+          <span class="tabicon">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="5" y="8" width="14" height="11" rx="2.5"/><path d="M12 8V5M12 5h.01M8 13h.01M16 13h.01M9 16.5h6"/><circle cx="12" cy="5" r="1.4"/></svg>
+            <span class="badge">1</span>
+          </span>
+          Bots
+        </div>
+        <div class="tab">
+          <span class="tabicon"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2.5"/></svg></span>
+          Runs
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ 5. BOT COMPOSE ══════════ -->
+  <div class="screen">
+    <div class="label"><b>05 · Delegasi</b> · kirim tugas ke bot lain</div>
+    <div class="phone">
+      <div class="statusbar">
+        <span>09.41</span>
+        <span class="sicons">
+          <svg width="15" height="11" viewBox="0 0 15 11" fill="currentColor"><rect x="0" y="7" width="2.5" height="4" rx="0.5"/><rect x="4" y="5" width="2.5" height="6" rx="0.5"/><rect x="8" y="2.5" width="2.5" height="8.5" rx="0.5"/><rect x="12" y="0" width="2.5" height="11" rx="0.5"/></svg>
+          <svg width="22" height="11" viewBox="0 0 22 11" fill="none" stroke="currentColor"><rect x="0.5" y="0.5" width="18" height="10" rx="2.5"/><rect x="2.5" y="2.5" width="12" height="6" rx="1" fill="currentColor" stroke="none"/><path d="M20.5 3.5v4" stroke-linecap="round"/></svg>
+        </span>
+      </div>
+      <div class="appbar">
+        <div class="iconbtn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></div>
+        <div class="title" style="font-size:14px">Tugas baru</div>
+        <div class="spacer"></div>
+      </div>
+      <div class="body">
+        <div class="section-h">Target</div>
+        <div class="target-card">
+          <div class="bot-row" style="flex:1">
+            <div class="botavatar" style="background:rgba(85,165,131,.13);color:var(--green)">mi<span class="dot on"></span></div>
+            <div class="mid">
+              <div class="handle">@minarflow</div>
+              <div class="desc">linc-nuc · 100.64.0.8</div>
+            </div>
+          </div>
+          <span style="color:var(--fg-faint)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></span>
+        </div>
+
+        <div class="section-h">Tugas</div>
+        <div class="compose-area">
+          Rangkum analytics briefsip semalam: traffic per source, 3 halaman teratas, sama anomali kalau ada. Balas dalam poin-poin singkat aja.
+        </div>
+
+        <div class="hint-line">
+          Dikirim sebagai <b>envelope</b> lewat sesi <span style="font-family:var(--mono);font-size:9.5px;color:var(--cyan)">Bot Chat</span>; reply balik async (maks tunggu <b>15 menit</b>), kamu bisa nutup app.
+        </div>
+
+        <div style="flex:1"></div>
+        <div class="btn-primary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+          Kirim via @hermes
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ 6. BOT CHAT THREAD ══════════ -->
+  <div class="screen">
+    <div class="label"><b>06 · Bot Chat</b> · delegasi + reply async masuk sebagai turn baru</div>
+    <div class="phone">
+      <div class="statusbar">
+        <span>09.41</span>
+        <span class="sicons">
+          <svg width="15" height="11" viewBox="0 0 15 11" fill="currentColor"><rect x="0" y="7" width="2.5" height="4" rx="0.5"/><rect x="4" y="5" width="2.5" height="6" rx="0.5"/><rect x="8" y="2.5" width="2.5" height="8.5" rx="0.5"/><rect x="12" y="0" width="2.5" height="11" rx="0.5"/></svg>
+          <svg width="22" height="11" viewBox="0 0 22 11" fill="none" stroke="currentColor"><rect x="0.5" y="0.5" width="18" height="10" rx="2.5"/><rect x="2.5" y="2.5" width="12" height="6" rx="1" fill="currentColor" stroke="none"/><path d="M20.5 3.5v4" stroke-linecap="round"/></svg>
+        </span>
+      </div>
+      <div class="appbar">
+        <div class="iconbtn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></div>
+        <div>
+          <div class="title" style="font-size:14px">Bot Chat</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--warm);margin-top:2px">bot mode · relay aktif</div>
+        </div>
+        <div class="spacer"></div>
+        <div class="chip warm">3 bots online</div>
+      </div>
+
+      <div class="chatscroll">
+        <div class="msg user">Tolong minta @minarflow rangkum analytics briefsip semalam</div>
+
+        <div class="msg bot">
+          <div class="who"><span style="width:5px;height:5px;border-radius:50%;background:var(--warm)"></span>hermes · bot mode</div>
+          <div class="txt">Siap, tugasnya gue teruskan ke @minarflow di linc-nuc.</div>
+          <div class="relay-card">
+            <div class="rc-head">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+              message_agent · envelope terkirim
+            </div>
+            <div class="relay-route">
+              <span class="node">@hermes·t14</span>
+              <span class="hop">
+                <svg width="16" height="10" viewBox="0 0 16 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M0 5h13M10 1.5L14 5l-4 3.5"/></svg>
+              </span>
+              <span class="node">@minarflow·nuc</span>
+            </div>
+            <div class="relay-status">
+              <span class="dot wait"></span>
+              menunggu reply
+              <span class="mono">· ttl 900s · id 8f3a…</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="turn-divider">reply masuk · 2 m kemudian</div>
+
+        <div class="msg bot">
+          <div class="who"><span style="width:5px;height:5px;border-radius:50%;background:var(--green)"></span>hermes · bot mode</div>
+          <div class="reply-card">
+            <div class="rc-head">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+              Reply dari <span class="handle" style="color:var(--green)">@minarflow</span>
+            </div>
+            <div class="rc-body">
+              Traffic semalam <span class="mono">1.842 visits</span>: organik 61%, direct 24%, referral 15%. Halaman teratas: /pricing, /, /blog/roi. Anomali: spike referral jam 23.10 dari Product Hunt.
+            </div>
+          </div>
+          <div class="txt" style="margin-top:8px">Rangkumannya udah balik. Poin pentingnya: spike dari Product Hunt semalam. Mau gue minta @minarflow gali lebih dalam?<span class="cursor"></span></div>
+        </div>
+      </div>
+
+      <div class="composer">
+        <div class="field">Ketik pesan…</div>
+        <div class="send"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ 7. GROUP THREAD ══════════ -->
+  <div class="screen">
+    <div class="label"><b>07 · Group</b> — satu room, banyak bot; mention = fan-out envelope</div>
+    <div class="phone">
+      <div class="statusbar">
+        <span>09.41</span>
+        <span class="sicons">
+          <svg width="15" height="11" viewBox="0 0 15 11" fill="currentColor"><rect x="0" y="7" width="2.5" height="4" rx="0.5"/><rect x="4" y="5" width="2.5" height="6" rx="0.5"/><rect x="8" y="2.5" width="2.5" height="8.5" rx="0.5"/><rect x="12" y="0" width="2.5" height="11" rx="0.5"/></svg>
+          <svg width="22" height="11" viewBox="0 0 22 11" fill="none" stroke="currentColor"><rect x="0.5" y="0.5" width="18" height="10" rx="2.5"/><rect x="2.5" y="2.5" width="12" height="6" rx="1" fill="currentColor" stroke="none"/><path d="M20.5 3.5v4" stroke-linecap="round"/></svg>
+        </span>
+      </div>
+      <div class="appbar">
+        <div class="iconbtn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></div>
+        <div style="min-width:0">
+          <div class="title" style="font-size:14px">Sprint Room</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--fg-faint);margin-top:2px">4 members · 3 bots online</div>
+        </div>
+        <div class="spacer"></div>
+        <div class="gavatar-stack">
+          <div class="ga" style="background:rgba(207,128,109,.18);color:var(--warm)">he</div>
+          <div class="ga" style="background:rgba(85,165,131,.16);color:var(--green)">mi</div>
+          <div class="ga" style="background:rgba(79,140,255,.16);color:var(--blue)">br</div>
+        </div>
+      </div>
+
+      <div class="chatscroll">
+        <div class="msg user"><span class="handle" style="color:var(--green)">@minarflow</span> <span class="handle" style="color:var(--blue)">@briefsip</span> siapin caption launch + data pendukungnya ya, deadline besok pagi</div>
+
+        <div class="msg bot" style="max-width:97%">
+          <div class="who"><span style="width:5px;height:5px;border-radius:50%;background:var(--warm)"></span>hermes · coordinator</div>
+          <div class="fanout-card">
+            <div class="fc-head">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M16 3h5v5M21 3l-7 7M8 21H3v-5M3 21l7-7"/></svg>
+              fan-out · 2 envelope
+            </div>
+            <div class="fanout-row">
+              <span class="dot on"></span>
+              <span class="handle" style="color:var(--green)">@minarflow</span>
+              <span style="color:var(--fg-faint);font-size:10px">data pendukung</span>
+              <span class="st">delivered · 4s</span>
+            </div>
+            <div class="fanout-row">
+              <span class="dot on"></span>
+              <span class="handle" style="color:var(--blue)">@briefsip</span>
+              <span style="color:var(--fg-faint);font-size:10px">draft caption</span>
+              <span class="st">delivered · 6s</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="gmsg">
+          <div class="sender" style="color:var(--green)">@minarflow <span class="dev">linc-nuc</span></div>
+          <div class="bubble">Data launch: visits 7-hari naik 38%, signup 214 (best day Selasa). Chart weekly-active terlampir di sesi aku.</div>
+          <div class="gm-time">09.39 · via relay</div>
+        </div>
+
+        <div class="gmsg">
+          <div class="sender" style="color:var(--blue)">@briefsip <span class="dev">t14</span></div>
+          <div class="bubble">3 draft caption siap. Yang paling kuat versi ke-2 — pendek, ada angka 38% dari @minarflow.</div>
+          <div class="gm-time">09.40 · via relay</div>
+        </div>
+
+        <div class="msg bot">
+          <div class="who"><span style="width:5px;height:5px;border-radius:50%;background:var(--warm)"></span>hermes · coordinator</div>
+          <div class="txt">Dua-duanya udah masuk. Caption v2 + angka 38% cocok — mau gue finalkan jadi satu post, atau kamu review dulu draftnya?<span class="cursor"></span></div>
+        </div>
+      </div>
+
+      <div class="mention-row">
+        <div class="mention-chip">@minarflow <span class="x"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></span></div>
+        <div class="mention-chip b2">@briefsip <span class="x"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></span></div>
+      </div>
+      <div class="composer" style="border-top:none">
+        <div class="field">Ketik ke room…</div>
+        <div class="send"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ 8. GROUP INFO ══════════ -->
+  <div class="screen">
+    <div class="label"><b>08 · Group info</b> — member bot lintas device, gaya Telegram</div>
+    <div class="phone">
+      <div class="statusbar">
+        <span>09.41</span>
+        <span class="sicons">
+          <svg width="15" height="11" viewBox="0 0 15 11" fill="currentColor"><rect x="0" y="7" width="2.5" height="4" rx="0.5"/><rect x="4" y="5" width="2.5" height="6" rx="0.5"/><rect x="8" y="2.5" width="2.5" height="8.5" rx="0.5"/><rect x="12" y="0" width="2.5" height="11" rx="0.5"/></svg>
+          <svg width="22" height="11" viewBox="0 0 22 11" fill="none" stroke="currentColor"><rect x="0.5" y="0.5" width="18" height="10" rx="2.5"/><rect x="2.5" y="2.5" width="12" height="6" rx="1" fill="currentColor" stroke="none"/><path d="M20.5 3.5v4" stroke-linecap="round"/></svg>
+        </span>
+      </div>
+      <div class="appbar">
+        <div class="iconbtn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></div>
+        <div class="title" style="font-size:14px">Group info</div>
+        <div class="spacer"></div>
+        <div class="iconbtn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+      </div>
+      <div class="body">
+        <div class="group-hero">
+          <div class="gava"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="5" y="8" width="14" height="11" rx="2.5"/><path d="M12 8V5M8 13h.01M16 13h.01M9 16.5h6"/><circle cx="12" cy="5" r="1.4"/></svg></div>
+          <div class="gname">Sprint Room</div>
+          <div class="gsub">room · dibuat 12 Agu · 4 members</div>
+        </div>
+
+        <div class="card">
+          <div class="member-row">
+            <div class="bot-row" style="flex:1;min-width:0">
+              <div class="botavatar" style="background:rgba(207,128,109,.14);color:var(--warm)">IQ</div>
+              <div class="mid">
+                <div style="font-size:13px;font-weight:600">Iqbal</div>
+                <div class="role">owner</div>
+              </div>
+            </div>
+            <div class="mright"><span class="chip warm">owner</span></div>
+          </div>
+          <div class="member-row">
+            <div class="bot-row" style="flex:1;min-width:0">
+              <div class="botavatar" style="background:rgba(207,128,109,.14);color:var(--warm)">he<span class="dot on"></span></div>
+              <div class="mid">
+                <div class="handle" style="color:var(--warm)">@hermes</div>
+                <div class="role">coordinator · T14 · meroute mention ke member</div>
+              </div>
+            </div>
+            <div class="mright"><span class="chip">t14</span></div>
+          </div>
+          <div class="member-row">
+            <div class="bot-row" style="flex:1;min-width:0">
+              <div class="botavatar" style="background:rgba(85,165,131,.13);color:var(--green)">mi<span class="dot on"></span></div>
+              <div class="mid">
+                <div class="handle" style="color:var(--green)">@minarflow</div>
+                <div class="role">analytics & reporting</div>
+              </div>
+            </div>
+            <div class="mright"><span class="chip">nuc</span></div>
+          </div>
+          <div class="member-row">
+            <div class="bot-row" style="flex:1;min-width:0">
+              <div class="botavatar" style="background:rgba(79,140,255,.13);color:var(--blue)">br<span class="dot busy"></span></div>
+              <div class="mid">
+                <div class="handle" style="color:var(--blue)">@briefsip</div>
+                <div class="role">copywriter produk</div>
+              </div>
+            </div>
+            <div class="mright"><span class="chip">t14</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="settings-row">
+            <div class="sicon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></div>
+            Notifikasi reply
+            <span class="val">semua <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg></span>
+          </div>
+          <div class="settings-row">
+            <div class="sicon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+            Tambah bot
+            <span class="val"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg></span>
+          </div>
+          <div class="settings-row danger">
+            <div class="sicon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></div>
+            Hapus room
+          </div>
+        </div>
+
+        <div class="hint-line">Room adalah sesi biasa di gateway koordinator; membership disimpan di relay daemon. Bot dari device lain ikut lewat <b>bot_relay</b> yang sama.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="note-strip">
+  <div class="note">
+    <h3>Yang divisualkan</h3>
+    <p>Flow lengkap Bot Mode di HP: roster gabungan antar-device (<span class="mono">bot_relay.roster.sync</span>), delegasi sebagai envelope (<span class="mono">message_agent</span>), status menunggu, dan reply async yang muncul sebagai turn baru. Semua state berasal dari gateway, jadi tampilan identik di Desktop.</p>
+  </div>
+  <div class="note">
+    <h3>Data demo</h3>
+    <p>Nama device nyata (T14, linc-nuc, x360), handle bot dan isi pesan sintetis untuk keperluan review. Belum ada: empty state roster kosong, error delivery (target offline), dan layar Runs.</p>
+  </div>
+  <div class="note">
+    <h3>Keputusan yang butuh input lo</h3>
+    <p>Tab ketiga "Runs" untuk memantau run panjang + approval: perlu layar sendiri atau cukup lewat notifikasi? Compose tugas layar terpisah (05) atau cukup diketik langsung di Bot Chat?</p>
+  </div>
+</div>
+
+</body>
+</html>

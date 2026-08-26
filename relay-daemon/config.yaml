@@ -1,0 +1,19 @@
+# hermes-relay-daemon configuration.
+#
+# Each entry is one Hermes gateway (`hermes serve` / dashboard) the relay holds
+# a WebSocket to. `name` is the connection id used in roster rows and envelope
+# routing (must match ^[a-zA-Z0-9][a-zA-Z0-9_-]{0,63}$) — keep names stable:
+# senders resolve targets against the roster this daemon pushes, so renaming a
+# connection invalidates queued envelopes addressed to the old id.
+#
+# Auth is shared: credentials come from $HERMES_HOME/config.yaml
+# (dashboard.basic_auth) on the machine running the daemon.
+connections:
+  - name: nuc
+    url: http://100.105.150.35:9119
+
+  # Example second connection (T14 laptop). Uncomment once it runs
+  # `hermes serve`/dashboard on its Tailscale address with the same
+  # dashboard.basic_auth credentials.
+  # - name: t14
+  #   url: http://100.85.238.50:9119

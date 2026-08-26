@@ -1,0 +1,18 @@
+[Unit]
+Description=Hermes Bot Mode relay daemon (headless cross-connection A2A relay)
+After=network-online.target hermes-dashboard.service
+Wants=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+ExecStart=/home/iqbal/.hermes/hermes-agent/venv/bin/python /home/iqbal/workspace/personal/hermes-mobile/relay-daemon/relay_daemon.py
+WorkingDirectory=/home/iqbal/.hermes
+Environment="HERMES_HOME=/home/iqbal/.hermes"
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

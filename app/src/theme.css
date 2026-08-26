@@ -1,0 +1,896 @@
+/* Hermes Mobile theme — tokens pinned from DESIGN.md (do not invent colors). */
+
+:root {
+  --chrome: #0d0d0e;
+  --page: #070708;
+  --sidebar: #0a0a0b;
+  --card: #161618;
+  --elevated: #1c1c1f;
+  --fg: #f2f2f3;
+  --fg-dim: #a7a7ad;
+  --fg-faint: #6d6d74;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-soft: rgba(255, 255, 255, 0.05);
+  --blue: #4f8cff;
+  --blue-deep: #0053fd;
+  --warm: #cf806d;
+  --amber: #ffd24a;
+  --green: #55a583;
+  --red: #e75e78;
+  --cyan: #6f9ba6;
+
+  --r-chip: 6px;
+  --r-iconbtn: 9px;
+  --r-row: 10px;
+  --r-button: 12px;
+  --r-card: 14px;
+  --r-sheet: 20px;
+
+  --font-sans: "Segoe WPC", "Segoe UI", -apple-system, BlinkMacSystemFont,
+    "SF Pro Text", system-ui, sans-serif;
+  /* The Mono Is Data Rule: mono only for handles, commands, IPs, IDs, timestamps. */
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Scroll stays fully functional, chrome just never shows a scrollbar. */
+*,
+*::before,
+*::after {
+  scrollbar-width: none;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+/* Mobile overflow guard: nothing may push the page wider than the viewport.
+   (100vw would include the scrollbar; max-width: 100% does not.) */
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+body {
+  background: var(--chrome);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+/* ── layout shells ─────────────────────────────────────────────────────── */
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  max-width: 480px;
+  min-width: 0;
+  margin: 0 auto;
+  background: var(--chrome);
+}
+
+.appbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.appbar-title {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.18;
+}
+
+.appbar-sub {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg-faint);
+  letter-spacing: 0.02em;
+  line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* More space above a heading than below it: with the 12px body gap this reads
+   as 24px above a section label and 8px below it. */
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+  margin: 12px 2px -4px;
+}
+
+.body > .section-label:first-child {
+  margin-top: 0;
+}
+
+.hint {
+  font-size: 11.5px;
+  color: var(--fg-faint);
+  line-height: 1.6;
+  padding: 4px 2px;
+}
+
+/* Empty state (a hint directly after the search field, e.g. ChatList) gets
+   real breathing room: centered column, 40px vertical air, narrow measure. */
+.body > .field + .hint {
+  align-self: center;
+  max-width: 260px;
+  padding: 40px 12px;
+  text-align: center;
+}
+
+/* ── components ────────────────────────────────────────────────────────── */
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-card);
+  padding: 16px 18px;
+}
+
+.card-sunken {
+  background: color-mix(in srgb, var(--card) 88%, #000);
+}
+
+.btn {
+  border: 1px solid transparent;
+  border-radius: var(--r-button);
+  padding: 12px;
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  width: 100%;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.btn-primary {
+  background: var(--blue-deep);
+  color: #fff;
+}
+
+.btn-ghost {
+  background: var(--card);
+  border-color: var(--line);
+  color: var(--fg-dim);
+}
+
+.btn-destructive {
+  background: transparent;
+  border-color: rgba(231, 94, 120, 0.4);
+  color: var(--red);
+}
+
+.iconbtn {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  background: var(--card);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-iconbtn);
+  color: var(--fg-dim);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* Instant press feedback on every control — fires on pointer-down (:active),
+   not on release. 100ms ease-out so it reads as immediate but not binary. */
+.btn,
+.iconbtn,
+.sendbtn,
+.stopbtn,
+.rowcard,
+.drawer-item {
+  transition: transform 100ms ease-out;
+}
+
+.btn:active,
+.iconbtn:active,
+.sendbtn:active,
+.stopbtn:active,
+.rowcard:active,
+.drawer-item:active {
+  transform: scale(0.97);
+}
+
+.field {
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-button);
+  padding: 11px 14px;
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  outline: none;
+}
+
+.field:focus {
+  border-color: var(--line);
+}
+
+.field::placeholder {
+  color: var(--fg-faint);
+}
+
+.field.mono {
+  font-size: 11.5px;
+}
+
+.chip {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  border-radius: var(--r-chip);
+  padding: 2.5px 7px;
+  white-space: nowrap;
+  background: rgba(111, 155, 166, 0.12);
+  border: 1px solid rgba(111, 155, 166, 0.22);
+  color: var(--cyan);
+}
+
+.chip-green {
+  background: rgba(85, 165, 131, 0.12);
+  border-color: rgba(85, 165, 131, 0.22);
+  color: var(--green);
+}
+
+.chip-warm {
+  background: rgba(207, 128, 109, 0.1);
+  border-color: rgba(207, 128, 109, 0.25);
+  color: var(--warm);
+}
+
+.chip-amber {
+  background: rgba(255, 210, 74, 0.06);
+  border-color: rgba(255, 210, 74, 0.12);
+  color: var(--amber);
+}
+
+/* status dots */
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.dot-on {
+  background: var(--green);
+}
+
+.dot-busy {
+  background: var(--amber);
+}
+
+.dot-off {
+  background: #4a4a50;
+}
+
+/* tool card (signature) */
+.toolcard {
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-button);
+  padding: 10px 12px;
+  margin-top: 8px;
+  background: color-mix(in srgb, var(--card) 88%, #000);
+}
+
+.toolcard-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.toolcard-cmd {
+  margin-top: 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--amber);
+  background: rgba(255, 210, 74, 0.06);
+  border: 1px solid rgba(255, 210, 74, 0.12);
+  border-radius: var(--r-row);
+  padding: 6px 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.toolcard-out {
+  margin-top: 6px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--fg-faint);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 120px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* chat bubbles */
+.bubble-user {
+  align-self: flex-end;
+  max-width: 85%;
+  background: rgba(79, 140, 255, 0.16);
+  border: 1px solid rgba(79, 140, 255, 0.22);
+  color: var(--fg);
+  border-radius: var(--r-card);
+  padding: 10px 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.bubble-bot {
+  align-self: stretch;
+  background: var(--card);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-card);
+  padding: 10px 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* composer */
+.composer {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line-soft);
+}
+
+.composer .field {
+  flex: 1;
+  min-width: 0;
+}
+
+.sendbtn {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border: none;
+  border-radius: var(--r-button);
+  background: var(--blue-deep);
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  align-self: center;
+}
+
+.stopbtn {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: var(--r-button);
+  background: rgba(231, 94, 120, 0.14);
+  border: 1px solid rgba(231, 94, 120, 0.3);
+  color: var(--red);
+  font-size: 14px;
+  cursor: pointer;
+  align-self: center;
+}
+
+/* approval sheet (signature) — Dim Sheet Rule: no shadow, 55% dim behind */
+.sheet-dim {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 4, 5, 0.55);
+  z-index: 40;
+}
+
+.sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--elevated);
+  border-top: 1px solid var(--line);
+  border-radius: var(--r-sheet) var(--r-sheet) 0 0;
+  padding: 10px 18px 22px;
+  z-index: 41;
+}
+
+.sheet-grab {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--line);
+  margin: 0 auto 12px;
+}
+
+.sheet-cmd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--amber);
+  background: #101012;
+  border-radius: var(--r-row);
+  padding: 10px 12px;
+  margin: 12px 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.sheet-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* app shell: header + sidebar drawer (replaces the old tabbar) */
+
+/* The header is a translucent material layer floating over the scroll body:
+   content scrolls beneath it and reads through the blur. Height is pinned so
+   .shell-body can reserve exactly the same space. */
+:root {
+  --shell-header-h: 64px;
+}
+
+.screen {
+  position: relative;
+}
+
+.shell-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: calc(var(--shell-header-h) + env(safe-area-inset-top));
+  padding: 12px 16px;
+  padding-top: calc(12px + env(safe-area-inset-top));
+  background: color-mix(in srgb, var(--chrome) 82%, transparent);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+}
+
+/* Scroll-edge fade replaces the old hairline border-bottom. */
+.shell-header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 6px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.05), transparent);
+  pointer-events: none;
+}
+
+.shell-header-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.shell-body {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding-top: calc(var(--shell-header-h) + env(safe-area-inset-top));
+}
+
+/* screens render their own .screen (height:100%) inside the shell body */
+.shell-body > .screen {
+  flex: 1;
+  min-height: 0;
+}
+
+/* sidebar drawer — Flat-Inside Rule: no shadow, depth comes from the 55% dim
+   backdrop (Dim Sheet Rule) and the elevated drawer surface.
+   Motion: spring-like cubic-bezier — 300ms to open, slightly faster mirrored
+   curve to close. Symmetric path: enters and leaves from the left. Input is
+   never locked during the transition (pointer-events flip with .open only). */
+.drawer-root {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+}
+
+.drawer-root.open {
+  pointer-events: auto;
+}
+
+.drawer-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 4, 5, 0.55);
+  opacity: 0;
+  transition: opacity 250ms ease-in;
+}
+
+.drawer-root.open .drawer-backdrop {
+  opacity: 1;
+  transition: opacity 300ms ease-out;
+}
+
+.drawer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: min(300px, 84vw);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px;
+  padding-top: calc(14px + env(safe-area-inset-top));
+  padding-bottom: calc(14px + env(safe-area-inset-bottom));
+  background: color-mix(in srgb, var(--sidebar) 88%, transparent);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
+  border-right: 1px solid var(--line-soft);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  transform: translateX(-100%);
+  transition: transform 250ms cubic-bezier(0.76, 0, 0.68, 0.28);
+}
+
+.drawer-root.open .drawer {
+  transform: translateX(0);
+  transition: transform 300ms cubic-bezier(0.32, 0.72, 0.24, 1);
+}
+
+/* Reduced motion: no travel, just a 150ms cross-fade. */
+@media (prefers-reduced-motion: reduce) {
+  .drawer,
+  .drawer-root.open .drawer {
+    opacity: 0;
+    transition: opacity 150ms ease-out;
+  }
+
+  .drawer-root.open .drawer {
+    opacity: 1;
+  }
+
+  .drawer-backdrop,
+  .drawer-root.open .drawer-backdrop {
+    transition: opacity 150ms ease-out;
+  }
+
+  .btn,
+  .iconbtn,
+  .sendbtn,
+  .stopbtn,
+  .rowcard,
+  .drawer-item {
+    transition: none;
+  }
+
+  .btn:active,
+  .iconbtn:active,
+  .sendbtn:active,
+  .stopbtn:active,
+  .rowcard:active,
+  .drawer-item:active {
+    transform: none;
+  }
+}
+
+/* Reduced transparency: materials fall back to solid surfaces. */
+@media (prefers-reduced-transparency: reduce) {
+  .shell-header {
+    background: var(--chrome);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .drawer {
+    background: var(--sidebar);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+.drawer-conn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--card);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-card);
+  padding: 15px 16px;
+}
+
+.drawer-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.drawer-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--r-row);
+  color: var(--fg-dim);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-align: left;
+  cursor: pointer;
+}
+
+.drawer-item.active {
+  background: var(--card);
+  border-color: var(--line-soft);
+  color: var(--fg);
+}
+
+.drawer-item-icon {
+  display: grid;
+  place-items: center;
+  color: var(--fg-faint);
+}
+
+.drawer-item.active .drawer-item-icon {
+  color: var(--blue);
+}
+
+.drawer-item-label {
+  flex: 1;
+}
+
+.drawer-foot {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.drawer-version {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+  padding: 0 2px;
+}
+
+/* list rows */
+.body > * {
+  min-width: 0;
+}
+
+.rowcard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--card);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-card);
+  padding: 16px 18px;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  color: var(--fg);
+  font: inherit;
+}
+
+.rowcard-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.rowcard-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rowcard-sub {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--fg-dim);
+  margin-top: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sess-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.rowcard-meta {
+  flex: none;
+  margin-left: auto;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--fg-faint);
+  letter-spacing: 0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* device glyph tile (Connections row, mockup layar 01) */
+.glyph {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 11px;
+  background: var(--elevated);
+  border: 1px solid var(--line-soft);
+  display: grid;
+  place-items: center;
+  color: var(--fg-dim);
+}
+
+/* connection status text on the right of a device row */
+.conn-st {
+  font-size: 10.5px;
+  font-weight: 600;
+  text-align: right;
+  white-space: nowrap;
+  flex: none;
+}
+
+.conn-st-on {
+  color: var(--green);
+}
+
+.conn-st-busy {
+  color: var(--amber);
+}
+
+.conn-st-off {
+  color: var(--fg-faint);
+}
+
+/* row title with an inline chip (e.g. "T14 [default]") — chip never clips */
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.title-row .rowcard-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.title-row .chip {
+  flex: none;
+}
+
+/* bot avatar (Bots roster, mockup layar 04) — tinted initials tile with the
+   status dot pinned to the corner, ringed in card color so it reads on the edge */
+.botavatar {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.botavatar .dot {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  box-sizing: content-box;
+  border: 2px solid var(--card);
+}
+
+.chevron {
+  color: var(--fg-faint);
+  flex: none;
+  display: grid;
+  place-items: center;
+}
+
+/* button with a leading icon, centered as one unit (mockup ghost buttons) */
+.btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* placeholder screens (Soon): big tonal icon tile, centered */
+.soon-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--r-card);
+  background: var(--elevated);
+  border: 1px solid var(--line-soft);
+  display: grid;
+  place-items: center;
+  color: var(--fg-dim);
+}
+
+.error-line {
+  font-size: 11.5px;
+  color: var(--red);
+}
+
+.ok-line {
+  font-size: 11.5px;
+  color: var(--green);
+}

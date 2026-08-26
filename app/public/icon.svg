@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Hermes Mobile mark: watchful eye over a relay path. Authored for this repo. -->
+  <rect width="512" height="512" rx="110" fill="#0d0d0e"/>
+  <rect x="14" y="14" width="484" height="484" rx="100" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="6"/>
+  <!-- eye outline -->
+  <path d="M96 256 C160 168 352 168 416 256 C352 344 160 344 96 256 Z"
+        fill="none" stroke="#4f8cff" stroke-width="22" stroke-linejoin="round"/>
+  <!-- pupil -->
+  <circle cx="256" cy="256" r="58" fill="#0053fd"/>
+  <circle cx="256" cy="256" r="24" fill="#0d0d0e"/>
+  <!-- relay hops -->
+  <circle cx="150" cy="408" r="16" fill="#6f9ba6"/>
+  <circle cx="256" cy="408" r="16" fill="#cf806d"/>
+  <circle cx="362" cy="408" r="16" fill="#55a583"/>
+  <path d="M166 408 H240 M272 408 H346" stroke="rgba(255,255,255,.25)" stroke-width="8" stroke-linecap="round"/>
+</svg>
