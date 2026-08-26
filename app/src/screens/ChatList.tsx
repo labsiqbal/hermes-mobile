@@ -62,6 +62,7 @@ export default function ChatList({ conn, client, onOpenChat }: Props) {
   }, [load]);
 
   useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect -- Sync initial gateway state on mount.
     void load();
     return client.addStateHandler((state) => {
       if (state === "open") void load();

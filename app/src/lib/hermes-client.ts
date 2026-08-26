@@ -516,6 +516,7 @@ export class HermesConnection {
     this.stopped = false;
     if (this.state === "open" || this.state === "connecting") return;
     await this.openSocket();
+    // oxlint-disable-next-line typescript/no-this-alias -- Registry stores the live instance.
     activeConnection = this;
   }
 

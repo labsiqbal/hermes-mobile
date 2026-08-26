@@ -8,7 +8,7 @@ Hermes Mobile is a thin screen onto your own machines: every session, tool call,
 
 ## Screenshots
 
-UI is pinned to the approved mockup in [`design/index.html`](design/index.html) — open it in a browser for the six reference screens (Connections, Chats, Chat + approval sheet, Bots roster, Delegation, Bot Chat).
+The current visual contract lives in [`DESIGN.md`](DESIGN.md). [`design/index.html`](design/index.html) retains the original six-screen review board and may not include later chat controls.
 
 ## Requirements
 

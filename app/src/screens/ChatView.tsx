@@ -247,7 +247,7 @@ function mentionTokenAt(text: string, caret: number): MentionToken | null {
 }
 
 /** Convert one resumed history message into timeline items (or null to skip). */
-export function historyItems(m: Record<string, unknown>): TimelineItem[] {
+function historyItems(m: Record<string, unknown>): TimelineItem[] {
   const role = typeof m.role === "string" ? m.role : "";
   if (role === "user" || role === "assistant") {
     const text = historyText(m).trim();

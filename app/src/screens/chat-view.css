@@ -106,8 +106,8 @@
   padding: 0 2px;
 }
 
-/* Asymmetric corner radii (mockup): user bottom-right small, bot top-left
-   small. User bubble keeps its blue tint + border from theme.css. */
+/* Asymmetric corner radii: user bottom-right small, bot top-left small.
+   The scoped user-bubble fill above intentionally overrides theme.css. */
 .chat-view .bubble-user {
   border-radius: 14px 14px 5px 14px;
 }
