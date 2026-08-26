@@ -6,6 +6,7 @@ import {
   type SavedConnection,
   type SessionSummary,
 } from "./lib/hermes-client";
+import Home from "./screens/Home";
 import Connections from "./screens/Connections";
 import ChatList from "./screens/ChatList";
 import ChatView from "./screens/ChatView";
@@ -34,7 +35,7 @@ const BotsScreen: ComponentType<BotsScreenProps> = loadBots
     })
   : BotsStub;
 
-type Screen = NavId | "chat";
+type Screen = NavId | "chat" | "home";
 
 const TITLES: Record<NavId, string> = {
   chats: "Chats",
@@ -47,13 +48,15 @@ const TITLES: Record<NavId, string> = {
 
 export default function App() {
   const store = useMemo(() => new ConnectionStore(), []);
-  const [screen, setScreen] = useState<Screen>("chats");
+  const [screen, setScreen] = useState<Screen>("home");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeConn, setActiveConn] = useState<SavedConnection | null>(null);
   const [client, setClient] = useState<HermesConnection | null>(null);
   const [activeSession, setActiveSession] = useState<SessionSummary | null>(null);
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
   const [connState, setConnState] = useState<ConnectionState>("idle");
+  /** Where ChatView's back button returns to. */
+  const [chatReturnTo, setChatReturnTo] = useState<Screen>("chats");
 
   // Track the live socket state for the header/sidebar status dot. Initial
   // state is set in handleConnect; here we only subscribe to transitions.
@@ -76,20 +79,33 @@ export default function App() {
     setActiveConn(null);
     setActiveSession(null);
     setConnState("idle");
-    setScreen("chats");
+    setScreen("home");
     setDrawerOpen(false);
   }
 
   function openChat(session: SessionSummary | null) {
     setActiveSession(session);
     setActiveGroup(null);
+    setChatReturnTo("chats");
     setScreen("chat");
   }
 
   function openGroup(roomId: string) {
     setActiveSession(null);
     setActiveGroup(roomId);
+    setChatReturnTo("groups");
     setScreen("chat");
+  }
+
+  function openSessionFromHome(conn: SavedConnection, connected: HermesConnection, session: SessionSummary) {
+    setActiveConn(conn);
+    setClient(connected);
+    setConnState(connected.connectionState);
+    setActiveSession(session);
+    setActiveGroup(null);
+    setChatReturnTo("home");
+    setScreen("chat");
+    setDrawerOpen(false);
   }
 
   // Integration contract for BotsScreen: it only knows a session id, so wrap
@@ -110,6 +126,18 @@ export default function App() {
     setDrawerOpen(false);
   }
 
+  // ── home: device picker with recent sessions ─────────────────────────────
+  if (screen === "home") {
+    return (
+      <Home
+        store={store}
+        onConnect={handleConnect}
+        onOpenSession={openSessionFromHome}
+        onManageDevices={() => setScreen("connections")}
+      />
+    );
+  }
+
   // ── not connected: device picker only ────────────────────────────────────
   if (!activeConn || !client) {
     return <Connections store={store} onConnect={handleConnect} />;
@@ -123,7 +151,7 @@ export default function App() {
         client={client}
         session={activeSession}
         group={activeGroup ? { roomId: activeGroup } : undefined}
-        onBack={() => setScreen(activeGroup ? "groups" : "chats")}
+        onBack={() => setScreen(chatReturnTo)}
       />
     );
   }
@@ -132,7 +160,7 @@ export default function App() {
   return (
     <div className="screen">
       <Header
-        title={TITLES[screen]}
+        title={TITLES[screen as NavId]}
         subtitle={`${activeConn.label} · ${activeConn.url}`}
         state={connState}
         onMenu={() => setDrawerOpen(true)}
@@ -167,7 +195,7 @@ export default function App() {
         onClose={() => setDrawerOpen(false)}
         conn={activeConn}
         state={connState}
-        active={screen}
+        active={screen as NavId}
         onNavigate={handleNavigate}
         onDisconnect={handleDisconnect}
         version={APP_VERSION}
