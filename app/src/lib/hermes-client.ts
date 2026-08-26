@@ -407,6 +407,7 @@ export class HermesConnection {
    * was missed.
    */
   private replayEpoch: string | null = null;
+  private replayGenerationValue = 0;
 
   constructor(options: HermesConnectionOptions) {
     this.url = options.url.replace(/\/+$/, "");
@@ -423,6 +424,10 @@ export class HermesConnection {
 
   get connectionState(): ConnectionState {
     return this.state;
+  }
+
+  get replayGeneration(): number {
+    return this.replayGenerationValue;
   }
 
   /** Subscribe to gateway events. Returns an unsubscribe function. */
@@ -511,6 +516,7 @@ export class HermesConnection {
     this.stopped = false;
     if (this.state === "open" || this.state === "connecting") return;
     await this.openSocket();
+    // oxlint-disable-next-line typescript/no-this-alias -- Registry stores the live instance.
     activeConnection = this;
   }
 
@@ -621,7 +627,12 @@ export class HermesConnection {
       this.reconnectTimer = null;
       if (this.stopped) return;
       this.openSocket().catch(() => {
-        /* state already flipped; next backoff tick retries */
+        // Re-authentication can fail before a WebSocket exists, so there is
+        // no close event to schedule the next attempt. Keep the retry loop
+        // alive for both HTTP/auth failures and socket-handshake failures.
+        if (this.stopped) return;
+        this.setState("error");
+        this.scheduleReconnect();
       });
     }, delay);
   }
@@ -864,7 +875,10 @@ export class HermesConnection {
    */
   private adoptReplayEpoch(epoch: string): void {
     if (this.replayEpoch === epoch) return;
-    if (this.replayEpoch !== null) this.lastSeenSeq.clear();
+    if (this.replayEpoch !== null) {
+      this.lastSeenSeq.clear();
+      this.replayGenerationValue += 1;
+    }
     this.replayEpoch = epoch;
   }
 

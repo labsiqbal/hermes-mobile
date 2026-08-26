@@ -16,6 +16,24 @@ export function Settings({
   onDisconnect: () => void;
 }) {
   const [confirmWipe, setConfirmWipe] = useState(false);
+  const [fontSize, setFontSizeState] = useState(() => {
+    try {
+      return parseFloat(localStorage.getItem("hermes-mobile.font-size") || "13");
+    } catch {
+      return 13;
+    }
+  });
+
+  const setFontSize = (size: number) => {
+    setFontSizeState(size);
+    try {
+      localStorage.setItem("hermes-mobile.font-size", String(size));
+    } catch {
+      /* ignore */
+    }
+    // Apply to CSS variable
+    document.documentElement.style.setProperty("--chat-font-size", `${size}px`);
+  };
 
   const wipeLocalData = () => {
     localStorage.clear();
@@ -68,6 +86,27 @@ export function Settings({
           >
             Hapus semua data lokal
           </button>
+        </div>
+
+        <div className="section-label">Tampilan</div>
+        <div className="card">
+          <div className="title-row">
+            <div className="rowcard-title">Ukuran teks chat</div>
+            <span className="chip">{fontSize}px</span>
+          </div>
+          <input
+            type="range"
+            min={11}
+            max={16}
+            step={0.5}
+            value={fontSize}
+            onChange={(e) => setFontSize(parseFloat(e.target.value))}
+            style={{ width: "100%", marginTop: 8 }}
+          />
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
+            <span className="hint" style={{ padding: 0 }}>Kecil</span>
+            <span className="hint" style={{ padding: 0 }}>Besar</span>
+          </div>
         </div>
 
         <div className="section-label">Tentang</div>

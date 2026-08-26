@@ -10,6 +10,7 @@ import {
   isRelaySession,
 } from "./chat-list-utils";
 import { botTint } from "./bots-utils";
+import { isActive } from "../lib/active-sessions";
 
 interface Props {
   conn: SavedConnection;
@@ -29,7 +30,7 @@ const LONG_PRESS_MS = 500;
 /** Gerakan pointer di atas ini (px) membatalkan long-press (user sedang scroll). */
 const LONG_PRESS_MOVE_TOLERANCE = 10;
 
-export default function ChatList({ client, onOpenChat }: Props) {
+export default function ChatList({ conn, client, onOpenChat }: Props) {
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
@@ -61,11 +62,18 @@ export default function ChatList({ client, onOpenChat }: Props) {
   }, [load]);
 
   useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect -- Sync initial gateway state on mount.
     void load();
-    return client.addStateHandler((s) => {
-      if (s === "open") void load();
+    return client.addStateHandler((state) => {
+      if (state === "open") void load();
     });
   }, [client, load]);
+
+  // Re-render list when active badges change (events fire globally in App).
+  useEffect(() => {
+    const t = setInterval(() => setSessions((prev) => [...prev]), 2000);
+    return () => clearInterval(t);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -211,6 +219,12 @@ export default function ChatList({ client, onOpenChat }: Props) {
                         <span className="chip" style={RELAY_CHIP_STYLE}>
                           relay
                         </span>
+                      </>
+                    )}
+                    {isActive(conn.id, s.id, s.resolved_id) && (
+                      <>
+                        {" "}
+                        <span className="chip chip-amber chip-live">proses</span>
                       </>
                     )}
                   </div>

@@ -4,11 +4,11 @@
 
 ## Platform
 
-web (mockup); target akhir: mobile app (iOS/Android), stack belum diputus
+mobile-first PWA; kandidat shell native iOS/Android belum diputus
 
 ## Stack
 
-delegated: mockup statis single-file HTML/CSS untuk review visual; stack app beneran belum diputus (kandidat: Flutter / React Native / native)
+React 19 + TypeScript + Vite 8. Mockup statis single-file HTML/CSS tetap jadi referensi visual; shell native belum diputus.
 
 ## Users
 
@@ -32,8 +32,8 @@ Bukan chatbot cloud — client tipis ke agent self-hosted: semua sesi, tool, dan
 ## Capabilities and Constraints
 
 - Layar inti: Connections (pilih device) → Chat list → Chat view (streaming, tool cards, approval sheet) → Bots roster → Bot chat (delegasi + reply async).
-- Auth: token/ticket WS; credential di secure storage HP.
-- Belum diputus: stack app, mode SSH (backlog v2), push notification saat HP di background.
+- Auth: password login + ticket WS; credential masih di `localStorage` browser untuk v1, secure storage backlog.
+- Belum diputus: shell native, mode SSH (backlog v2), push notification saat HP di background.
 
 ## Brand Commitments
 

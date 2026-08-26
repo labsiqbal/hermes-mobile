@@ -4,11 +4,11 @@ A mobile-first PWA client for a self-hosted [Hermes Agent](https://github.com/No
 
 Hermes Mobile is a thin screen onto your own machines: every session, tool call, and approval happens on the gateway — the phone is just a window. Chat sessions stream live, tool calls render as first-class cards, and dangerous-command approvals pop up as a bottom sheet you can approve or deny from anywhere on the tailnet.
 
-> Early scaffold (v1). Chat + approvals work; Bot Mode (agent-to-agent delegation) screens are stubbed. See `PRODUCT.md` and `DESIGN.md` for the product truth and design system.
+> Early v1. Chat, approvals, Bots, Groups, Runs, and the headless relay work. Secure credential storage, push notifications, and voice input remain backlog. See `PRODUCT.md` and `DESIGN.md` for product truth and design system.
 
 ## Screenshots
 
-UI is pinned to the approved mockup in [`design/index.html`](design/index.html) — open it in a browser for the six reference screens (Connections, Chats, Chat + approval sheet, Bots roster, Delegation, Bot Chat).
+The current visual contract lives in [`DESIGN.md`](DESIGN.md). [`design/index.html`](design/index.html) retains the original six-screen review board and may not include later chat controls.
 
 ## Requirements
 
