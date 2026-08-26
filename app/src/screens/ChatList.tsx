@@ -10,7 +10,7 @@ import {
   isRelaySession,
 } from "./chat-list-utils";
 import { botTint } from "./bots-utils";
-import { isActive, pruneStale } from "../lib/active-sessions";
+import { isActive } from "../lib/active-sessions";
 
 interface Props {
   conn: SavedConnection;
@@ -63,7 +63,6 @@ export default function ChatList({ client, onOpenChat }: Props) {
 
   useEffect(() => {
     void load();
-    pruneStale();
     return client.addStateHandler((state) => {
       if (state === "open") void load();
     });
@@ -221,7 +220,7 @@ export default function ChatList({ client, onOpenChat }: Props) {
                         </span>
                       </>
                     )}
-                    {isActive(s.id) && (
+                    {isActive(conn.id, s.id, s.resolved_id) && (
                       <>
                         {" "}
                         <span className="chip chip-amber chip-live">proses</span>

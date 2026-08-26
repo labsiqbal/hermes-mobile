@@ -2,9 +2,9 @@ import { useCallback, useEffect, useRef, useState, type ChangeEvent, type Synthe
 import "./chat-view.css";
 import { PlusIcon } from "../components/icons";
 import {
+  clearSessionEvents,
   getSessionEvents,
-  getViewWatermark,
-  markViewWatermark,
+  linkSessionAliases,
 } from "../lib/active-sessions";
 import { BOT_CHAT_TITLE } from "../lib/hermes-client";
 import type {
@@ -337,6 +337,7 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
   const [mention, setMention] = useState<MentionToken | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const sidRef = useRef("");
+  const handledEventsRef = useRef(new WeakSet<GatewayEvent>());
   const bodyRef = useRef<HTMLDivElement>(null);
   // Sticky-scroll: only follow the stream while the user sits near the bottom.
   const stickRef = useRef(true);
@@ -435,10 +436,29 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
     let cancelled = false;
     (async () => {
       try {
-        const opened = session
-          ? await client.resumeSession(session.id)
+        let opened = session
+          ? await client.resumeSession(session.resolved_id || session.id)
           : await client.createSession({});
         if (cancelled) return;
+        const cached = getSessionEvents(
+          client,
+          opened.session_id,
+          client.replayGeneration,
+        );
+        if (cached.some((event) => event.type === "message.complete" || event.type === "error")) {
+          if (session) {
+            opened = await client.resumeSession(session.resolved_id || session.id);
+            if (cancelled) return;
+          }
+          clearSessionEvents(client, opened.session_id, client.replayGeneration);
+        }
+        linkSessionAliases(
+          conn.id,
+          session?.id,
+          session?.resolved_id,
+          opened.stored_session_id,
+          opened.session_id,
+        );
         sidRef.current = opened.session_id;
         setLiveSid(opened.session_id);
         setInfo(opened.info);
@@ -460,33 +480,17 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
   }, [client, session?.id]);
 
   // ── mid-turn catch-up: replay events cached while this view was away ─────
-  // HermesConnection already receives and losslessly replays gateway events
-  // while ChatView is unmounted. App caches that stream; this view resumes at
-  // its own watermark instead of incorrectly using the connection watermark.
   useEffect(() => {
     if (isGroup || !liveSid) return;
-    const events = getSessionEvents(liveSid) as GatewayEvent[];
-    const existingTexts = items
-      .filter((item) => item.kind === "bot" && !item.streaming)
-      .map((item) => (item as { kind: "bot"; text: string }).text);
-    let watermark = getViewWatermark(liveSid);
-
-    // Resume history already contains completed turns. Move past the newest
-    // matching completion before replaying, so its deltas cannot duplicate it.
+    const events = getSessionEvents(
+      client,
+      liveSid,
+      client.replayGeneration,
+    ) as GatewayEvent[];
     for (const event of events) {
-      if (
-        event.type === "message.complete" &&
-        existingTexts.includes(eventText(event.payload)) &&
-        typeof event.seq === "number"
-      ) {
-        watermark = Math.max(watermark, event.seq);
-      }
-    }
-    markViewWatermark(liveSid, watermark);
-    for (const event of events) {
-      if (typeof event.seq === "number" && event.seq <= watermark) continue;
+      if (handledEventsRef.current.has(event)) continue;
       handleGatewayEvent(event);
-      markViewWatermark(liveSid, event.seq);
+      handledEventsRef.current.add(event);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [liveSid, isGroup]);
@@ -651,16 +655,9 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
     if (isGroup) return;
     return client.addEventHandler((event) => {
       const sid = sidRef.current;
-      if (
-        sid &&
-        event.session_id === sid &&
-        typeof event.seq === "number" &&
-        event.seq <= getViewWatermark(sid)
-      ) {
-        return;
-      }
+      if (!sid || event.session_id !== sid || handledEventsRef.current.has(event)) return;
       handleGatewayEvent(event);
-      if (sid && event.session_id === sid) markViewWatermark(sid, event.seq);
+      handledEventsRef.current.add(event);
     });
   }, [client, isGroup, handleGatewayEvent]);
 

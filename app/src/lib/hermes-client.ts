@@ -407,6 +407,7 @@ export class HermesConnection {
    * was missed.
    */
   private replayEpoch: string | null = null;
+  private replayGenerationValue = 0;
 
   constructor(options: HermesConnectionOptions) {
     this.url = options.url.replace(/\/+$/, "");
@@ -423,6 +424,10 @@ export class HermesConnection {
 
   get connectionState(): ConnectionState {
     return this.state;
+  }
+
+  get replayGeneration(): number {
+    return this.replayGenerationValue;
   }
 
   /** Subscribe to gateway events. Returns an unsubscribe function. */
@@ -864,7 +869,10 @@ export class HermesConnection {
    */
   private adoptReplayEpoch(epoch: string): void {
     if (this.replayEpoch === epoch) return;
-    if (this.replayEpoch !== null) this.lastSeenSeq.clear();
+    if (this.replayEpoch !== null) {
+      this.lastSeenSeq.clear();
+      this.replayGenerationValue += 1;
+    }
     this.replayEpoch = epoch;
   }
 

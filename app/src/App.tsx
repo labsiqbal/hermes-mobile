@@ -57,21 +57,24 @@ export default function App() {
   const [activeSession, setActiveSession] = useState<SessionSummary | null>(null);
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
   const [connState, setConnState] = useState<ConnectionState>("idle");
+  const [chatInstance, setChatInstance] = useState(0);
   /** Where ChatView's back button returns to. */
   const [chatReturnTo, setChatReturnTo] = useState<Screen>("chats");
 
   // Track active (mid-turn) sessions globally so the badge survives screen switches.
   useEffect(() => {
-    if (!client) return;
+    if (!client || !activeConn) return;
     const handler = (event: { type: string; session_id?: string }) => {
-      recordSessionEvent(event);
       const sid = event.session_id;
       if (!sid) return;
-      if (event.type === "message.start") markActive(sid);
-      if (event.type === "message.complete" || event.type === "error") markInactive(sid);
+      if (event.type === "message.start") markActive(activeConn.id, sid);
+      recordSessionEvent(client, event, client.replayGeneration);
+      if (event.type === "message.complete" || event.type === "error") {
+        markInactive(activeConn.id, sid);
+      }
     };
     return client.addEventHandler(handler);
-  }, [client]);
+  }, [client, activeConn]);
 
   // Track the live socket state for the header/sidebar status dot. Initial
   // state is set in handleConnect; here we only subscribe to transitions.
@@ -99,6 +102,7 @@ export default function App() {
   }
 
   function openChat(session: SessionSummary | null) {
+    setChatInstance((value) => value + 1);
     setActiveSession(session);
     setActiveGroup(null);
     setChatReturnTo("chats");
@@ -106,6 +110,7 @@ export default function App() {
   }
 
   function openGroup(roomId: string) {
+    setChatInstance((value) => value + 1);
     setActiveSession(null);
     setActiveGroup(roomId);
     setChatReturnTo("groups");
@@ -113,6 +118,7 @@ export default function App() {
   }
 
   function openSessionFromHome(conn: SavedConnection, connected: HermesConnection, session: SessionSummary) {
+    setChatInstance((value) => value + 1);
     setActiveConn(conn);
     setClient(connected);
     setConnState(connected.connectionState);
@@ -162,6 +168,7 @@ export default function App() {
   if (screen === "chat") {
     return (
       <ChatView
+        key={chatInstance}
         conn={activeConn}
         client={client}
         session={activeSession}
