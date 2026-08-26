@@ -17,6 +17,8 @@ import { Runs } from "./screens/Runs";
 import { Groups } from "./screens/Groups";
 import { Settings } from "./screens/Settings";
 
+import { markActive, markInactive, recordSessionEvent } from "./lib/active-sessions";
+
 // Keep in sync with package.json (no resolveJsonModule in tsconfig).
 const APP_VERSION = "0.1.0";
 
@@ -57,6 +59,19 @@ export default function App() {
   const [connState, setConnState] = useState<ConnectionState>("idle");
   /** Where ChatView's back button returns to. */
   const [chatReturnTo, setChatReturnTo] = useState<Screen>("chats");
+
+  // Track active (mid-turn) sessions globally so the badge survives screen switches.
+  useEffect(() => {
+    if (!client) return;
+    const handler = (event: { type: string; session_id?: string }) => {
+      recordSessionEvent(event);
+      const sid = event.session_id;
+      if (!sid) return;
+      if (event.type === "message.start") markActive(sid);
+      if (event.type === "message.complete" || event.type === "error") markInactive(sid);
+    };
+    return client.addEventHandler(handler);
+  }, [client]);
 
   // Track the live socket state for the header/sidebar status dot. Initial
   // state is set in handleConnect; here we only subscribe to transitions.
@@ -152,6 +167,7 @@ export default function App() {
         session={activeSession}
         group={activeGroup ? { roomId: activeGroup } : undefined}
         onBack={() => setScreen(chatReturnTo)}
+        onNewChat={() => openChat(null)}
       />
     );
   }

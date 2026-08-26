@@ -10,6 +10,7 @@ import {
   isRelaySession,
 } from "./chat-list-utils";
 import { botTint } from "./bots-utils";
+import { isActive, pruneStale } from "../lib/active-sessions";
 
 interface Props {
   conn: SavedConnection;
@@ -62,10 +63,17 @@ export default function ChatList({ client, onOpenChat }: Props) {
 
   useEffect(() => {
     void load();
-    return client.addStateHandler((s) => {
-      if (s === "open") void load();
+    pruneStale();
+    return client.addStateHandler((state) => {
+      if (state === "open") void load();
     });
   }, [client, load]);
+
+  // Re-render list when active badges change (events fire globally in App).
+  useEffect(() => {
+    const t = setInterval(() => setSessions((prev) => [...prev]), 2000);
+    return () => clearInterval(t);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -211,6 +219,12 @@ export default function ChatList({ client, onOpenChat }: Props) {
                         <span className="chip" style={RELAY_CHIP_STYLE}>
                           relay
                         </span>
+                      </>
+                    )}
+                    {isActive(s.id) && (
+                      <>
+                        {" "}
+                        <span className="chip chip-amber chip-live">proses</span>
                       </>
                     )}
                   </div>

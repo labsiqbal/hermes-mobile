@@ -1,5 +1,11 @@
-import { useEffect, useRef, useState, type ChangeEvent, type SyntheticEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type ChangeEvent, type SyntheticEvent } from "react";
 import "./chat-view.css";
+import { PlusIcon } from "../components/icons";
+import {
+  getSessionEvents,
+  getViewWatermark,
+  markViewWatermark,
+} from "../lib/active-sessions";
 import { BOT_CHAT_TITLE } from "../lib/hermes-client";
 import type {
   ApprovalRequest,
@@ -100,6 +106,49 @@ function roomForSession(sessionId: string): Room | null {
 
 type ToolStatus = "running" | "done" | "error";
 
+export type RenderMode = "cards" | "cli";
+
+const RENDER_MODE_KEY = "hermes-mobile.render-mode";
+const TOOL_COLLAPSE_KEY = "hermes-mobile.tool-collapse";
+
+export function getRenderMode(): RenderMode {
+  try {
+    return (localStorage.getItem(RENDER_MODE_KEY) as RenderMode) || "cards";
+  } catch {
+    return "cards";
+  }
+}
+
+export function setRenderMode(mode: RenderMode): void {
+  try {
+    localStorage.setItem(RENDER_MODE_KEY, mode);
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Per-tool collapse state: true = expanded, false = collapsed (default). */
+export function getToolExpanded(toolId: string): boolean {
+  try {
+    const raw = localStorage.getItem(TOOL_COLLAPSE_KEY);
+    const map = raw ? JSON.parse(raw) : {};
+    return Boolean(map[toolId]);
+  } catch {
+    return false;
+  }
+}
+
+export function setToolExpanded(toolId: string, expanded: boolean): void {
+  try {
+    const raw = localStorage.getItem(TOOL_COLLAPSE_KEY);
+    const map = raw ? JSON.parse(raw) : {};
+    map[toolId] = expanded;
+    localStorage.setItem(TOOL_COLLAPSE_KEY, JSON.stringify(map));
+  } catch {
+    /* ignore */
+  }
+}
+
 type TimelineItem =
   | { kind: "user"; id: string; text: string; entering?: boolean }
   | { kind: "bot"; id: string; text: string; streaming: boolean; entering?: boolean }
@@ -127,6 +176,7 @@ interface Props {
    *  room (no session resume; composer sends via driver.sendUserMessage). */
   group?: { roomId: string };
   onBack: () => void;
+  onNewChat: () => void;
 }
 
 let itemSeq = 0;
@@ -231,7 +281,19 @@ export function historyItems(m: Record<string, unknown>): TimelineItem[] {
   return [];
 }
 
-export default function ChatView({ conn, client, session, group, onBack }: Props) {
+export default function ChatView({ conn, client, session, group, onBack, onNewChat }: Props) {
+  // Apply saved font size on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("hermes-mobile.font-size");
+      if (saved) {
+        document.documentElement.style.setProperty("--chat-font-size", `${saved}px`);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
   const isGroup = Boolean(group?.roomId);
   const [liveSid, setLiveSid] = useState("");
   const [info, setInfo] = useState<SessionInfo | undefined>();
@@ -243,7 +305,32 @@ export default function ChatView({ conn, client, session, group, onBack }: Props
   const [awaiting, setAwaiting] = useState(false);
   const [approval, setApproval] = useState<ApprovalRequest | null>(null);
   const [sheetClosing, setSheetClosing] = useState(false);
+  const [renderMode, setRenderModeState] = useState<RenderMode>(() => getRenderMode());
+  const [showTools, setShowTools] = useState(() => {
+    try {
+      return localStorage.getItem("hermes-mobile.show-tools") !== "false";
+    } catch {
+      return true;
+    }
+  });
+  const [expandedTools, setExpandedTools] = useState<Record<string, boolean>>({});
+  const [allExpanded, setAllExpanded] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [fatal, setFatal] = useState("");
+  const toggleRenderMode = useCallback(() => {
+    const next = renderMode === "cards" ? "cli" : "cards";
+    setRenderModeState(next);
+    setRenderMode(next);
+  }, [renderMode]);
+  const toggleShowTools = useCallback(() => {
+    const next = !showTools;
+    setShowTools(next);
+    try {
+      localStorage.setItem("hermes-mobile.show-tools", String(next));
+    } catch {
+      /* ignore */
+    }
+  }, [showTools]);
   // @-mention autocomplete (Bot Chat only): roster fetched once per session,
   // `mention` is the active token ending at the composer caret.
   const [botRoster, setBotRoster] = useState<ProfileSummary[] | null>(null);
@@ -372,169 +459,210 @@ export default function ChatView({ conn, client, session, group, onBack }: Props
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [client, session?.id]);
 
-  // ── gateway event stream ────────────────────────────────────────────────
+  // ── mid-turn catch-up: replay events cached while this view was away ─────
+  // HermesConnection already receives and losslessly replays gateway events
+  // while ChatView is unmounted. App caches that stream; this view resumes at
+  // its own watermark instead of incorrectly using the connection watermark.
   useEffect(() => {
-    if (isGroup) return; // group entries arrive via the driver's onEntry
-    return client.addEventHandler((event: GatewayEvent) => {
-      const sid = sidRef.current;
-      if (!sid || (event.session_id && event.session_id !== sid)) return;
-      const p = event.payload as Record<string, unknown> | undefined;
+    if (isGroup || !liveSid) return;
+    const events = getSessionEvents(liveSid) as GatewayEvent[];
+    const existingTexts = items
+      .filter((item) => item.kind === "bot" && !item.streaming)
+      .map((item) => (item as { kind: "bot"; text: string }).text);
+    let watermark = getViewWatermark(liveSid);
 
-      switch (event.type) {
-        case "message.start":
-          setStreaming(true);
-          setAwaiting(true);
-          // No bubble yet — the typing indicator holds this space until the
-          // first delta arrives (the delta handler creates the bubble lazily).
-          break;
-        case "message.delta":
-          setAwaiting(false);
-          setItems((prev) => {
-            const next = [...prev];
-            for (let i = next.length - 1; i >= 0; i--) {
-              const item = next[i];
-              if (item.kind === "bot" && item.streaming) {
-                next[i] = { ...item, text: item.text + eventText(event.payload) };
-                return next;
-              }
+    // Resume history already contains completed turns. Move past the newest
+    // matching completion before replaying, so its deltas cannot duplicate it.
+    for (const event of events) {
+      if (
+        event.type === "message.complete" &&
+        existingTexts.includes(eventText(event.payload)) &&
+        typeof event.seq === "number"
+      ) {
+        watermark = Math.max(watermark, event.seq);
+      }
+    }
+    markViewWatermark(liveSid, watermark);
+    for (const event of events) {
+      if (typeof event.seq === "number" && event.seq <= watermark) continue;
+      handleGatewayEvent(event);
+      markViewWatermark(liveSid, event.seq);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [liveSid, isGroup]);
+
+  // ── gateway event stream ────────────────────────────────────────────────
+  const handleGatewayEvent = useCallback((event: GatewayEvent) => {
+    const sid = sidRef.current;
+    if (!sid || (event.session_id && event.session_id !== sid)) return;
+    const p = event.payload as Record<string, unknown> | undefined;
+
+    switch (event.type) {
+      case "message.start":
+        setStreaming(true);
+        setAwaiting(true);
+        break;
+      case "message.delta":
+        setAwaiting(false);
+        setItems((prev) => {
+          const next = [...prev];
+          for (let i = next.length - 1; i >= 0; i--) {
+            const item = next[i];
+            if (item.kind === "bot" && item.streaming) {
+              next[i] = { ...item, text: item.text + eventText(event.payload) };
+              return next;
             }
+          }
+          return [
+            ...next,
+            {
+              kind: "bot",
+              id: nextItemId(),
+              text: eventText(event.payload),
+              streaming: true,
+              entering: true,
+            },
+          ];
+        });
+        break;
+      case "message.complete": {
+        setStreaming(false);
+        setAwaiting(false);
+        const text = eventText(event.payload);
+        const status = typeof p?.status === "string" ? p.status : "";
+        setItems((prev) => {
+          const next = [...prev];
+          for (let i = next.length - 1; i >= 0; i--) {
+            const item = next[i];
+            if (item.kind === "bot" && item.streaming) {
+              next[i] = {
+                ...item,
+                text: text || item.text,
+                streaming: false,
+              };
+              return next;
+            }
+          }
+          if (text) {
             return [
               ...next,
               {
-                kind: "bot",
+                kind: status === "error" ? "error" : "bot",
                 id: nextItemId(),
-                text: eventText(event.payload),
-                streaming: true,
+                text,
+                streaming: false,
                 entering: true,
-              },
+              } as TimelineItem,
             ];
-          });
-          break;
-        case "message.complete": {
-          setStreaming(false);
-          setAwaiting(false);
-          const text = eventText(event.payload);
-          const status = typeof p?.status === "string" ? p.status : "";
-          setItems((prev) => {
-            const next = [...prev];
-            for (let i = next.length - 1; i >= 0; i--) {
-              const item = next[i];
-              if (item.kind === "bot" && item.streaming) {
-                next[i] = {
-                  ...item,
-                  text: text || item.text,
-                  streaming: false,
-                };
-                return next;
-              }
+          }
+          return next;
+        });
+        break;
+      }
+      case "tool.start":
+        setItems((prev) => [
+          ...prev,
+          {
+            kind: "tool",
+            id: String(p?.tool_id ?? nextItemId()),
+            name: String(p?.name ?? "tool"),
+            context: String(p?.context ?? ""),
+            status: "running",
+            entering: true,
+          },
+        ]);
+        break;
+      case "tool.complete":
+        setItems((prev) => {
+          const id = String(p?.tool_id ?? "");
+          const next = [...prev];
+          for (let i = next.length - 1; i >= 0; i--) {
+            const item = next[i];
+            if (item.kind === "tool" && item.id === id) {
+              next[i] = {
+                ...item,
+                status: "done",
+                summary: typeof p?.summary === "string" ? p.summary : undefined,
+                duration: typeof p?.duration_s === "number" ? p.duration_s : undefined,
+              };
+              return next;
             }
-            if (text) {
-              return [
-                ...next,
-                {
-                  kind: status === "error" ? "error" : "bot",
-                  id: nextItemId(),
-                  text,
-                  streaming: false,
-                  entering: true,
-                } as TimelineItem,
-              ];
-            }
-            return next;
-          });
-          break;
-        }
-        case "tool.start":
-          setItems((prev) => [
-            ...prev,
+          }
+          return [
+            ...next,
             {
               kind: "tool",
-              id: String(p?.tool_id ?? nextItemId()),
+              id: id || nextItemId(),
               name: String(p?.name ?? "tool"),
-              context: String(p?.context ?? ""),
-              status: "running",
+              context: String(p?.summary ?? ""),
+              status: "done",
               entering: true,
             },
-          ]);
-          break;
-        case "tool.complete":
-          setItems((prev) => {
-            const id = String(p?.tool_id ?? "");
-            const next = [...prev];
-            for (let i = next.length - 1; i >= 0; i--) {
-              const item = next[i];
-              if (item.kind === "tool" && item.id === id) {
-                next[i] = {
-                  ...item,
-                  status: "done",
-                  summary: typeof p?.summary === "string" ? p.summary : undefined,
-                  duration: typeof p?.duration_s === "number" ? p.duration_s : undefined,
-                };
-                return next;
-              }
-            }
-            return [
-              ...next,
-              {
-                kind: "tool",
-                id: id || nextItemId(),
-                name: String(p?.name ?? "tool"),
-                context: String(p?.summary ?? ""),
-                status: "done",
-                entering: true,
-              },
-            ];
-          });
-          break;
-        case "bot.reply":
-        case "bot_reply":
-        case "relay.reply": {
-          // Async bot-mode reply arriving as its own event (relayed via the
-          // Desktop). Render as the green reply card from the mockup.
-          const handle = String(
-            p?.handle ?? p?.from_handle ?? p?.from ?? p?.sender ?? "",
-          ).replace(/^@/, "");
-          const text = String(p?.text ?? p?.reply ?? p?.message ?? p?.body ?? "");
-          if (!text) break;
-          setItems((prev) => [
-            ...prev,
-            {
-              kind: "reply",
-              id: nextItemId(),
-              handle: handle || "bot",
-              text,
-              entering: true,
-            },
-          ]);
-          break;
-        }
-        case "approval.request":
-          // A fresh request cancels any in-flight close animation.
-          if (sheetTimerRef.current) {
-            clearTimeout(sheetTimerRef.current);
-            sheetTimerRef.current = null;
-          }
-          setSheetClosing(false);
-          setApproval((p as ApprovalRequest) ?? {});
-          break;
-        case "error":
-          setStreaming(false);
-          setAwaiting(false);
-          setItems((prev) => [
-            ...prev,
-            {
-              kind: "error",
-              id: nextItemId(),
-              text: String(p?.message ?? "unknown error"),
-              entering: true,
-            },
-          ]);
-          break;
-        default:
-          break;
+          ];
+        });
+        break;
+      case "bot.reply":
+      case "bot_reply":
+      case "relay.reply": {
+        const handle = String(
+          p?.handle ?? p?.from_handle ?? p?.from ?? p?.sender ?? "",
+        ).replace(/^@/, "");
+        const text = String(p?.text ?? p?.reply ?? p?.message ?? p?.body ?? "");
+        if (!text) break;
+        setItems((prev) => [
+          ...prev,
+          {
+            kind: "reply",
+            id: nextItemId(),
+            handle: handle || "bot",
+            text,
+            entering: true,
+          },
+        ]);
+        break;
       }
+      case "approval.request":
+        if (sheetTimerRef.current) {
+          clearTimeout(sheetTimerRef.current);
+          sheetTimerRef.current = null;
+        }
+        setSheetClosing(false);
+        setApproval((p as ApprovalRequest) ?? {});
+        break;
+      case "error":
+        setStreaming(false);
+        setAwaiting(false);
+        setItems((prev) => [
+          ...prev,
+          {
+            kind: "error",
+            id: nextItemId(),
+            text: String(p?.message ?? "unknown error"),
+            entering: true,
+          },
+        ]);
+        break;
+      default:
+        break;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isGroup) return;
+    return client.addEventHandler((event) => {
+      const sid = sidRef.current;
+      if (
+        sid &&
+        event.session_id === sid &&
+        typeof event.seq === "number" &&
+        event.seq <= getViewWatermark(sid)
+      ) {
+        return;
+      }
+      handleGatewayEvent(event);
+      if (sid && event.session_id === sid) markViewWatermark(sid, event.seq);
     });
-  }, [client, isGroup]);
+  }, [client, isGroup, handleGatewayEvent]);
 
   // autoscroll — sticky: follow the stream only while the user is near the
   // bottom (±80px). New items ease in with a smooth scroll; streaming deltas
@@ -716,8 +844,13 @@ export default function ChatView({ conn, client, session, group, onBack }: Props
           ←
         </button>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div className="rowcard-title">
-            {isGroup ? groupRoom?.name || "Group" : room ? room.name : session?.title || "New chat"}
+          <div className="appbar-title-row">
+            <span className="rowcard-title">
+              {isGroup ? groupRoom?.name || "Group" : room ? room.name : session?.title || "New chat"}
+            </span>
+            <span className="chip chip-model" title={`${info?.provider || ""} ${info?.model || ""}`.trim()}>
+              {info?.model?.split("/").pop() || "—"}
+            </span>
           </div>
           <div className={`appbar-sub${groupMembers ? " mono" : ""}`}>
             {isGroup
@@ -728,6 +861,41 @@ export default function ChatView({ conn, client, session, group, onBack }: Props
                   ? `${groupMembers.length} bots · bot mode`
                   : subtitle || conn.url}
           </div>
+        </div>
+        <button className="iconbtn" onClick={onNewChat} title="New chat">
+          <PlusIcon size={16} />
+        </button>
+        <div className="appbar-menu">
+          <button
+            className="iconbtn"
+            onClick={() => setMenuOpen((prev) => !prev)}
+            title="Chat options"
+          >
+            ⋮
+          </button>
+          {menuOpen && (
+            <div className="appbar-dropdown">
+              <button onClick={toggleShowTools}>
+                {showTools ? "Hide tool calls" : "Show tool calls"}
+              </button>
+              <button
+                onClick={() => {
+                  const next = !allExpanded;
+                  setAllExpanded(next);
+                  setExpandedTools(
+                    Object.fromEntries(
+                      items.filter((item) => item.kind === "tool").map((item) => [item.id, next]),
+                    ),
+                  );
+                }}
+              >
+                {allExpanded ? "Collapse all tools" : "Expand all tools"}
+              </button>
+              <button onClick={toggleRenderMode}>
+                {renderMode === "cards" ? "CLI style" : "Card style"}
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -768,11 +936,37 @@ export default function ChatView({ conn, client, session, group, onBack }: Props
                   </div>
                 </div>
               );
-            case "tool":
+            case "tool": {
+              if (!showTools) return null;
+              const expanded = expandedTools[item.id] ?? (allExpanded || getToolExpanded(item.id));
+              const toggleExpand = () => {
+                setExpandedTools((prev) => ({ ...prev, [item.id]: !expanded }));
+                setToolExpanded(item.id, !expanded);
+              };
+              if (renderMode === "cli") {
+                return (
+                  <div key={item.id} className={`toolline${item.entering ? " msg-enter" : ""}`}>
+                    <button className="toolline-toggle" onClick={toggleExpand}>
+                      <span className="toolline-icon">{expanded ? "▾" : "▸"}</span>
+                      <span className="mono toolline-name">{item.name}</span>
+                      {item.context && (
+                        <span className="toolline-args">
+                          ({item.context.length > 60 && !expanded ? `${item.context.slice(0, 60)}…` : item.context})
+                        </span>
+                      )}
+                      {item.duration !== undefined && (
+                        <span className="rowcard-meta">{item.duration.toFixed(1)}s</span>
+                      )}
+                    </button>
+                    {expanded && item.summary && <div className="toolline-out">  ⎿  {item.summary}</div>}
+                    {expanded && item.status === "running" && <div className="toolline-out">  ⎿  running…</div>}
+                  </div>
+                );
+              }
               return (
                 <div key={item.id} className={`toolcard${item.entering ? " msg-enter" : ""}`}>
-                  <div className="toolcard-head">
-                    <span>▸</span>
+                  <button className="toolcard-toggle" onClick={toggleExpand}>
+                    <span>{expanded ? "▾" : "▸"}</span>
                     <span style={{ flex: 1 }} className="mono">
                       {item.name}
                     </span>
@@ -786,11 +980,12 @@ export default function ChatView({ conn, client, session, group, onBack }: Props
                     >
                       {item.status === "running" ? "running" : "exit 0"}
                     </span>
-                  </div>
-                  {item.context && <div className="toolcard-cmd">{item.context}</div>}
-                  {item.summary && <div className="toolcard-out">{item.summary}</div>}
+                  </button>
+                  {expanded && item.context && <div className="toolcard-cmd">{item.context}</div>}
+                  {expanded && item.summary && <div className="toolcard-out">{item.summary}</div>}
                 </div>
               );
+            }
             case "member": {
               // Group room message: Telegram-style — bubble kiri dengan
               // sender label berwarna botTint deterministik per handle.
@@ -907,49 +1102,51 @@ export default function ChatView({ conn, client, session, group, onBack }: Props
         </div>
       )}
 
-      <div className="composer">
-        <input
-          ref={inputRef}
-          className="field"
-          placeholder={
-            isGroup
-              ? groupRoom
-                ? "Ketik ke grup…"
-                : "Memuat room…"
-              : liveSid
-                ? room
-                  ? "Ketik ke room…"
-                  : "Message…"
-                : "Opening session…"
-          }
-          value={input}
-          disabled={isGroup ? !groupRoom : !liveSid}
-          onChange={handleComposerChange}
-          onSelect={handleComposerSelect}
-          onBlur={() => setMention(null)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") void send();
-          }}
-        />
-        {streaming && !isGroup ? (
-          <button
-            className="stopbtn"
-            title="Stop"
-            onClick={() => void client.interruptSession(sidRef.current).catch(() => undefined)}
-          >
-            ■
-          </button>
-        ) : (
-          <button
-            className="sendbtn"
-            disabled={
-              isGroup ? !groupRoom || groupBusy || !input.trim() : !liveSid || !input.trim()
+      <div className="composer-wrap">
+        <div className="composer-pill">
+          <input
+            ref={inputRef}
+            className="composer-input"
+            placeholder={
+              isGroup
+                ? groupRoom
+                  ? "Ketik ke grup…"
+                  : "Memuat room…"
+                : liveSid
+                  ? room
+                    ? "Ketik ke room…"
+                    : "Message…"
+                  : "Opening session…"
             }
-            onClick={() => void send()}
-          >
-            ↑
-          </button>
-        )}
+            value={input}
+            disabled={isGroup ? !groupRoom : !liveSid}
+            onChange={handleComposerChange}
+            onSelect={handleComposerSelect}
+            onBlur={() => setMention(null)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") void send();
+            }}
+          />
+          {streaming && !isGroup ? (
+            <button
+              className="composer-action composer-stop"
+              title="Stop"
+              onClick={() => void client.interruptSession(sidRef.current).catch(() => undefined)}
+            >
+              ■
+            </button>
+          ) : (
+            <button
+              className="composer-action composer-send"
+              disabled={
+                isGroup ? !groupRoom || groupBusy || !input.trim() : !liveSid || !input.trim()
+              }
+              onClick={() => void send()}
+            >
+              ↑
+            </button>
+          )}
+        </div>
       </div>
 
       {shownApproval && (
