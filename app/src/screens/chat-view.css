@@ -225,28 +225,11 @@
   animation: cv-chip-pulse 1.6s ease-in-out infinite;
 }
 
-.chat-view .toolcard-toggle,
-.chat-view .toolline-toggle {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  width: 100%;
-  padding: 0;
-  background: none;
-  border: none;
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-.chat-view .toolcard-toggle:hover,
-.chat-view .toolline-toggle:hover {
-  opacity: 0.85;
-}
-
-/* ── ChatGPT-style tool cards (collapsed by default) ─────────────────────── */
+/* ── compact tool cards below the response ──────────────────────────────── */
 .chat-view .toolcard {
   align-self: stretch;
+  display: flex;
+  flex-direction: column;
   background: var(--elevated);
   border: 1px solid var(--line-soft);
   border-radius: 12px;
@@ -283,6 +266,20 @@
 .chat-view .toolcard-dot.error {
   background: var(--red);
 }
+.chat-view .toolcard-name {
+  flex: none;
+  color: var(--fg);
+  font-weight: 600;
+}
+.chat-view .toolcard-args {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--fg-dim);
+  font-size: 11.5px;
+}
 .chat-view .toolcard-chevron {
   color: var(--fg-faint);
   font-size: 17px;
@@ -295,6 +292,8 @@
   color: var(--fg-dim);
   border-top: 1px solid var(--line-soft);
   background: rgba(0,0,0,.2);
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 .chat-view .toolcard-out {
   padding: 8px 12px;
@@ -306,46 +305,6 @@
   word-break: break-word;
   max-height: 200px;
   overflow-y: auto;
-}
-
-/* ── CLI-style inline tool lines ─────────────────────────────────────────── */
-.chat-view .toolline {
-  padding: 6px 0 6px 12px;
-  font-size: 12.5px;
-  line-height: 1.5;
-  color: var(--fg-dim);
-  border-left: 2px solid var(--line);
-  margin: 4px 0 4px 8px;
-}
-.chat-view .toolline-head {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-.chat-view .toolline-icon {
-  color: var(--amber);
-  font-size: 11px;
-}
-.chat-view .toolline-name {
-  color: var(--fg);
-  font-weight: 500;
-}
-.chat-view .toolline-args {
-  color: var(--fg-dim);
-  font-size: 11.5px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 100%;
-}
-.chat-view .toolline-out {
-  font-family: var(--mono);
-  font-size: 11.5px;
-  color: var(--fg-dim);
-  margin-top: 2px;
-  white-space: pre-wrap;
-  word-break: break-word;
 }
 
 @keyframes cv-chip-pulse {

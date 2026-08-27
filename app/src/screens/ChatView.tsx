@@ -107,26 +107,7 @@ function roomForSession(sessionId: string): Room | null {
 
 type ToolStatus = "running" | "done" | "error";
 
-type RenderMode = "cards" | "cli";
-
-const RENDER_MODE_KEY = "hermes-mobile.render-mode";
 const TOOL_COLLAPSE_KEY = "hermes-mobile.tool-collapse";
-
-function getRenderMode(): RenderMode {
-  try {
-    return (localStorage.getItem(RENDER_MODE_KEY) as RenderMode) || "cards";
-  } catch {
-    return "cards";
-  }
-}
-
-function setRenderMode(mode: RenderMode): void {
-  try {
-    localStorage.setItem(RENDER_MODE_KEY, mode);
-  } catch {
-    /* ignore */
-  }
-}
 
 /** Per-tool collapse state: true = expanded, false = collapsed (default). */
 function getToolExpanded(toolId: string): boolean {
@@ -404,7 +385,6 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
   const [awaiting, setAwaiting] = useState(false);
   const [approval, setApproval] = useState<ApprovalRequest | null>(null);
   const [sheetClosing, setSheetClosing] = useState(false);
-  const [renderMode, setRenderModeState] = useState<RenderMode>(() => getRenderMode());
   const [showTools, setShowTools] = useState(() => {
     try {
       return localStorage.getItem("hermes-mobile.show-tools") !== "false";
@@ -416,11 +396,6 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
   const [allExpanded, setAllExpanded] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [fatal, setFatal] = useState("");
-  const toggleRenderMode = useCallback(() => {
-    const next = renderMode === "cards" ? "cli" : "cards";
-    setRenderModeState(next);
-    setRenderMode(next);
-  }, [renderMode]);
   const toggleShowTools = useCallback(() => {
     const next = !showTools;
     setShowTools(next);
@@ -1007,9 +982,6 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
                 >
                   {allExpanded ? "Collapse all tools" : "Expand all tools"}
                 </button>
-                <button onClick={toggleRenderMode}>
-                  {renderMode === "cards" ? "CLI style" : "Card style"}
-                </button>
               </div>
             </>
           )}
@@ -1054,33 +1026,16 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
                 setExpandedTools((prev) => ({ ...prev, [item.id]: !expanded }));
                 setToolExpanded(item.id, !expanded);
               };
-              if (renderMode === "cli") {
-                return (
-                  <div key={item.id} className={`toolline${item.entering ? " msg-enter" : ""}`}>
-                    <button className="toolline-toggle" onClick={toggleExpand}>
-                      <span className="toolline-icon">{expanded ? "▾" : "▸"}</span>
-                      <span className="mono toolline-name">{item.name}</span>
-                      {item.context && (
-                        <span className="toolline-args">
-                          ({item.context.length > 60 && !expanded ? `${item.context.slice(0, 60)}…` : item.context})
-                        </span>
-                      )}
-                      {item.duration !== undefined && (
-                        <span className="rowcard-meta">{item.duration.toFixed(1)}s</span>
-                      )}
-                    </button>
-                    {expanded && item.summary && <div className="toolline-out">  ⎿  {item.summary}</div>}
-                    {expanded && item.status === "running" && <div className="toolline-out">  ⎿  running…</div>}
-                  </div>
-                );
-              }
               return (
                 <div key={item.id} className={`toolcard${item.entering ? " msg-enter" : ""}`}>
                   <button className="toolcard-toggle" onClick={toggleExpand}>
                     <span className={`toolcard-dot ${item.status}`} />
-                    <span style={{ flex: 1 }} className="mono">
-                      {item.name}
-                    </span>
+                    <span className="mono toolcard-name">{item.name}</span>
+                    {item.context && (
+                      <span className="toolcard-args">
+                        {item.context.length > 48 && !expanded ? `${item.context.slice(0, 48)}…` : item.context}
+                      </span>
+                    )}
                     {item.duration !== undefined && (
                       <span className="rowcard-meta">{item.duration.toFixed(1)}s</span>
                     )}
@@ -1088,6 +1043,7 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
                   </button>
                   {expanded && item.context && <div className="toolcard-cmd">{item.context}</div>}
                   {expanded && item.summary && <div className="toolcard-out">{item.summary}</div>}
+                  {expanded && item.status === "running" && <div className="toolcard-out">running…</div>}
                 </div>
               );
             }
