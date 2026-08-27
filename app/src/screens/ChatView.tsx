@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type ChangeEvent, type SyntheticEvent } from "react";
+import { memo, useCallback, useEffect, useRef, useState, type ChangeEvent, type SyntheticEvent } from "react";
 import "./chat-view.css";
 import { PlusIcon } from "../components/icons";
 import {
@@ -280,6 +280,84 @@ function historyItems(m: Record<string, unknown>): TimelineItem[] {
   }
   return [];
 }
+
+/**
+ * Gateway deltas arrive in bursts. Reveal their accumulated text at a steady
+ * cadence so a live answer reads as one stream, not a series of jumps. This
+ * mirrors Proxima's chat behavior but isolates animation updates to this one
+ * bubble; the timeline does not re-render every frame.
+ */
+function useSmoothReveal(target: string, active: boolean): string {
+  const [shown, setShown] = useState(0);
+  const targetRef = useRef(target);
+  const heldRef = useRef(target);
+  const shownRef = useRef(0);
+  const activeRef = useRef(active);
+  const [reducedMotion] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
+
+  targetRef.current = target;
+  if (target) heldRef.current = target;
+
+  useEffect(() => {
+    if (active && !activeRef.current) {
+      shownRef.current = 0;
+      setShown(0);
+    }
+    activeRef.current = active;
+    if (reducedMotion) return;
+
+    let frame = 0;
+    const tick = () => {
+      const goal = active ? targetRef.current : heldRef.current;
+      const previous = shownRef.current;
+      if (previous < goal.length) {
+        const remaining = goal.length - previous;
+        const next = previous + Math.min(remaining, Math.max(2, Math.min(6, Math.ceil(remaining / 12))));
+        shownRef.current = next;
+        setShown(next);
+      } else if (!active) {
+        shownRef.current = 0;
+        setShown(0);
+        return;
+      }
+      frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [active, reducedMotion]);
+
+  if (reducedMotion) return target;
+  return active ? target.slice(0, shown) : shown > 0 ? heldRef.current.slice(0, shown) : target;
+}
+
+const StreamingBotBubble = memo(function StreamingBotBubble({
+  text,
+  streaming,
+  label,
+  entering,
+}: {
+  text: string;
+  streaming: boolean;
+  label: string;
+  entering?: boolean;
+}) {
+  const shown = useSmoothReveal(text, streaming);
+  if (!shown && streaming) return null;
+  return (
+    <div className="botmsg">
+      <div className="bubble-who">{label}</div>
+      <div className={`bubble-bot${entering ? " msg-enter" : ""}`}>
+        {shown}
+        {streaming && <span className="stream-cursor">▍</span>}
+      </div>
+    </div>
+  );
+});
 
 export default function ChatView({ conn, client, session, group, onBack, onNewChat }: Props) {
   // Apply saved font size on mount
@@ -924,15 +1002,7 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
                 </div>
               );
             case "bot":
-              return (
-                <div key={item.id} className="botmsg">
-                  <div className="bubble-who">{botLabel}</div>
-                  <div className={`bubble-bot${item.entering ? " msg-enter" : ""}`}>
-                    {item.text}
-                    {item.streaming && <span className="stream-cursor">▍</span>}
-                  </div>
-                </div>
-              );
+              return <StreamingBotBubble key={item.id} text={item.text} streaming={item.streaming} label={botLabel} entering={item.entering} />;
             case "tool": {
               if (!showTools) return null;
               const expanded = expandedTools[item.id] ?? (allExpanded || getToolExpanded(item.id));
