@@ -1,5 +1,6 @@
 import { memo, useCallback, useEffect, useRef, useState, type ChangeEvent, type SyntheticEvent } from "react";
 import "./chat-view.css";
+import { MessageContent } from "../components/MessageContent";
 import { PlusIcon } from "../components/icons";
 import {
   clearSessionEvents,
@@ -372,7 +373,7 @@ const StreamingBotBubble = memo(function StreamingBotBubble({
     <div className="botmsg">
       <div className="bubble-who">{label}</div>
       <div className={`bubble-bot${entering ? " msg-enter" : ""}`}>
-        {shown}
+        <MessageContent content={shown} />
         {streaming && <span className="stream-cursor">▍</span>}
       </div>
     </div>
@@ -1100,7 +1101,7 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
                     @{item.handle}
                   </div>
                   <div className={`bubble-bot${item.entering ? " msg-enter" : ""}`}>
-                    {item.text}
+                    <MessageContent content={item.text} />
                   </div>
                 </div>
               );
@@ -1120,7 +1121,9 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
                       </span>
                     </span>
                   </div>
-                  <div className="replycard-body">{item.text}</div>
+                  <div className="replycard-body">
+                    <MessageContent content={item.text} />
+                  </div>
                 </div>
               );
             }
