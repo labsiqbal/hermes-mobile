@@ -107,30 +107,6 @@ function roomForSession(sessionId: string): Room | null {
 
 type ToolStatus = "running" | "done" | "error";
 
-const TOOL_COLLAPSE_KEY = "hermes-mobile.tool-collapse";
-
-/** Per-tool collapse state: true = expanded, false = collapsed (default). */
-function getToolExpanded(toolId: string): boolean {
-  try {
-    const raw = localStorage.getItem(TOOL_COLLAPSE_KEY);
-    const map = raw ? JSON.parse(raw) : {};
-    return Boolean(map[toolId]);
-  } catch {
-    return false;
-  }
-}
-
-function setToolExpanded(toolId: string, expanded: boolean): void {
-  try {
-    const raw = localStorage.getItem(TOOL_COLLAPSE_KEY);
-    const map = raw ? JSON.parse(raw) : {};
-    map[toolId] = expanded;
-    localStorage.setItem(TOOL_COLLAPSE_KEY, JSON.stringify(map));
-  } catch {
-    /* ignore */
-  }
-}
-
 type TimelineItem =
   | { kind: "user"; id: string; text: string; entering?: boolean }
   | { kind: "bot"; id: string; text: string; streaming: boolean; entering?: boolean }
@@ -385,26 +361,7 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
   const [awaiting, setAwaiting] = useState(false);
   const [approval, setApproval] = useState<ApprovalRequest | null>(null);
   const [sheetClosing, setSheetClosing] = useState(false);
-  const [showTools, setShowTools] = useState(() => {
-    try {
-      return localStorage.getItem("hermes-mobile.show-tools") !== "false";
-    } catch {
-      return true;
-    }
-  });
-  const [expandedTools, setExpandedTools] = useState<Record<string, boolean>>({});
-  const [allExpanded, setAllExpanded] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [fatal, setFatal] = useState("");
-  const toggleShowTools = useCallback(() => {
-    const next = !showTools;
-    setShowTools(next);
-    try {
-      localStorage.setItem("hermes-mobile.show-tools", String(next));
-    } catch {
-      /* ignore */
-    }
-  }, [showTools]);
   // @-mention autocomplete (Bot Chat only): roster fetched once per session,
   // `mention` is the active token ending at the composer caret.
   const [botRoster, setBotRoster] = useState<ProfileSummary[] | null>(null);
@@ -949,43 +906,6 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
         <button className="iconbtn" onClick={onNewChat} title="New chat">
           <PlusIcon size={16} />
         </button>
-        <div className="appbar-menu">
-          <button
-            className="iconbtn"
-            onClick={() => setMenuOpen((prev) => !prev)}
-            title="Chat options"
-          >
-            ⋮
-          </button>
-          {menuOpen && (
-            <>
-              <button
-                type="button"
-                className="appbar-menu-backdrop"
-                aria-label="Close chat options"
-                onClick={() => setMenuOpen(false)}
-              />
-              <div className="appbar-dropdown">
-                <button onClick={toggleShowTools}>
-                  {showTools ? "Hide tool calls" : "Show tool calls"}
-                </button>
-                <button
-                  onClick={() => {
-                    const next = !allExpanded;
-                    setAllExpanded(next);
-                    setExpandedTools(
-                      Object.fromEntries(
-                        items.filter((item) => item.kind === "tool").map((item) => [item.id, next]),
-                      ),
-                    );
-                  }}
-                >
-                  {allExpanded ? "Collapse all tools" : "Expand all tools"}
-                </button>
-              </div>
-            </>
-          )}
-        </div>
       </div>
 
       {groupMembers && (
@@ -1020,30 +940,14 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
             case "tool": {
               // Proxima model: current turn activity is collected first. Once
               // its reply lands, cards reveal beneath that reply as one log.
-              if (!showTools || item.pendingReply) return null;
-              const expanded = expandedTools[item.id] ?? (allExpanded || getToolExpanded(item.id));
-              const toggleExpand = () => {
-                setExpandedTools((prev) => ({ ...prev, [item.id]: !expanded }));
-                setToolExpanded(item.id, !expanded);
-              };
+              if (item.pendingReply) return null;
               return (
                 <div key={item.id} className={`toolcard${item.entering ? " msg-enter" : ""}`}>
-                  <button className="toolcard-toggle" onClick={toggleExpand}>
-                    <span className={`toolcard-dot ${item.status}`} />
-                    <span className="mono toolcard-name">{item.name}</span>
-                    {item.context && (
-                      <span className="toolcard-args">
-                        {item.context.length > 48 && !expanded ? `${item.context.slice(0, 48)}…` : item.context}
-                      </span>
-                    )}
-                    {item.duration !== undefined && (
-                      <span className="rowcard-meta">{item.duration.toFixed(1)}s</span>
-                    )}
-                    <span className="toolcard-chevron" aria-hidden="true">{expanded ? "⌄" : "›"}</span>
-                  </button>
-                  {expanded && item.context && <div className="toolcard-cmd">{item.context}</div>}
-                  {expanded && item.summary && <div className="toolcard-out">{item.summary}</div>}
-                  {expanded && item.status === "running" && <div className="toolcard-out">running…</div>}
+                  <span className={`toolcard-dot ${item.status}`} />
+                  <span className="mono toolcard-name">{item.name}</span>
+                  {item.duration !== undefined && (
+                    <span className="rowcard-meta">{item.duration.toFixed(1)}s</span>
+                  )}
                 </div>
               );
             }

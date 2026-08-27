@@ -229,28 +229,13 @@
 .chat-view .toolcard {
   align-self: stretch;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 9px;
   background: var(--elevated);
   border: 1px solid var(--line-soft);
   border-radius: 12px;
   margin: 4px 0;
-  overflow: hidden;
-}
-.chat-view .toolcard-toggle {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  width: 100%;
   padding: 10px 12px;
-  background: none;
-  border: none;
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-.chat-view .toolcard-toggle:hover {
-  background: rgba(255,255,255,.03);
 }
 .chat-view .toolcard-dot {
   width: 7px;
@@ -267,44 +252,10 @@
   background: var(--red);
 }
 .chat-view .toolcard-name {
-  flex: none;
-  color: var(--fg);
-  font-weight: 600;
-}
-.chat-view .toolcard-args {
   flex: 1;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--fg-dim);
-  font-size: 11.5px;
-}
-.chat-view .toolcard-chevron {
-  color: var(--fg-faint);
-  font-size: 17px;
-  line-height: 1;
-}
-.chat-view .toolcard-cmd {
-  padding: 8px 12px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--fg-dim);
-  border-top: 1px solid var(--line-soft);
-  background: rgba(0,0,0,.2);
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-.chat-view .toolcard-out {
-  padding: 8px 12px;
-  font-family: var(--font-mono);
-  font-size: 12px;
   color: var(--fg);
-  border-top: 1px solid var(--line-soft);
-  white-space: pre-wrap;
-  word-break: break-word;
-  max-height: 200px;
-  overflow-y: auto;
+  font-weight: 600;
 }
 
 @keyframes cv-chip-pulse {
@@ -424,45 +375,6 @@
   color: var(--fg-dim);
 }
 
-/* ── appbar dropdown menu ─────────────────────────────────────────────────── */
-.chat-view .appbar-menu {
-  position: relative;
-}
-.chat-view .appbar-menu-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 49;
-  border: 0;
-  background: transparent;
-}
-.chat-view .appbar-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  margin-top: 4px;
-  background: var(--elevated);
-  border: 1px solid var(--line-soft);
-  border-radius: 12px;
-  padding: 4px;
-  min-width: 164px;
-  z-index: 50;
-  box-shadow: 0 8px 24px rgba(0,0,0,.4);
-}
-.chat-view .appbar-dropdown button {
-  display: block;
-  width: 100%;
-  padding: 8px 12px;
-  background: none;
-  border: none;
-  color: var(--fg);
-  font-size: 13px;
-  text-align: left;
-  border-radius: 8px;
-  cursor: pointer;
-}
-.chat-view .appbar-dropdown button:hover {
-  background: rgba(255,255,255,.05);
-}
 
 /* ── ChatGPT-style floating composer ─────────────────────────────────────── */
 .chat-view .composer-wrap {
