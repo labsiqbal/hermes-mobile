@@ -967,27 +967,35 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
             ⋮
           </button>
           {menuOpen && (
-            <div className="appbar-dropdown">
-              <button onClick={toggleShowTools}>
-                {showTools ? "Hide tool calls" : "Show tool calls"}
-              </button>
+            <>
               <button
-                onClick={() => {
-                  const next = !allExpanded;
-                  setAllExpanded(next);
-                  setExpandedTools(
-                    Object.fromEntries(
-                      items.filter((item) => item.kind === "tool").map((item) => [item.id, next]),
-                    ),
-                  );
-                }}
-              >
-                {allExpanded ? "Collapse all tools" : "Expand all tools"}
-              </button>
-              <button onClick={toggleRenderMode}>
-                {renderMode === "cards" ? "CLI style" : "Card style"}
-              </button>
-            </div>
+                type="button"
+                className="appbar-menu-backdrop"
+                aria-label="Close chat options"
+                onClick={() => setMenuOpen(false)}
+              />
+              <div className="appbar-dropdown">
+                <button onClick={toggleShowTools}>
+                  {showTools ? "Hide tool calls" : "Show tool calls"}
+                </button>
+                <button
+                  onClick={() => {
+                    const next = !allExpanded;
+                    setAllExpanded(next);
+                    setExpandedTools(
+                      Object.fromEntries(
+                        items.filter((item) => item.kind === "tool").map((item) => [item.id, next]),
+                      ),
+                    );
+                  }}
+                >
+                  {allExpanded ? "Collapse all tools" : "Expand all tools"}
+                </button>
+                <button onClick={toggleRenderMode}>
+                  {renderMode === "cards" ? "CLI style" : "Card style"}
+                </button>
+              </div>
+            </>
           )}
         </div>
       </div>
@@ -1051,20 +1059,14 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
               return (
                 <div key={item.id} className={`toolcard${item.entering ? " msg-enter" : ""}`}>
                   <button className="toolcard-toggle" onClick={toggleExpand}>
-                    <span>{expanded ? "▾" : "▸"}</span>
+                    <span className={`toolcard-dot ${item.status}`} />
                     <span style={{ flex: 1 }} className="mono">
                       {item.name}
                     </span>
                     {item.duration !== undefined && (
                       <span className="rowcard-meta">{item.duration.toFixed(1)}s</span>
                     )}
-                    <span
-                      className={`chip ${
-                        item.status === "running" ? "chip-amber chip-live" : "chip-green"
-                      }`}
-                    >
-                      {item.status === "running" ? "running" : "exit 0"}
-                    </span>
+                    <span className="toolcard-chevron" aria-hidden="true">{expanded ? "⌄" : "›"}</span>
                   </button>
                   {expanded && item.context && <div className="toolcard-cmd">{item.context}</div>}
                   {expanded && item.summary && <div className="toolcard-out">{item.summary}</div>}

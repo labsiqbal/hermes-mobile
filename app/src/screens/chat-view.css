@@ -256,7 +256,7 @@
 .chat-view .toolcard-toggle {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
   width: 100%;
   padding: 10px 12px;
   background: none;
@@ -268,6 +268,25 @@
 }
 .chat-view .toolcard-toggle:hover {
   background: rgba(255,255,255,.03);
+}
+.chat-view .toolcard-dot {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--green);
+}
+.chat-view .toolcard-dot.running {
+  background: var(--amber);
+  animation: cv-chip-pulse 1.6s ease-in-out infinite;
+}
+.chat-view .toolcard-dot.error {
+  background: var(--red);
+}
+.chat-view .toolcard-chevron {
+  color: var(--fg-faint);
+  font-size: 17px;
+  line-height: 1;
 }
 .chat-view .toolcard-cmd {
   padding: 8px 12px;
@@ -450,6 +469,13 @@
 .chat-view .appbar-menu {
   position: relative;
 }
+.chat-view .appbar-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 49;
+  border: 0;
+  background: transparent;
+}
 .chat-view .appbar-dropdown {
   position: absolute;
   top: 100%;
@@ -459,7 +485,7 @@
   border: 1px solid var(--line-soft);
   border-radius: 12px;
   padding: 4px;
-  min-width: 160px;
+  min-width: 164px;
   z-index: 50;
   box-shadow: 0 8px 24px rgba(0,0,0,.4);
 }
