@@ -287,21 +287,38 @@ function historyItems(m: Record<string, unknown>): TimelineItem[] {
  * mirrors Proxima's chat behavior but isolates animation updates to this one
  * bubble; the timeline does not re-render every frame.
  */
-function useSmoothReveal(target: string, active: boolean): string {
-  const [shown, setShown] = useState(0);
-  const targetRef = useRef(target);
-  const heldRef = useRef(target);
-  const shownRef = useRef(0);
-  const activeRef = useRef(active);
-  const [reducedMotion] = useState(
+function useReducedMotion(): boolean {
+  const [reduced, setReduced] = useState(
     () =>
       typeof window !== "undefined" &&
       typeof window.matchMedia === "function" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   );
 
-  targetRef.current = target;
-  if (target) heldRef.current = target;
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReduced(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+
+  return reduced;
+}
+
+function useSmoothReveal(target: string, active: boolean): string {
+  const [shown, setShown] = useState(0);
+  const [displayed, setDisplayed] = useState(target);
+  const targetRef = useRef(target);
+  const heldRef = useRef(target);
+  const shownRef = useRef(0);
+  const activeRef = useRef(active);
+  const reducedMotion = useReducedMotion();
+
+  useEffect(() => {
+    targetRef.current = target;
+    if (target) heldRef.current = target;
+  }, [target]);
 
   useEffect(() => {
     if (active && !activeRef.current) {
@@ -319,6 +336,7 @@ function useSmoothReveal(target: string, active: boolean): string {
         const remaining = goal.length - previous;
         const next = previous + Math.min(remaining, Math.max(2, Math.min(6, Math.ceil(remaining / 12))));
         shownRef.current = next;
+        setDisplayed(goal);
         setShown(next);
       } else if (!active) {
         shownRef.current = 0;
@@ -329,10 +347,10 @@ function useSmoothReveal(target: string, active: boolean): string {
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [active, reducedMotion]);
+  }, [active, reducedMotion, target]);
 
   if (reducedMotion) return target;
-  return active ? target.slice(0, shown) : shown > 0 ? heldRef.current.slice(0, shown) : target;
+  return active ? displayed.slice(0, shown) : shown > 0 ? displayed.slice(0, shown) : target;
 }
 
 const StreamingBotBubble = memo(function StreamingBotBubble({
