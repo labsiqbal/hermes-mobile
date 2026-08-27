@@ -160,6 +160,8 @@ type TimelineItem =
       status: ToolStatus;
       summary?: string;
       duration?: number;
+      /** Current-turn activity stays off the transcript until its reply lands. */
+      pendingReply?: boolean;
       entering?: boolean;
     }
   | { kind: "reply"; id: string; handle: string; text: string; entering?: boolean }
@@ -631,7 +633,13 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
         const text = eventText(event.payload);
         const status = typeof p?.status === "string" ? p.status : "";
         setItems((prev) => {
-          const next = [...prev];
+          const released = prev
+            .filter((item): item is Extract<TimelineItem, { kind: "tool" }> =>
+              item.kind === "tool" && item.pendingReply === true,
+            )
+            .map((item) => ({ ...item, pendingReply: false, entering: true }));
+          const next = prev.filter((item) => item.kind !== "tool" || !item.pendingReply);
+          let completed = false;
           for (let i = next.length - 1; i >= 0; i--) {
             const item = next[i];
             if (item.kind === "bot" && item.streaming) {
@@ -640,22 +648,20 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
                 text: text || item.text,
                 streaming: false,
               };
-              return next;
+              completed = true;
+              break;
             }
           }
-          if (text) {
-            return [
-              ...next,
-              {
-                kind: status === "error" ? "error" : "bot",
-                id: nextItemId(),
-                text,
-                streaming: false,
-                entering: true,
-              } as TimelineItem,
-            ];
+          if (!completed && text) {
+            next.push({
+              kind: status === "error" ? "error" : "bot",
+              id: nextItemId(),
+              text,
+              streaming: false,
+              entering: true,
+            } as TimelineItem);
           }
-          return next;
+          return [...next, ...released];
         });
         break;
       }
@@ -668,6 +674,7 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
             name: String(p?.name ?? "tool"),
             context: String(p?.context ?? ""),
             status: "running",
+            pendingReply: true,
             entering: true,
           },
         ]);
@@ -732,15 +739,23 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
       case "error":
         setStreaming(false);
         setAwaiting(false);
-        setItems((prev) => [
-          ...prev,
-          {
-            kind: "error",
-            id: nextItemId(),
-            text: String(p?.message ?? "unknown error"),
-            entering: true,
-          },
-        ]);
+        setItems((prev) => {
+          const released = prev
+            .filter((item): item is Extract<TimelineItem, { kind: "tool" }> =>
+              item.kind === "tool" && item.pendingReply === true,
+            )
+            .map((item) => ({ ...item, pendingReply: false, entering: true }));
+          return [
+            ...prev.filter((item) => item.kind !== "tool" || !item.pendingReply),
+            {
+              kind: "error",
+              id: nextItemId(),
+              text: String(p?.message ?? "unknown error"),
+              entering: true,
+            } as TimelineItem,
+            ...released,
+          ];
+        });
         break;
       default:
         break;
@@ -1030,7 +1045,9 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
             case "bot":
               return <StreamingBotBubble key={item.id} text={item.text} streaming={item.streaming} label={botLabel} entering={item.entering} />;
             case "tool": {
-              if (!showTools) return null;
+              // Proxima model: current turn activity is collected first. Once
+              // its reply lands, cards reveal beneath that reply as one log.
+              if (!showTools || item.pendingReply) return null;
               const expanded = expandedTools[item.id] ?? (allExpanded || getToolExpanded(item.id));
               const toggleExpand = () => {
                 setExpandedTools((prev) => ({ ...prev, [item.id]: !expanded }));
