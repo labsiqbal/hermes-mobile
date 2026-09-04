@@ -226,8 +226,7 @@ body {
 .iconbtn,
 .sendbtn,
 .stopbtn,
-.rowcard,
-.drawer-item {
+.rowcard {
   transition: transform 100ms ease-out;
 }
 
@@ -235,8 +234,7 @@ body {
 .iconbtn:active,
 .sendbtn:active,
 .stopbtn:active,
-.rowcard:active,
-.drawer-item:active {
+.rowcard:active {
   transform: scale(0.97);
 }
 
@@ -468,7 +466,7 @@ body {
   gap: 10px;
 }
 
-/* app shell: header + sidebar drawer (replaces the old tabbar) */
+/* app shell: floating header + bottom tab bar */
 
 /* The header is a translucent material layer floating over the scroll body:
    content scrolls beneath it and reads through the blur. Height is pinned so
@@ -522,6 +520,86 @@ body {
   display: flex;
   flex-direction: column;
   padding-top: calc(var(--shell-header-h) + env(safe-area-inset-top));
+  padding-bottom: calc(var(--shell-tabbar-h) + env(safe-area-inset-bottom));
+}
+
+/* Detail screens (chat) render the same floating header but reserve the
+   space in their own scroll container — no shell-body wrapper. */
+.chat-view .body {
+  padding-top: calc(var(--shell-header-h) + env(safe-area-inset-top));
+}
+
+/* ── bottom tab bar — the single navigation surface for root screens ─────
+   44px+ touch targets, icon + label, active state tinted blue. */
+:root {
+  --shell-tabbar-h: 56px;
+}
+
+.shell-tabbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  min-height: calc(var(--shell-tabbar-h) + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  border-top: 1px solid var(--line-soft);
+  background: color-mix(in srgb, var(--chrome) 88%, transparent);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+}
+
+.shell-tab {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 7px 0 5px;
+  background: none;
+  border: none;
+  color: var(--fg-faint);
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.shell-tab.active {
+  color: var(--blue);
+}
+
+/* Reduced motion: no travel, just opacity fades; interactive presses keep
+   feedback without the scale animation. */
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  .iconbtn,
+  .sendbtn,
+  .stopbtn,
+  .rowcard {
+    transition: none;
+  }
+
+  .btn:active,
+  .iconbtn:active,
+  .sendbtn:active,
+  .stopbtn:active,
+  .rowcard:active {
+    transform: none;
+  }
+}
+
+/* Reduced transparency: materials fall back to solid surfaces. */
+@media (prefers-reduced-transparency: reduce) {
+  .shell-header,
+  .shell-tabbar {
+    background: var(--chrome);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 }
 
 /* screens render their own .screen (height:100%) inside the shell body */
@@ -530,183 +608,6 @@ body {
   min-height: 0;
 }
 
-/* sidebar drawer — Flat-Inside Rule: no shadow, depth comes from the 55% dim
-   backdrop (Dim Sheet Rule) and the elevated drawer surface.
-   Motion: spring-like cubic-bezier — 300ms to open, slightly faster mirrored
-   curve to close. Symmetric path: enters and leaves from the left. Input is
-   never locked during the transition (pointer-events flip with .open only). */
-.drawer-root {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  pointer-events: none;
-}
-
-.drawer-root.open {
-  pointer-events: auto;
-}
-
-.drawer-backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(4, 4, 5, 0.55);
-  opacity: 0;
-  transition: opacity 250ms ease-in;
-}
-
-.drawer-root.open .drawer-backdrop {
-  opacity: 1;
-  transition: opacity 300ms ease-out;
-}
-
-.drawer {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: min(300px, 84vw);
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 14px;
-  padding-top: calc(14px + env(safe-area-inset-top));
-  padding-bottom: calc(14px + env(safe-area-inset-bottom));
-  background: color-mix(in srgb, var(--sidebar) 88%, transparent);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
-  backdrop-filter: blur(24px) saturate(160%);
-  border-right: 1px solid var(--line-soft);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  transform: translateX(-100%);
-  transition: transform 250ms cubic-bezier(0.76, 0, 0.68, 0.28);
-}
-
-.drawer-root.open .drawer {
-  transform: translateX(0);
-  transition: transform 300ms cubic-bezier(0.32, 0.72, 0.24, 1);
-}
-
-/* Reduced motion: no travel, just a 150ms cross-fade. */
-@media (prefers-reduced-motion: reduce) {
-  .drawer,
-  .drawer-root.open .drawer {
-    opacity: 0;
-    transition: opacity 150ms ease-out;
-  }
-
-  .drawer-root.open .drawer {
-    opacity: 1;
-  }
-
-  .drawer-backdrop,
-  .drawer-root.open .drawer-backdrop {
-    transition: opacity 150ms ease-out;
-  }
-
-  .btn,
-  .iconbtn,
-  .sendbtn,
-  .stopbtn,
-  .rowcard,
-  .drawer-item {
-    transition: none;
-  }
-
-  .btn:active,
-  .iconbtn:active,
-  .sendbtn:active,
-  .stopbtn:active,
-  .rowcard:active,
-  .drawer-item:active {
-    transform: none;
-  }
-}
-
-/* Reduced transparency: materials fall back to solid surfaces. */
-@media (prefers-reduced-transparency: reduce) {
-  .shell-header {
-    background: var(--chrome);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-
-  .drawer {
-    background: var(--sidebar);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-}
-
-.drawer-conn {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: var(--card);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--r-card);
-  padding: 15px 16px;
-}
-
-.drawer-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.drawer-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 12px 14px;
-  background: none;
-  border: 1px solid transparent;
-  border-radius: var(--r-row);
-  color: var(--fg-dim);
-  font-family: inherit;
-  font-size: 13.5px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  text-align: left;
-  cursor: pointer;
-}
-
-.drawer-item.active {
-  background: var(--card);
-  border-color: var(--line-soft);
-  color: var(--fg);
-}
-
-.drawer-item-icon {
-  display: grid;
-  place-items: center;
-  color: var(--fg-faint);
-}
-
-.drawer-item.active .drawer-item-icon {
-  color: var(--blue);
-}
-
-.drawer-item-label {
-  flex: 1;
-}
-
-.drawer-foot {
-  margin-top: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.drawer-version {
-  font-family: var(--font-mono);
-  font-size: 9.5px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--fg-faint);
-  padding: 0 2px;
-}
 
 /* list rows */
 .body > * {

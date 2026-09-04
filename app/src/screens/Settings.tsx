@@ -1,5 +1,6 @@
 import { useState } from "react";
-import type { SavedConnection } from "../lib/hermes-client";
+import type { ConnectionStore, HermesConnection, SavedConnection } from "../lib/hermes-client";
+import Connections from "./Connections";
 
 // Keep-in-sync dengan "version" di package.json — dibaca manual karena
 // import package.json butuh resolveJsonModule + env khusus Vite.
@@ -10,9 +11,13 @@ const REPO_URL = "https://github.com/iqbal/hermes-mobile";
 
 export function Settings({
   conn,
+  store,
+  onConnect,
   onDisconnect,
 }: {
   conn: SavedConnection;
+  store: ConnectionStore;
+  onConnect: (conn: SavedConnection, client: HermesConnection) => void;
   onDisconnect: () => void;
 }) {
   const [confirmWipe, setConfirmWipe] = useState(false);
@@ -71,6 +76,9 @@ export function Settings({
             Ganti device
           </button>
         </div>
+
+        <div className="section-label">Devices</div>
+        <Connections store={store} onConnect={onConnect} embedded />
 
         <div className="section-label">Penyimpanan</div>
         <div className="card">

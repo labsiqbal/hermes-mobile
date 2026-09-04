@@ -11,21 +11,18 @@ import Connections from "./screens/Connections";
 import ChatList from "./screens/ChatList";
 import ChatView from "./screens/ChatView";
 import Header from "./components/Header";
-import Sidebar, { type NavId } from "./components/Sidebar";
+import TabBar, { type NavId } from "./components/TabBar";
 import BotsStub, { type BotsScreenProps } from "./components/BotsStub";
 import { Runs } from "./screens/Runs";
 import { Groups } from "./screens/Groups";
 import { Settings } from "./screens/Settings";
+import { PlusIcon } from "./components/icons";
 
 import { markActive, markInactive, recordSessionEvent } from "./lib/active-sessions";
 
-// Keep in sync with package.json (no resolveJsonModule in tsconfig).
-const APP_VERSION = "0.1.0";
-
-// Defensive integration: src/screens/Bots.tsx is owned by another agent and may
-// not exist yet. A glob (not a literal dynamic import) keeps `tsc`/vite green
-// either way; when the module or the named export is missing we render the
-// INTEGRATION-STUB instead.
+// Defensive integration: src/screens/Bots.tsx may not exist yet. A glob (not a
+// literal dynamic import) keeps `tsc`/vite green either way; when the module
+// or the named export is missing we render the INTEGRATION-STUB instead.
 const botsModules = import.meta.glob<{ BotsScreen?: ComponentType<BotsScreenProps> }>(
   "./screens/Bots.tsx",
 );
@@ -41,17 +38,15 @@ type Screen = NavId | "chat" | "home";
 
 const TITLES: Record<NavId, string> = {
   chats: "Chats",
-  bots: "Bots",
   groups: "Groups",
+  bots: "Bots",
   runs: "Runs",
-  connections: "Connections",
   settings: "Settings",
 };
 
 export default function App() {
   const store = useMemo(() => new ConnectionStore(), []);
   const [screen, setScreen] = useState<Screen>("home");
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeConn, setActiveConn] = useState<SavedConnection | null>(null);
   const [client, setClient] = useState<HermesConnection | null>(null);
   const [activeSession, setActiveSession] = useState<SessionSummary | null>(null);
@@ -76,8 +71,8 @@ export default function App() {
     return client.addEventHandler(handler);
   }, [client, activeConn]);
 
-  // Track the live socket state for the header/sidebar status dot. Initial
-  // state is set in handleConnect; here we only subscribe to transitions.
+  // Track the live socket state for the header status dot. Initial state is set
+  // in handleConnect; here we only subscribe to transitions.
   useEffect(() => {
     if (!client) return;
     return client.addStateHandler(setConnState);
@@ -88,7 +83,6 @@ export default function App() {
     setClient(connected);
     setConnState(connected.connectionState);
     setScreen("chats");
-    setDrawerOpen(false);
   }
 
   function handleDisconnect() {
@@ -98,7 +92,6 @@ export default function App() {
     setActiveSession(null);
     setConnState("idle");
     setScreen("home");
-    setDrawerOpen(false);
   }
 
   function openChat(session: SessionSummary | null) {
@@ -126,7 +119,6 @@ export default function App() {
     setActiveGroup(null);
     setChatReturnTo("home");
     setScreen("chat");
-    setDrawerOpen(false);
   }
 
   // Integration contract for BotsScreen: it only knows a session id, so wrap
@@ -144,7 +136,6 @@ export default function App() {
 
   function handleNavigate(nav: NavId) {
     setScreen(nav);
-    setDrawerOpen(false);
   }
 
   // ── home: device picker with recent sessions ─────────────────────────────
@@ -154,7 +145,7 @@ export default function App() {
         store={store}
         onConnect={handleConnect}
         onOpenSession={openSessionFromHome}
-        onManageDevices={() => setScreen("connections")}
+        onManageDevices={() => setScreen("settings")}
       />
     );
   }
@@ -164,7 +155,8 @@ export default function App() {
     return <Connections store={store} onConnect={handleConnect} />;
   }
 
-  // ── inside a chat / group: ChatView owns its own appbar + back button ────
+  // ── chat detail page: full screen, ChatView renders the same unified
+  // Header (back + title + model chip) — no tab bar. ─────────────────────
   if (screen === "chat") {
     return (
       <ChatView
@@ -173,20 +165,32 @@ export default function App() {
         client={client}
         session={activeSession}
         group={activeGroup ? { roomId: activeGroup } : undefined}
+        state={connState}
         onBack={() => setScreen(chatReturnTo)}
         onNewChat={() => openChat(null)}
       />
     );
   }
 
-  // ── connected: header + sidebar drawer shell ─────────────────────────────
+  // ── unified shell: ONE header on every root screen + bottom tab bar ─────
   return (
     <div className="screen">
       <Header
         title={TITLES[screen as NavId]}
-        subtitle={`${activeConn.label} · ${activeConn.url}`}
+        subtitle={`${activeConn.label} · ${activeConn.url.replace(/^https?:\/\//, "")}`}
         state={connState}
-        onMenu={() => setDrawerOpen(true)}
+        right={
+          screen === "chats" ? (
+            <button
+              className="iconbtn"
+              onClick={() => openChat(null)}
+              aria-label="New chat"
+              title="New chat"
+            >
+              <PlusIcon size={16} />
+            </button>
+          ) : undefined
+        }
       />
       <div className="shell-body">
         {screen === "chats" && (
@@ -206,23 +210,16 @@ export default function App() {
           <Groups client={client} conn={activeConn} onOpenGroup={openGroup} />
         )}
         {screen === "runs" && <Runs client={client} conn={activeConn} />}
-        {screen === "connections" && (
-          <Connections store={store} onConnect={handleConnect} embedded />
-        )}
         {screen === "settings" && (
-          <Settings conn={activeConn} onDisconnect={handleDisconnect} />
+          <Settings
+            conn={activeConn}
+            store={store}
+            onConnect={handleConnect}
+            onDisconnect={handleDisconnect}
+          />
         )}
       </div>
-      <Sidebar
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        conn={activeConn}
-        state={connState}
-        active={screen as NavId}
-        onNavigate={handleNavigate}
-        onDisconnect={handleDisconnect}
-        version={APP_VERSION}
-      />
+      <TabBar active={screen as NavId} onNavigate={handleNavigate} />
     </div>
   );
 }

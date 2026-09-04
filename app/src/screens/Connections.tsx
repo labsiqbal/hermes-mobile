@@ -152,31 +152,22 @@ export default function Connections({ store, onConnect, embedded }: Props) {
     }
   }
 
-  return (
-    <div className="screen">
-      {!embedded && (
-        <div className="appbar">
-          <div>
-            <div className="appbar-title">Connections</div>
-            <div className="appbar-sub">pick a machine on your tailnet</div>
-          </div>
-        </div>
+  const rows = (
+    <>
+      <div className="section-label">Tailnet · {connections.length} device</div>
+      {connections.length === 0 && !showForm && (
+        <div className="hint">No devices yet — add your first Hermes machine below.</div>
       )}
-      <div className="body">
-        <div className="section-label">Tailnet · {connections.length} device</div>
-        {connections.length === 0 && !showForm && (
-          <div className="hint">No devices yet — add your first Hermes machine below.</div>
-        )}
-        {connections.map((conn) => {
-          const probe = probes[conn.id];
-          const busy = busyId === conn.id;
-          return (
-            <div
-              key={conn.id}
-              className="rowcard"
-              role="button"
-              tabIndex={0}
-              onClick={() => {
+      {connections.map((conn) => {
+        const probe = probes[conn.id];
+        const busy = busyId === conn.id;
+        return (
+          <div
+            key={conn.id}
+            className="rowcard"
+            role="button"
+            tabIndex={0}
+            onClick={() => {
                 if (busyId === null) void handleConnect(conn);
               }}
               onKeyDown={(e) => {
@@ -218,13 +209,10 @@ export default function Connections({ store, onConnect, embedded }: Props) {
         {error && <div className="error-line">{error}</div>}
 
         {!showForm ? (
-          <>
-            <div style={{ flex: 1 }} />
-            <button className="btn btn-ghost btn-icon" onClick={() => setShowForm(true)}>
-              <PlusIcon size={14} />
-              Tambah device
-            </button>
-          </>
+          <button className="btn btn-ghost btn-icon" onClick={() => setShowForm(true)}>
+            <PlusIcon size={14} />
+            Tambah device
+          </button>
         ) : (
           <>
             <div className="section-label">Tambah device</div>
@@ -285,7 +273,23 @@ export default function Connections({ store, onConnect, embedded }: Props) {
             </div>
           </>
         )}
+    </>
+  );
+
+  if (embedded) {
+    return <>{rows}</>;
+  }
+
+  // Standalone pre-connect picker keeps its own appbar.
+  return (
+    <div className="screen">
+      <div className="appbar">
+        <div>
+          <div className="appbar-title">Connections</div>
+          <div className="appbar-sub">pick a machine on your tailnet</div>
+        </div>
       </div>
+      <div className="body">{rows}</div>
     </div>
   );
 }

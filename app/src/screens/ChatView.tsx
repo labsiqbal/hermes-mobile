@@ -1,5 +1,6 @@
 import { memo, useCallback, useEffect, useRef, useState, type ChangeEvent, type ReactNode, type SyntheticEvent } from "react";
 import "./chat-view.css";
+import Header from "../components/Header";
 import { MessageContent } from "../components/MessageContent";
 import { PlusIcon } from "../components/icons";
 import {
@@ -10,6 +11,7 @@ import {
 import { BOT_CHAT_TITLE } from "../lib/hermes-client";
 import type {
   ApprovalRequest,
+  ConnectionState,
   GatewayEvent,
   HermesConnection,
   ProfileSummary,
@@ -133,6 +135,8 @@ interface Props {
   /** Group room mode: when set, the view is driven by a GroupDriver for this
    *  room (no session resume; composer sends via driver.sendUserMessage). */
   group?: { roomId: string };
+  /** Live socket state — shown by the shared Header's status dot. */
+  state: ConnectionState;
   onBack: () => void;
   onNewChat: () => void;
 }
@@ -335,7 +339,7 @@ const StreamingBotBubble = memo(function StreamingBotBubble({
   );
 });
 
-export default function ChatView({ conn, client, session, group, onBack, onNewChat }: Props) {
+export default function ChatView({ conn, client, session, group, state, onBack, onNewChat }: Props) {
   // Apply saved font size on mount
   useEffect(() => {
     try {
@@ -826,9 +830,15 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
     }
   }
 
-  // Appbar subtitle: profile · device. The model gets the chip, not the
-  // subtitle, so nothing appears twice.
-  const subtitle = [info?.profile_name, conn.label].filter(Boolean).join(" · ");
+  // Unified-header subtitle: model chip folded into the context line —
+  // `model · profile · device`, same shape on every chat.
+  const chatSubtitle = [
+    info?.model?.split("/").pop(),
+    info?.profile_name,
+    conn.label,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   // Small mono sender label above bot bubbles (mockup 03/06: "hermes · default").
   const botLabel = `hermes · ${info?.profile_name || "default"}`;
@@ -977,33 +987,17 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
 
   return (
     <div className="screen chat-view">
-      <div className="appbar">
-        <button className="iconbtn" onClick={onBack}>
-          ←
-        </button>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div className="appbar-title-row">
-            <span className="rowcard-title">
-              {isGroup ? groupRoom?.name || "Group" : room ? room.name : session?.title || "New chat"}
-            </span>
-            <span className="chip chip-model" title={`${info?.provider || ""} ${info?.model || ""}`.trim()}>
-              {info?.model?.split("/").pop() || "—"}
-            </span>
-          </div>
-          <div className={`appbar-sub${groupMembers ? " mono" : ""}`}>
-            {isGroup
-              ? `${groupRoom?.members.length ?? 0} members · group`
-              : room
-                ? `${room.members.length} members · bot mode`
-                : groupMembers
-                  ? `${groupMembers.length} bots · bot mode`
-                  : subtitle || conn.url}
-          </div>
-        </div>
-        <button className="iconbtn" onClick={onNewChat} title="New chat">
-          <PlusIcon size={16} />
-        </button>
-      </div>
+      <Header
+        title={isGroup ? groupRoom?.name || "Group" : room ? room.name : session?.title || "New chat"}
+        subtitle={chatSubtitle}
+        state={state}
+        onBack={onBack}
+        right={
+          <button className="iconbtn" onClick={onNewChat} aria-label="New chat" title="New chat">
+            <PlusIcon size={16} />
+          </button>
+        }
+      />
 
       {groupMembers && (
         <div className="memberstrip" aria-label="Room members">

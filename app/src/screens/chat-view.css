@@ -16,23 +16,6 @@
   position: relative; /* anchor for the scroll-to-bottom FAB */
 }
 
-/* appbar: title row with model chip (chip carries the model, subtitle the
-   profile+device — nothing appears twice). */
-.chat-view .appbar-title-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.chat-view .chip-model {
-  font-size: 10px;
-  font-family: var(--font-mono);
-  padding: 2px 6px;
-  background: var(--elevated);
-  border: 1px solid var(--line-soft);
-  color: var(--fg-dim);
-  border-radius: 7px;
-}
-
 /* ── timeline ───────────────────────────────────────────────────────────── */
 .chat-view .body {
   overflow-x: hidden;
@@ -191,13 +174,16 @@
   margin-top: 7px;
 }
 
-/* ── room member strip ──────────────────────────────────────────────────── */
+/* ── room member strip ────────────────────────────────────────────────────
+   The floating shell-header overlays content, so the strip reserves the
+   header's height below the top edge. */
 .chat-view .memberstrip {
   display: flex;
   align-items: center;
   gap: 6px;
   flex: none;
   height: 40px;
+  margin-top: calc(var(--shell-header-h) + env(safe-area-inset-top));
   padding: 0 16px;
   overflow-x: auto;
   border-bottom: 1px solid var(--line-soft);
