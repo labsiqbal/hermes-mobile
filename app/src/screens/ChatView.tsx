@@ -118,8 +118,6 @@ type TimelineItem =
       status: ToolStatus;
       summary?: string;
       duration?: number;
-      /** Current-turn activity stays off the transcript until its reply lands. */
-      pendingReply?: boolean;
       entering?: boolean;
     }
   | { kind: "reply"; id: string; handle: string; text: string; entering?: boolean }
@@ -361,6 +359,7 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
   const [awaiting, setAwaiting] = useState(false);
   const [approval, setApproval] = useState<ApprovalRequest | null>(null);
   const [sheetClosing, setSheetClosing] = useState(false);
+  const [stuck, setStuck] = useState(false);
   const [fatal, setFatal] = useState("");
   // @-mention autocomplete (Bot Chat only): roster fetched once per session,
   // `mention` is the active token ending at the composer caret.
@@ -566,12 +565,7 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
         const text = eventText(event.payload);
         const status = typeof p?.status === "string" ? p.status : "";
         setItems((prev) => {
-          const released = prev
-            .filter((item): item is Extract<TimelineItem, { kind: "tool" }> =>
-              item.kind === "tool" && item.pendingReply === true,
-            )
-            .map((item) => ({ ...item, pendingReply: false, entering: true }));
-          const next = prev.filter((item) => item.kind !== "tool" || !item.pendingReply);
+          const next = [...prev];
           let completed = false;
           for (let i = next.length - 1; i >= 0; i--) {
             const item = next[i];
@@ -594,7 +588,7 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
               entering: true,
             } as TimelineItem);
           }
-          return [...next, ...released];
+          return next;
         });
         break;
       }
@@ -607,7 +601,6 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
             name: String(p?.name ?? "tool"),
             context: String(p?.context ?? ""),
             status: "running",
-            pendingReply: true,
             entering: true,
           },
         ]);
@@ -672,23 +665,15 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
       case "error":
         setStreaming(false);
         setAwaiting(false);
-        setItems((prev) => {
-          const released = prev
-            .filter((item): item is Extract<TimelineItem, { kind: "tool" }> =>
-              item.kind === "tool" && item.pendingReply === true,
-            )
-            .map((item) => ({ ...item, pendingReply: false, entering: true }));
-          return [
-            ...prev.filter((item) => item.kind !== "tool" || !item.pendingReply),
-            {
-              kind: "error",
-              id: nextItemId(),
-              text: String(p?.message ?? "unknown error"),
-              entering: true,
-            } as TimelineItem,
-            ...released,
-          ];
-        });
+        setItems((prev) => [
+          ...prev,
+          {
+            kind: "error",
+            id: nextItemId(),
+            text: String(p?.message ?? "unknown error"),
+            entering: true,
+          } as TimelineItem,
+        ]);
         break;
       default:
         break;
@@ -721,7 +706,17 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
   function handleBodyScroll() {
     const el = bodyRef.current;
     if (!el) return;
-    stickRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+    const near = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+    stickRef.current = near;
+    setStuck(!near);
+  }
+
+  function jumpToBottom() {
+    const el = bodyRef.current;
+    if (!el) return;
+    stickRef.current = true;
+    setStuck(false);
+    el.scrollTo({ top: el.scrollHeight, behavior: reduceMotionRef.current ? "auto" : "smooth" });
   }
 
   useEffect(() => {
@@ -831,13 +826,9 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
     }
   }
 
-  const subtitle = [
-    info?.profile_name,
-    info?.model,
-    conn.label,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  // Appbar subtitle: profile · device. The model gets the chip, not the
+  // subtitle, so nothing appears twice.
+  const subtitle = [info?.profile_name, conn.label].filter(Boolean).join(" · ");
 
   // Small mono sender label above bot bubbles (mockup 03/06: "hermes · default").
   const botLabel = `hermes · ${info?.profile_name || "default"}`;
@@ -889,7 +880,6 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
       let firstId = "";
       for (; i < items.length && items[i].kind === "tool"; i++) {
         const t = items[i] as Extract<TimelineItem, { kind: "tool" }>;
-        if (t.pendingReply) continue; // Proxima model: reveal with the reply
         if (!firstId) firstId = t.id;
         anyEntering ||= Boolean(t.entering);
         rows.push(
@@ -1036,7 +1026,7 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
         {fatal && <div className="error-line">{fatal}</div>}
         {timeline}
         {awaiting && (
-          <div className="bubble-bot typing-bubble msg-enter" aria-label="Agent is thinking">
+          <div className="typing-bubble msg-enter" aria-label="Agent is thinking">
             <span className="typing-dot" />
             <span className="typing-dot" />
             <span className="typing-dot" />
@@ -1047,7 +1037,7 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
             <div className="bubble-who" style={{ color: botTint(groupTurn).fg }}>
               @{groupTurn} sedang mengetik…
             </div>
-            <div className="bubble-bot typing-bubble msg-enter" aria-label={`@${groupTurn} is typing`}>
+            <div className="typing-bubble msg-enter" aria-label={`@${groupTurn} is typing`}>
               <span className="typing-dot" />
               <span className="typing-dot" />
               <span className="typing-dot" />
@@ -1066,6 +1056,12 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
           </div>
         )}
       </div>
+
+      {stuck && !approval && (
+        <button type="button" className="jump-btn" aria-label="Scroll to bottom" onClick={jumpToBottom}>
+          ↓
+        </button>
+      )}
 
       {mentionSuggestions.length > 0 && (
         <div className="mentionbar" role="listbox" aria-label="Mention a bot">

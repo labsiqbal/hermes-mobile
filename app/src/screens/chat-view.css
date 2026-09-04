@@ -1,379 +1,23 @@
-/* ChatView motion polish — fluid-interface layer on top of theme.css tokens.
-   No new colors, no scrollbar styling (owned globally). All animations honor
-   prefers-reduced-motion by falling back to opacity-only fades. */
-
-/* ── message entrance: gentle pop, anchored to the sender's side ─────────── */
-
-@keyframes cv-pop-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.msg-enter {
-  animation: cv-pop-in 220ms ease-out both;
-}
-
-.msg-enter.bubble-user {
-  transform-origin: 100% 100%;
-}
-
-.msg-enter.bubble-bot,
-.msg-enter.toolcard,
-.msg-enter.replycard {
-  transform-origin: 0 100%;
-}
+/* ChatView — mobile chat visual contract (refactored 2026-09).
+   Pattern source: ChatGPT / Claude mobile.
+   1. Assistant prose: full-width, unboxed. Filled bubbles belong to the user
+      side only.
+   2. Tool activity: dimmed, compact, chronological rows — visible live while
+      the turn runs, not hidden until the reply lands.
+   3. Readable mobile type: 15px body, 1.5 line-height. Turn separation comes
+      from the timeline gap, not from internal prose margins.
+   All animations honor prefers-reduced-motion (fade-only fallback). */
 
 :root {
-  --chat-font-size: 13px;
+  --chat-font-size: 15px;
 }
 
-/* ── ChatGPT-style bubbles ────────────────────────────────────────────────── */
-.chat-view .bubble-user {
-  align-self: flex-end;
-  background: var(--blue-deep);
-  color: #fff;
-  border-radius: 18px 18px 4px 18px;
-  padding: 10px 14px;
-  max-width: 85%;
-  font-size: var(--chat-font-size);
-  line-height: 1.45;
+.chat-view {
+  position: relative; /* anchor for the scroll-to-bottom FAB */
 }
 
-/* ChatGPT/Claude pattern: assistant prose is full-width, unboxed — the
-   bubble treatment belongs to the user side only. */
-.chat-view .bubble-bot {
-  align-self: stretch;
-  background: none;
-  border: none;
-  padding: 0;
-  max-width: 100%;
-  font-size: var(--chat-font-size);
-  line-height: 1.45;
-}
-
-.chat-view .botmsg {
-  align-self: stretch;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.chat-view .bubble-who {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--fg-faint);
-  margin-bottom: 4px;
-  margin-left: 4px;
-}
-
-.chat-view .stream-cursor {
-  color: var(--blue);
-  animation: cv-cursor-blink 1s ease-in-out infinite;
-}
-
-@keyframes cv-cursor-blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
-}
-
-/* ── ChatView layout + mockup 03/06 alignment ──────────────────────────────
-   Scoped under .chat-view (the screen root in ChatView.tsx) so these
-   overrides never leak into other screens that share theme.css classes. */
-
-/* Never let the chat body scroll horizontally, whatever the content. */
-.chat-view .body {
-  overflow-x: hidden;
-}
-
-/* Sender label above bot bubbles: small mono, faint (mockup .msg .who). */
-.chat-view .botmsg {
-  align-self: stretch;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.chat-view .bubble-who {
-  font-family: var(--font-mono);
-  font-size: 9.5px;
-  color: var(--fg-faint);
-  margin-bottom: 5px;
-  padding: 0 2px;
-}
-
-/* Asymmetric corner radii: user bottom-right small (sender side). */
-.chat-view .bubble-user {
-  border-radius: 14px 14px 5px 14px;
-}
-
-/* Overflow guards: long words/URLs wrap instead of forcing horizontal
-   scroll; flex children may shrink below their content width. */
-.chat-view .bubble-user,
-.chat-view .bubble-bot,
-.chat-view .toolcard,
-.chat-view .replycard {
-  min-width: 0;
-  max-width: 100%;
-  overflow-wrap: anywhere;
-}
-
-.chat-view .bubble-user {
-  max-width: 85%;
-}
-
-.chat-view .toolcard-out {
-  overflow-wrap: anywhere;
-}
-
-/* Bot-reply card (mockup 06): green-tinted card, "Reply dari @handle". */
-.chat-view .replycard {
-  align-self: stretch;
-  margin-top: 8px;
-  border: 1px solid color-mix(in srgb, var(--green) 28%, transparent);
-  background: color-mix(in srgb, var(--green) 7%, transparent);
-  border-radius: 12px;
-  padding: 11px 12px;
-}
-
-.chat-view .replycard-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--green);
-}
-
-.chat-view .replycard-body {
-  font-size: 12px;
-  line-height: 1.55;
-  margin-top: 7px;
-  white-space: pre-wrap;
-}
-
-/* ── typing indicator: iMessage-style pill, 3 dots bouncing in sequence ──── */
-
-.typing-bubble {
-  align-self: flex-start;
-  display: inline-flex;
-  gap: 5px;
-  align-items: center;
-  width: auto;
-  padding: 13px 15px;
-  border-radius: 18px;
-}
-
-/* bubble-bot is unboxed now; the typing pill keeps its own surface.
-   Needs .chat-view scope to out-specify the unboxed .bubble-bot above. */
-.chat-view .typing-bubble {
-  background: var(--card);
-  border: 1px solid var(--line-soft);
-}
-
-.typing-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--fg-faint);
-  animation: cv-dot-bounce 1.15s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite;
-}
-
-.typing-dot:nth-child(2) {
-  animation-delay: 120ms;
-}
-
-.typing-dot:nth-child(3) {
-  animation-delay: 240ms;
-}
-
-@keyframes cv-dot-bounce {
-  0%,
-  60%,
-  100% {
-    transform: translateY(0);
-    opacity: 0.45;
-  }
-  30% {
-    transform: translateY(-4px);
-    opacity: 1;
-  }
-}
-
-/* ── streaming cursor ────────────────────────────────────────────────────── */
-
-.stream-cursor {
-  color: var(--blue);
-  animation: cv-cursor-blink 1s ease-in-out infinite;
-}
-
-@keyframes cv-cursor-blink {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.25;
-  }
-}
-
-/* ── running tool chip: soft "still working" pulse ───────────────────────── */
-
-.chip-live {
-  animation: cv-chip-pulse 1.6s ease-in-out infinite;
-}
-
-/* ── tool rows below the response: quiet single lines, stacked tight ──────
-   Claude-mobile pattern: activity reads as a dimmed log, not as cards.
-   .toolstack groups consecutive rows under one timeline slot so the body
-   gap doesn't spread them. */
-.chat-view .toolstack {
-  align-self: stretch;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 2px 0;
-}
-.chat-view .toolcard {
-  align-self: stretch;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: none;
-  border: none;
-  margin: 0;
-  padding: 0;
-}
-.chat-view .toolcard-dot {
-  width: 6px;
-  height: 6px;
-  flex: none;
-  border-radius: 50%;
-  background: var(--green);
-}
-.chat-view .toolcard-dot.running {
-  background: var(--amber);
-  animation: cv-chip-pulse 1.6s ease-in-out infinite;
-}
-.chat-view .toolcard-dot.error {
-  background: var(--red);
-}
-.chat-view .toolcard-name {
-  flex: 1;
-  min-width: 0;
-  color: var(--fg-faint);
-  font-weight: 500;
-  font-size: 11px;
-}
-
-@keyframes cv-chip-pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.55;
-  }
-}
-
-/* ── approval sheet: spring-feel entrance + symmetric exit ───────────────── */
-
-.sheet-anim.sheet {
-  animation: cv-sheet-in 320ms cubic-bezier(0.32, 0.72, 0.24, 1) both;
-}
-
-.sheet-anim.sheet.sheet-out {
-  animation: cv-sheet-out 320ms cubic-bezier(0.32, 0.72, 0.24, 1) both;
-}
-
-.sheet-anim.sheet-dim {
-  animation: cv-fade-in 320ms ease-out both;
-}
-
-.sheet-anim.sheet-dim.sheet-out {
-  animation: cv-fade-out 320ms ease-in both;
-}
-
-@keyframes cv-sheet-in {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-
-@keyframes cv-sheet-out {
-  from {
-    transform: translateY(0);
-  }
-  to {
-    transform: translateY(100%);
-  }
-}
-
-@keyframes cv-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes cv-fade-out {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
-}
-
-/* ── reduced motion: everything degrades to a plain opacity fade ─────────── */
-
-@media (prefers-reduced-motion: reduce) {
-  .msg-enter {
-    animation: cv-fade-in 160ms ease-out both;
-  }
-
-  .chat-view .mentionbar {
-    animation-name: cv-fade-in;
-  }
-
-  .typing-dot {
-    animation-name: cv-dot-fade;
-  }
-
-  .stream-cursor,
-  .chip-live {
-    animation: none;
-  }
-
-  .sheet-anim.sheet {
-    animation-name: cv-fade-in;
-  }
-
-  .sheet-anim.sheet.sheet-out {
-    animation-name: cv-fade-out;
-  }
-}
-
-@keyframes cv-dot-fade {
-  0%,
-  100% {
-    opacity: 0.35;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
+/* appbar: title row with model chip (chip carries the model, subtitle the
+   profile+device — nothing appears twice). */
 .chat-view .appbar-title-row {
   display: flex;
   align-items: center;
@@ -386,135 +30,168 @@
   background: var(--elevated);
   border: 1px solid var(--line-soft);
   color: var(--fg-dim);
+  border-radius: 7px;
 }
 
-
-/* ── ChatGPT-style floating composer ─────────────────────────────────────── */
-.chat-view .composer-wrap {
-  position: sticky;
-  bottom: 0;
-  padding: 12px 16px calc(16px + env(safe-area-inset-bottom));
-  background: linear-gradient(transparent, var(--chrome) 30%);
+/* ── timeline ───────────────────────────────────────────────────────────── */
+.chat-view .body {
+  overflow-x: hidden;
+  gap: 14px;
+  padding-bottom: 8px;
 }
-.chat-view .composer-pill {
+
+/* message entrance: gentle pop anchored to the sender's side */
+@keyframes cv-pop-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.msg-enter { animation: cv-pop-in 220ms ease-out both; }
+.msg-enter.bubble-user { transform-origin: 100% 100%; }
+.msg-enter.botmsg,
+.msg-enter.toolstack,
+.msg-enter.replycard,
+.msg-enter.errorcard { transform-origin: 0 100%; }
+
+/* user bubble styling lives in theme.css (.bubble-user) — single source */
+
+/* ── assistant message: label + full-width prose, no box ────────────────── */
+.chat-view .botmsg {
+  align-self: stretch;
   display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.chat-view .bubble-who {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg-faint);
+  margin-bottom: 5px;
+  padding: 0 1px;
+}
+/* Assistant message typography (layout + unbox live in theme.css). */
+.chat-view .bubble-bot {
+  font-size: var(--chat-font-size);
+  line-height: 1.5;
+  color: var(--fg);
+}
+
+/* ── typing indicator: small pill, NOT full-width (scope wins over
+      .bubble-bot which is stretch/unboxed) ──────────────────────────────── */
+.chat-view .typing-bubble {
+  align-self: flex-start;
+  display: inline-flex;
+  gap: 5px;
   align-items: center;
-  gap: 4px;
+  width: auto;
+  padding: 12px 14px;
+  border-radius: 16px;
   background: var(--card);
   border: 1px solid var(--line-soft);
-  border-radius: 24px;
-  padding: 4px;
-  box-shadow: 0 4px 24px rgba(0,0,0,.3);
 }
-.chat-view .composer-input {
-  flex: 1;
-  min-width: 0;
+.typing-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--fg-faint);
+  animation: cv-dot-bounce 1.15s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 120ms; }
+.typing-dot:nth-child(3) { animation-delay: 240ms; }
+@keyframes cv-dot-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.45; }
+  30%           { transform: translateY(-4px); opacity: 1; }
+}
+
+/* ── streaming cursor ───────────────────────────────────────────────────── */
+.chat-view .stream-cursor {
+  color: var(--blue);
+  animation: cv-cursor-blink 1s ease-in-out infinite;
+}
+@keyframes cv-cursor-blink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.25; }
+}
+
+/* ── tool activity: quiet chronological log rows ──────────────────────────
+   Consecutive rows group into one timeline slot so the body gap doesn't
+   spread them like messages. */
+.chat-view .toolstack {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.chat-view .toolcard {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
   background: none;
   border: none;
-  color: var(--fg);
-  font-size: var(--chat-font-size);
-  padding: 8px 4px;
-  outline: none;
 }
-.chat-view .composer-input::placeholder {
-  color: var(--fg-faint);
-}
-.chat-view .composer-action {
-  width: 36px;
-  height: 36px;
+.chat-view .toolcard-dot {
+  width: 6px;
+  height: 6px;
+  flex: none;
   border-radius: 50%;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  flex: none;
-  font-size: 14px;
+  background: var(--green);
 }
-.chat-view .composer-send {
-  background: var(--blue-deep);
-  color: #fff;
+.chat-view .toolcard-dot.running {
+  background: var(--amber);
+  animation: cv-chip-pulse 1.6s ease-in-out infinite;
 }
-.chat-view .composer-send:disabled {
-  background: var(--line);
-  color: var(--fg-faint);
-}
-.chat-view .composer-stop {
-  background: rgba(231, 94, 120, 0.2);
-  color: var(--red);
-  border: 1px solid rgba(231, 94, 120, 0.3);
-}
-
-/* ── @-mention autocomplete (Bot Chat) ───────────────────────────────────── */
-
-/* Suggestion bar pinned directly above the composer; scrolls horizontally
-   when the roster overflows. Enters with a soft pop (fade + 4px rise). */
-.chat-view .mentionbar {
-  display: flex;
-  gap: 8px;
-  padding: 8px 16px;
-  overflow-x: auto;
-  border-top: 1px solid var(--line-soft);
-  animation: cv-mention-in 180ms ease-out both;
-}
-
-.chat-view .mentionchip {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: none;
-  max-width: 230px;
-  padding: 6px 10px;
-  background: var(--card);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--r-button);
-  font: inherit;
-  color: inherit;
-  cursor: pointer;
-}
-
-.chat-view .mentionchip-avatar {
-  width: 22px;
-  height: 22px;
-  flex: none;
-  border-radius: 7px;
-  display: grid;
-  place-items: center;
-  font-family: var(--font-mono);
-  font-size: 9px;
-  font-weight: 600;
-}
-
-.chat-view .mentionchip-handle {
-  flex: none;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--cyan);
-}
-
-.chat-view .mentionchip-desc {
+.chat-view .toolcard-dot.error { background: var(--red); }
+.chat-view .toolcard-name {
+  flex: 1;
   min-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  font-size: 11px;
   color: var(--fg-dim);
+  font-size: 12px;
+  font-weight: 500;
+}
+@keyframes cv-chip-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
 }
 
-@keyframes cv-mention-in {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* ── error in timeline: tinted card, scannable ──────────────────────────── */
+.chat-view .errorcard {
+  align-self: stretch;
+  border: 1px solid rgba(231, 94, 120, 0.25);
+  background: color-mix(in srgb, var(--red) 6%, transparent);
+  border-radius: 10px;
+  padding: 10px 12px;
 }
 
-/* ── room member strip (layar 07): chips pinned under the appbar ──────────
-   One small chip per member (tint dot + mono @handle), horizontal scroll
-   when the roster overflows, soft border separating it from the timeline. */
+/* ── bot reply card (Bot Mode) ──────────────────────────────────────────── */
+.chat-view .replycard {
+  align-self: stretch;
+  min-width: 0;
+  border: 1px solid color-mix(in srgb, var(--green) 28%, transparent);
+  background: color-mix(in srgb, var(--green) 7%, transparent);
+  border-radius: 12px;
+  padding: 11px 12px;
+  overflow-wrap: anywhere;
+}
+.chat-view .replycard-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--green);
+}
+.chat-view .replycard-handle {
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+.chat-view .replycard-body {
+  font-size: var(--chat-font-size);
+  line-height: 1.5;
+  margin-top: 7px;
+}
+
+/* ── room member strip ──────────────────────────────────────────────────── */
 .chat-view .memberstrip {
   display: flex;
   align-items: center;
@@ -526,7 +203,6 @@
   border-bottom: 1px solid var(--line-soft);
   animation: cv-fade-in 180ms ease-out both;
 }
-
 .chat-view .memberchip {
   display: inline-flex;
   align-items: center;
@@ -537,39 +213,19 @@
   border: 1px solid var(--line-soft);
   border-radius: 999px;
 }
-
 .chat-view .memberchip-dot {
   width: 6px;
   height: 6px;
   flex: none;
   border-radius: 50%;
 }
-
 .chat-view .memberchip-handle {
   font-family: var(--font-mono);
   font-size: 10.5px;
   font-weight: 600;
 }
 
-/* Sender handle inside a bot-reply card: colored per bot (group-chat style),
-   overriding the head's generic green via inline botTint. */
-.chat-view .replycard-handle {
-  font-family: var(--font-mono);
-  font-weight: 700;
-}
-
-/* Error inside the timeline: unboxed like assistant prose, tinted. */
-.chat-view .errorcard {
-  align-self: stretch;
-  border: 1px solid rgba(231, 94, 120, 0.25);
-  background: color-mix(in srgb, var(--red) 6%, transparent);
-  border-radius: 10px;
-  padding: 10px 12px;
-}
-
-/* Desktop-like LLM output: prose breathes; code/data stay inspectable.
-   Spacing tuned against ChatGPT/Claude mobile: tight internal margins,
-   turn separation comes from the timeline gap instead. */
+/* ── markdown: tight spacing, readable size ─────────────────────────────── */
 .chat-view .md {
   color: var(--fg);
   font-size: inherit;
@@ -584,17 +240,15 @@
 .chat-view .md h4 {
   margin: 12px 0 5px;
   color: var(--fg);
-  font-size: 1em;
   line-height: 1.35;
 }
 .chat-view .md h1 { font-size: 1.18em; }
 .chat-view .md h2 { font-size: 1.1em; }
+.chat-view .md h3,
+.chat-view .md h4 { font-size: 1em; }
 .chat-view .md ul,
-.chat-view .md ol {
-  margin: 0 0 8px;
-  padding-left: 21px;
-}
-.chat-view .md li + li { margin-top: 2px; }
+.chat-view .md ol { margin: 0 0 8px; padding-left: 22px; }
+.chat-view .md li + li { margin-top: 3px; }
 .chat-view .md a { color: var(--blue); }
 .chat-view .md blockquote {
   margin: 8px 0;
@@ -623,7 +277,7 @@
   padding: 12px;
   overflow-x: auto;
   font-family: var(--font-mono);
-  font-size: 11.5px;
+  font-size: 12px;
   line-height: 1.55;
   white-space: pre;
 }
@@ -654,6 +308,160 @@
   white-space: nowrap;
 }
 .chat-view .md th { background: var(--elevated); }
+
+/* ── scroll-to-bottom FAB ───────────────────────────────────────────────── */
+.chat-view .jump-btn {
+  position: absolute;
+  right: 16px;
+  bottom: calc(78px + env(safe-area-inset-bottom));
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--elevated);
+  color: var(--fg-dim);
+  font-size: 15px;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .35);
+  animation: cv-fade-in 160ms ease-out both;
+  z-index: 5;
+}
+
+/* ── composer: floating pill ────────────────────────────────────────────── */
+.chat-view .composer-wrap {
+  position: sticky;
+  bottom: 0;
+  padding: 12px 16px calc(16px + env(safe-area-inset-bottom));
+  background: linear-gradient(transparent, var(--chrome) 30%);
+}
+.chat-view .composer-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--card);
+  border: 1px solid var(--line-soft);
+  border-radius: 24px;
+  padding: 4px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, .3);
+}
+.chat-view .composer-input {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: none;
+  color: var(--fg);
+  font-size: var(--chat-font-size);
+  padding: 9px 6px;
+  outline: none;
+}
+.chat-view .composer-input::placeholder { color: var(--fg-faint); }
+.chat-view .composer-action {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex: none;
+  font-size: 15px;
+}
+.chat-view .composer-send { background: var(--blue-deep); color: #fff; }
+.chat-view .composer-send:disabled { background: var(--line); color: var(--fg-faint); }
+.chat-view .composer-stop {
+  background: rgba(231, 94, 120, 0.2);
+  color: var(--red);
+  border: 1px solid rgba(231, 94, 120, 0.3);
+}
+
+/* ── @-mention autocomplete (Bot Chat) ──────────────────────────────────── */
+.chat-view .mentionbar {
+  display: flex;
+  gap: 8px;
+  padding: 8px 16px;
+  overflow-x: auto;
+  border-top: 1px solid var(--line-soft);
+  animation: cv-mention-in 180ms ease-out both;
+}
+.chat-view .mentionchip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  max-width: 230px;
+  padding: 6px 10px;
+  background: var(--card);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-button);
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.chat-view .mentionchip-avatar {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+}
+.chat-view .mentionchip-handle {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--cyan);
+}
+.chat-view .mentionchip-desc {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 11px;
+  color: var(--fg-dim);
+}
+@keyframes cv-mention-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── approval sheet motion (theme.css owns the layout) ──────────────────── */
+.sheet-anim.sheet { animation: cv-sheet-in 320ms cubic-bezier(0.32, 0.72, 0.24, 1) both; }
+.sheet-anim.sheet.sheet-out { animation: cv-sheet-out 320ms cubic-bezier(0.32, 0.72, 0.24, 1) both; }
+.sheet-anim.sheet-dim { animation: cv-fade-in 320ms ease-out both; }
+.sheet-anim.sheet-dim.sheet-out { animation: cv-fade-out 320ms ease-in both; }
+@keyframes cv-sheet-in {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+@keyframes cv-sheet-out {
+  from { transform: translateY(0); }
+  to   { transform: translateY(100%); }
+}
+@keyframes cv-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes cv-fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/* ── reduced motion: everything degrades to opacity fades ───────────────── */
 @media (prefers-reduced-motion: reduce) {
+  .msg-enter { animation: cv-fade-in 160ms ease-out both; }
+  .chat-view .mentionbar { animation-name: cv-fade-in; }
+  .typing-dot { animation-name: cv-dot-fade; }
+  .chat-view .stream-cursor,
   .chat-view .toolcard-dot.running { animation: none; }
+  .sheet-anim.sheet { animation-name: cv-fade-in; }
+  .sheet-anim.sheet.sheet-out { animation-name: cv-fade-out; }
+}
+@keyframes cv-dot-fade {
+  0%, 100% { opacity: 0.35; }
+  50%      { opacity: 1; }
 }

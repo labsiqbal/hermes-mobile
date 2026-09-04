@@ -359,27 +359,27 @@ body {
   overscroll-behavior: contain;
 }
 
-/* chat bubbles */
+/* chat bubbles — ChatGPT/Claude mobile pattern: the user side gets the only
+   filled bubble; assistant prose is unboxed full-width. */
 .bubble-user {
   align-self: flex-end;
   max-width: 85%;
-  background: rgba(79, 140, 255, 0.16);
-  border: 1px solid rgba(79, 140, 255, 0.22);
-  color: var(--fg);
-  border-radius: var(--r-card);
-  padding: 10px 12px;
-  white-space: pre-wrap;
-  word-break: break-word;
+  min-width: 0;
+  background: var(--blue-deep);
+  color: #fff;
+  border-radius: 16px 16px 5px 16px;
+  padding: 10px 14px;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap; /* explicit newlines in user text stay visible */
 }
 
+/* Assistant prose: unboxed. Keep only the layout guard; chat-view.css sets
+   typography. Do NOT re-add bg/border/padding here. */
 .bubble-bot {
   align-self: stretch;
-  background: var(--card);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--r-card);
-  padding: 10px 12px;
-  white-space: pre-wrap;
-  word-break: break-word;
+  max-width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 /* composer */
