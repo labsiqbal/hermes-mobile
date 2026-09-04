@@ -45,13 +45,14 @@
   line-height: 1.45;
 }
 
+/* ChatGPT/Claude pattern: assistant prose is full-width, unboxed — the
+   bubble treatment belongs to the user side only. */
 .chat-view .bubble-bot {
-  align-self: flex-start;
-  background: var(--card);
-  border: 1px solid var(--line-soft);
-  border-radius: 18px 18px 18px 4px;
-  padding: 10px 14px;
-  max-width: 85%;
+  align-self: stretch;
+  background: none;
+  border: none;
+  padding: 0;
+  max-width: 100%;
   font-size: var(--chat-font-size);
   line-height: 1.45;
 }
@@ -106,14 +107,9 @@
   padding: 0 2px;
 }
 
-/* Asymmetric corner radii: user bottom-right small, bot top-left small.
-   The scoped user-bubble fill above intentionally overrides theme.css. */
+/* Asymmetric corner radii: user bottom-right small (sender side). */
 .chat-view .bubble-user {
   border-radius: 14px 14px 5px 14px;
-}
-
-.chat-view .bubble-bot {
-  border-radius: 5px 14px 14px 14px;
 }
 
 /* Overflow guards: long words/URLs wrap instead of forcing horizontal
@@ -173,6 +169,13 @@
   border-radius: 18px;
 }
 
+/* bubble-bot is unboxed now; the typing pill keeps its own surface.
+   Needs .chat-view scope to out-specify the unboxed .bubble-bot above. */
+.chat-view .typing-bubble {
+  background: var(--card);
+  border: 1px solid var(--line-soft);
+}
+
 .typing-dot {
   width: 7px;
   height: 7px;
@@ -225,21 +228,30 @@
   animation: cv-chip-pulse 1.6s ease-in-out infinite;
 }
 
-/* ── compact tool cards below the response ──────────────────────────────── */
+/* ── tool rows below the response: quiet single lines, stacked tight ──────
+   Claude-mobile pattern: activity reads as a dimmed log, not as cards.
+   .toolstack groups consecutive rows under one timeline slot so the body
+   gap doesn't spread them. */
+.chat-view .toolstack {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 2px 0;
+}
 .chat-view .toolcard {
   align-self: stretch;
   display: flex;
   align-items: center;
-  gap: 9px;
-  background: var(--elevated);
-  border: 1px solid var(--line-soft);
-  border-radius: 12px;
-  margin: 4px 0;
-  padding: 10px 12px;
+  gap: 8px;
+  background: none;
+  border: none;
+  margin: 0;
+  padding: 0;
 }
 .chat-view .toolcard-dot {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   flex: none;
   border-radius: 50%;
   background: var(--green);
@@ -254,8 +266,9 @@
 .chat-view .toolcard-name {
   flex: 1;
   min-width: 0;
-  color: var(--fg);
-  font-weight: 600;
+  color: var(--fg-faint);
+  font-weight: 500;
+  font-size: 11px;
 }
 
 @keyframes cv-chip-pulse {
@@ -545,35 +558,46 @@
   font-weight: 700;
 }
 
-/* Desktop-like LLM output: prose breathes; code/data stay inspectable. */
+/* Error inside the timeline: unboxed like assistant prose, tinted. */
+.chat-view .errorcard {
+  align-self: stretch;
+  border: 1px solid rgba(231, 94, 120, 0.25);
+  background: color-mix(in srgb, var(--red) 6%, transparent);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+/* Desktop-like LLM output: prose breathes; code/data stay inspectable.
+   Spacing tuned against ChatGPT/Claude mobile: tight internal margins,
+   turn separation comes from the timeline gap instead. */
 .chat-view .md {
   color: var(--fg);
   font-size: inherit;
-  line-height: 1.55;
+  line-height: 1.5;
 }
 .chat-view .md > :first-child { margin-top: 0; }
 .chat-view .md > :last-child { margin-bottom: 0; }
-.chat-view .md p { margin: 0 0 10px; }
+.chat-view .md p { margin: 0 0 8px; }
 .chat-view .md h1,
 .chat-view .md h2,
 .chat-view .md h3,
 .chat-view .md h4 {
-  margin: 16px 0 7px;
+  margin: 12px 0 5px;
   color: var(--fg);
   font-size: 1em;
   line-height: 1.35;
 }
-.chat-view .md h1 { font-size: 1.22em; }
-.chat-view .md h2 { font-size: 1.12em; }
+.chat-view .md h1 { font-size: 1.18em; }
+.chat-view .md h2 { font-size: 1.1em; }
 .chat-view .md ul,
 .chat-view .md ol {
-  margin: 0 0 10px;
+  margin: 0 0 8px;
   padding-left: 21px;
 }
-.chat-view .md li + li { margin-top: 4px; }
+.chat-view .md li + li { margin-top: 2px; }
 .chat-view .md a { color: var(--blue); }
 .chat-view .md blockquote {
-  margin: 10px 0;
+  margin: 8px 0;
   padding-left: 10px;
   border-left: 2px solid var(--line);
   color: var(--fg-dim);

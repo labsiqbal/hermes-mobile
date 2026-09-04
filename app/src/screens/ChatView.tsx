@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useRef, useState, type ChangeEvent, type SyntheticEvent } from "react";
+import { memo, useCallback, useEffect, useRef, useState, type ChangeEvent, type ReactNode, type SyntheticEvent } from "react";
 import "./chat-view.css";
 import { MessageContent } from "../components/MessageContent";
 import { PlusIcon } from "../components/icons";
@@ -878,6 +878,113 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
         ? botRoster.map((p) => botHandle(p))
         : null;
 
+  // ── timeline render: consecutive tool rows group into one tight stack so
+  // the 12px body gap doesn't spread them (Claude-style activity log). ─────
+  const timeline: ReactNode[] = [];
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (item.kind === "tool") {
+      const rows: ReactNode[] = [];
+      let anyEntering = false;
+      let firstId = "";
+      for (; i < items.length && items[i].kind === "tool"; i++) {
+        const t = items[i] as Extract<TimelineItem, { kind: "tool" }>;
+        if (t.pendingReply) continue; // Proxima model: reveal with the reply
+        if (!firstId) firstId = t.id;
+        anyEntering ||= Boolean(t.entering);
+        rows.push(
+          <div key={t.id} className="toolcard">
+            <span className={`toolcard-dot ${t.status}`} />
+            <span className="mono toolcard-name">{t.name}</span>
+            {t.duration !== undefined && (
+              <span className="rowcard-meta">{t.duration.toFixed(1)}s</span>
+            )}
+          </div>,
+        );
+      }
+      i--; // the loop increment moves past the last tool row
+      if (rows.length > 0) {
+        timeline.push(
+          <div key={`ts-${firstId}`} className={`toolstack${anyEntering ? " msg-enter" : ""}`}>
+            {rows}
+          </div>,
+        );
+      }
+      continue;
+    }
+    switch (item.kind) {
+      case "user":
+        timeline.push(
+          <div key={item.id} className={`bubble-user${item.entering ? " msg-enter" : ""}`}>
+            {item.text}
+          </div>,
+        );
+        break;
+      case "bot":
+        timeline.push(
+          <StreamingBotBubble
+            key={item.id}
+            text={item.text}
+            streaming={item.streaming}
+            label={botLabel}
+            entering={item.entering}
+          />,
+        );
+        break;
+      case "member": {
+        // Group room message: Telegram-style left message, sender label in a
+        // deterministic botTint per handle.
+        const tint = botTint(item.handle);
+        timeline.push(
+          <div key={item.id} className="botmsg">
+            <div className="bubble-who" style={{ color: tint.fg }}>
+              @{item.handle}
+            </div>
+            <div className={`bubble-bot${item.entering ? " msg-enter" : ""}`}>
+              <MessageContent content={item.text} />
+            </div>
+          </div>,
+        );
+        break;
+      }
+      case "reply": {
+        // Group-chat style: sender handle tinted per bot.
+        const tint = botTint(item.handle);
+        timeline.push(
+          <div key={item.id} className={`replycard${item.entering ? " msg-enter" : ""}`}>
+            <div className="replycard-head">
+              <span>↩</span>
+              <span>
+                Reply dari{" "}
+                <span className="replycard-handle" style={{ color: tint.fg }}>
+                  @{item.handle}
+                </span>
+              </span>
+            </div>
+            <div className="replycard-body">
+              <MessageContent content={item.text} />
+            </div>
+          </div>,
+        );
+        break;
+      }
+      case "notice":
+        timeline.push(
+          <div key={item.id} className={`hint${item.entering ? " msg-enter" : ""}`}>
+            {item.text}
+          </div>,
+        );
+        break;
+      case "error":
+        timeline.push(
+          <div key={item.id} className={`errorcard${item.entering ? " msg-enter" : ""}`}>
+            <span className="error-line">{item.text}</span>
+          </div>,
+        );
+        break;
+    }
+  }
+
   return (
     <div className="screen chat-view">
       <div className="appbar">
@@ -927,84 +1034,7 @@ export default function ChatView({ conn, client, session, group, onBack, onNewCh
 
       <div className="body" ref={bodyRef} onScroll={handleBodyScroll}>
         {fatal && <div className="error-line">{fatal}</div>}
-        {items.map((item) => {
-          switch (item.kind) {
-            case "user":
-              return (
-                <div key={item.id} className={`bubble-user${item.entering ? " msg-enter" : ""}`}>
-                  {item.text}
-                </div>
-              );
-            case "bot":
-              return <StreamingBotBubble key={item.id} text={item.text} streaming={item.streaming} label={botLabel} entering={item.entering} />;
-            case "tool": {
-              // Proxima model: current turn activity is collected first. Once
-              // its reply lands, cards reveal beneath that reply as one log.
-              if (item.pendingReply) return null;
-              return (
-                <div key={item.id} className={`toolcard${item.entering ? " msg-enter" : ""}`}>
-                  <span className={`toolcard-dot ${item.status}`} />
-                  <span className="mono toolcard-name">{item.name}</span>
-                  {item.duration !== undefined && (
-                    <span className="rowcard-meta">{item.duration.toFixed(1)}s</span>
-                  )}
-                </div>
-              );
-            }
-            case "member": {
-              // Group room message: Telegram-style — bubble kiri dengan
-              // sender label berwarna botTint deterministik per handle.
-              const tint = botTint(item.handle);
-              return (
-                <div key={item.id} className="botmsg">
-                  <div className="bubble-who" style={{ color: tint.fg }}>
-                    @{item.handle}
-                  </div>
-                  <div className={`bubble-bot${item.entering ? " msg-enter" : ""}`}>
-                    <MessageContent content={item.text} />
-                  </div>
-                </div>
-              );
-            }
-            case "reply": {
-              // Group-chat style: the sender handle takes the bot's own tint
-              // (deterministic per handle) instead of the generic green.
-              const tint = botTint(item.handle);
-              return (
-                <div key={item.id} className={`replycard${item.entering ? " msg-enter" : ""}`}>
-                  <div className="replycard-head">
-                    <span>↩</span>
-                    <span>
-                      Reply dari{" "}
-                      <span className="replycard-handle" style={{ color: tint.fg }}>
-                        @{item.handle}
-                      </span>
-                    </span>
-                  </div>
-                  <div className="replycard-body">
-                    <MessageContent content={item.text} />
-                  </div>
-                </div>
-              );
-            }
-            case "notice":
-              return (
-                <div key={item.id} className={`hint${item.entering ? " msg-enter" : ""}`}>
-                  {item.text}
-                </div>
-              );
-            case "error":
-              return (
-                <div
-                  key={item.id}
-                  className={`bubble-bot${item.entering ? " msg-enter" : ""}`}
-                  style={{ borderColor: "rgba(231,94,120,.3)" }}
-                >
-                  <span className="error-line">{item.text}</span>
-                </div>
-              );
-          }
-        })}
+        {timeline}
         {awaiting && (
           <div className="bubble-bot typing-bubble msg-enter" aria-label="Agent is thinking">
             <span className="typing-dot" />
