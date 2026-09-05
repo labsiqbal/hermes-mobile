@@ -41,14 +41,6 @@ jobs:
       - name: Install exactly the lockfile, including build tools
         run: npm ci --include=dev --ignore-scripts --no-audit --no-fund
 
-      - name: Require preinstalled Chrome (no browser downloads)
-        run: |
-          if [[ ! -x /usr/bin/google-chrome ]]; then
-            printf '%s\n' '::error::Preinstalled /usr/bin/google-chrome is required; browser validation cannot be skipped.' >&2
-            exit 1
-          fi
-          /usr/bin/google-chrome --version
-
       - name: Lint
         run: npm run lint
 
@@ -64,6 +56,14 @@ jobs:
 
       - name: Typecheck and production build
         run: npm run build
+
+      - name: Require preinstalled Chrome (no browser downloads)
+        run: |
+          if [[ ! -x /usr/bin/google-chrome ]]; then
+            printf '%s\n' '::error::Preinstalled /usr/bin/google-chrome is required; browser validation cannot be skipped.' >&2
+            exit 1
+          fi
+          /usr/bin/google-chrome --version
 
       - name: Manage component browser contracts (fixtures only)
         timeout-minutes: 2

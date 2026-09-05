@@ -369,6 +369,8 @@ try {
     }
     try {
       const { targetId } = await rpc('Target.createTarget', { url: 'about:blank' });
+      console.log(`Workspace Chrome target ready: ${Date.now() - started}ms`);
+      if (process.env.CI) console.log(`Workspace Chrome startup stderr (last 12000 characters):\n${stderr || '(empty)'}`);
       const { sessionId } = await rpc('Target.attachToTarget', { targetId, flatten: true });
       await rpc('Fetch.enable', { patterns: [{ urlPattern: '*', requestStage: 'Request' }] }, sessionId);
       await rpc('Emulation.setDeviceMetricsOverride', { width, height: 844, deviceScaleFactor: 1, mobile: true }, sessionId);
