@@ -633,6 +633,7 @@ body {
 /* Project-grouped session list — hierarchy mirrors Desktop, adapted to
    full-width mobile rows. */
 .project-group {
+  flex: none;
   border: 1px solid var(--line-soft);
   border-radius: var(--r-card);
   overflow: hidden;

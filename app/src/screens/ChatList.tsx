@@ -192,16 +192,24 @@ export default function ChatList({ conn, client, onOpenChat }: Props) {
 
   const q = query.trim().toLowerCase();
   const filtering = q.length > 0;
-  const projectRows = useMemo(() => projects.map((project) => ({
-    project,
-    sessions: projectSessions(project).filter((session) =>
-      !q || `${session.title} ${session.preview}`.toLowerCase().includes(q),
-    ),
-  })).filter(({ sessions: rows }) => !filtering || rows.length > 0),
+  const projectRows = useMemo(() => projects
+    // Chats lists conversations, not Desktop's empty project registry entries.
+    .filter((project) => project.sessionCount > 0)
+    .map((project) => ({
+      project,
+      sessions: projectSessions(project).filter((session) =>
+        !q || `${session.title} ${session.preview}`.toLowerCase().includes(q),
+      ),
+    }))
+    .filter(({ sessions: rows }) => !filtering || rows.length > 0),
   [filtering, projectSessions, projects, q]);
   const fallbackSessions = projects.length === 0
     ? sessions.filter((session) => !q || `${session.title} ${session.preview}`.toLowerCase().includes(q))
-    : sessions.filter((session) => !scopedIds.has(session.id) && (!q || `${session.title} ${session.preview}`.toLowerCase().includes(q)));
+    : sessions.filter((session) => {
+        // projects.tree can scope either lineage root or continuation tip.
+        const grouped = scopedIds.has(session.id) || Boolean(session.resolved_id && scopedIds.has(session.resolved_id));
+        return !grouped && (!q || `${session.title} ${session.preview}`.toLowerCase().includes(q));
+      });
 
   function renderSessionRow(session: SessionSummary) {
     return (
