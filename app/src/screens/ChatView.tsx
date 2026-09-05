@@ -2,7 +2,7 @@ import { memo, useCallback, useEffect, useRef, useState, type ChangeEvent, type 
 import "./chat-view.css";
 import Header from "../components/Header";
 import { MessageContent } from "../components/MessageContent";
-import { ArrowUpIcon, PlusIcon, StopIcon } from "../components/icons";
+import { ArrowUpIcon, FileIcon, ImageIcon, PlusIcon, StopIcon, XIcon } from "../components/icons";
 import {
   clearSessionEvents,
   getSessionEvents,
@@ -108,6 +108,9 @@ function roomForSession(sessionId: string): Room | null {
 }
 
 type ToolStatus = "running" | "done" | "error";
+
+/** A file staged on the gateway, consumed by the next prompt.submit. */
+type Attachment = { kind: "image" | "file"; name: string; path: string };
 
 type TimelineItem =
   | { kind: "user"; id: string; text: string; entering?: boolean }
@@ -369,7 +372,14 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   // `mention` is the active token ending at the composer caret.
   const [botRoster, setBotRoster] = useState<ProfileSummary[] | null>(null);
   const [mention, setMention] = useState<MentionToken | null>(null);
+  // Attachments staged on the gateway (consumed on the next prompt.submit).
+  const [attachments, setAttachments] = useState<Attachment[] | null>(null);
+  const [attachBusy, setAttachBusy] = useState(false);
+  const [attachError, setAttachError] = useState("");
+  const [attachMenuOpen, setAttachMenuOpen] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const sidRef = useRef("");
   const handledEventsRef = useRef(new WeakSet<GatewayEvent>());
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -770,6 +780,83 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
     });
   }
 
+  // ── composer attachments (gateway staging, consumed on next submit) ──────
+
+  function readFileAsDataUrl(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(new Error("read failed"));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function handlePickedImage(file: File) {
+    const sid = sidRef.current;
+    if (!sid) return;
+    setAttachBusy(true);
+    setAttachError("");
+    try {
+      const dataUrl = await readFileAsDataUrl(file);
+      const b64 = dataUrl.split(",")[1] ?? "";
+      const result = await client.attachImageBytes({
+        session_id: sid,
+        content_base64: b64,
+        filename: file.name,
+      });
+      if (result.attached && result.path) {
+        setAttachments((prev) => [
+          ...(prev ?? []),
+          { kind: "image", name: result.path!.split("/").pop() ?? file.name, path: result.path! },
+        ]);
+      } else {
+        setAttachError("Attachment was rejected by the gateway.");
+      }
+    } catch (err) {
+      setAttachError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setAttachBusy(false);
+    }
+  }
+
+  async function handlePickedFile(file: File) {
+    const sid = sidRef.current;
+    if (!sid) return;
+    setAttachBusy(true);
+    setAttachError("");
+    try {
+      const dataUrl = await readFileAsDataUrl(file);
+      const result = await client.attachFile({ session_id: sid, data_url: dataUrl, name: file.name });
+      if (result.attached) {
+        setAttachments((prev) => [
+          ...(prev ?? []),
+          { kind: "file", name: result.name ?? file.name, path: result.ref_text ?? file.name },
+        ]);
+        // Append the @file: ref so the agent's prompt carries the pointer.
+        if (result.ref_text) {
+          setInput((prev) => (prev ? `${prev} ${result.ref_text}` : result.ref_text!));
+        }
+      } else {
+        setAttachError("Attachment was rejected by the gateway.");
+      }
+    } catch (err) {
+      setAttachError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setAttachBusy(false);
+    }
+  }
+
+  async function removeAttachment(item: Attachment) {
+    if (item.kind === "image") {
+      try {
+        await client.detachImage(sidRef.current, item.path);
+      } catch {
+        /* best-effort unstage; the chip leaves the composer regardless */
+      }
+    }
+    setAttachments((prev) => (prev ?? []).filter((a) => a.path !== item.path));
+  }
+
   async function send() {
     const text = input.trim();
     if (!text) return;
@@ -789,6 +876,8 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
     if (!sid) return;
     setInput("");
     setMention(null);
+    // Attachments staged on the gateway are consumed by this submit.
+    setAttachments(null);
     stickRef.current = true; // the sender wants to see their own message
     setItems((prev) => [...prev, { kind: "user", id: nextItemId(), text, entering: true }]);
     setStreaming(true);
@@ -1098,7 +1187,66 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
       )}
 
       <div className="composer-wrap">
+        {attachError && (
+          <div className="error-line" style={{ marginBottom: 6 }}>{attachError}</div>
+        )}
+        {attachments && attachments.length > 0 && (
+          <div className="attach-chips">
+            {attachments.map((item) => (
+              <span key={item.path} className="attach-chip">
+                {item.kind === "image" ? <ImageIcon size={12} /> : <FileIcon size={12} />}
+                <span className="attach-chip-name">{item.name}</span>
+                <button
+                  type="button"
+                  className="attach-chip-x"
+                  onClick={() => void removeAttachment(item)}
+                  aria-label={`Remove ${item.name}`}
+                >
+                  <XIcon size={11} />
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+        {attachMenuOpen && !isGroup && (
+          <div className="attach-menu" role="menu">
+            <button
+              type="button"
+              className="attach-menu-item"
+              disabled={attachBusy}
+              onClick={() => {
+                setAttachMenuOpen(false);
+                imageInputRef.current?.click();
+              }}
+            >
+              <ImageIcon size={16} /> Image…
+            </button>
+            <button
+              type="button"
+              className="attach-menu-item"
+              disabled={attachBusy}
+              onClick={() => {
+                setAttachMenuOpen(false);
+                fileInputRef.current?.click();
+              }}
+            >
+              <FileIcon size={16} /> File…
+            </button>
+          </div>
+        )}
         <div className="composer-pill">
+          {!isGroup && (
+            <button
+              type="button"
+              className="composer-plus"
+              disabled={!liveSid || attachBusy}
+              onClick={() => setAttachMenuOpen((v) => !v)}
+              aria-label="Attach"
+              title="Attach"
+            >
+              {attachBusy ? "…" : <PlusIcon size={18} />}
+            </button>
+          )}
           <textarea
             ref={inputRef}
             className="composer-input"
@@ -1126,6 +1274,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
                 void send();
               }
             }}
+            onFocus={() => setAttachMenuOpen(false)}
           />
           {streaming && !isGroup ? (
             <button
@@ -1147,6 +1296,27 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
             </button>
           )}
         </div>
+        <input
+          ref={imageInputRef}
+          type="file"
+          accept="image/*"
+          style={{ display: "none" }}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            e.target.value = "";
+            if (file) void handlePickedImage(file);
+          }}
+        />
+        <input
+          ref={fileInputRef}
+          type="file"
+          style={{ display: "none" }}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            e.target.value = "";
+            if (file) void handlePickedFile(file);
+          }}
+        />
       </div>
 
       {shownApproval && (

@@ -942,6 +942,30 @@ export class HermesConnection {
     });
   }
 
+  /** Stage an image (base64 payload) on the session; the gateway consumes
+   *  it on the NEXT `prompt.submit` (attached_images queue). */
+  async attachImageBytes(params: {
+    session_id: string;
+    content_base64: string;
+    filename?: string;
+  }): Promise<{ attached: boolean; path?: string; count?: number }> {
+    return await this.rpc("image.attach_bytes", params);
+  }
+
+  /** Stage a non-image file; returns an `@file:` ref string for the composer. */
+  async attachFile(params: {
+    session_id: string;
+    data_url: string;
+    name: string;
+  }): Promise<{ attached: boolean; name?: string; ref_text?: string }> {
+    return await this.rpc("file.attach", params);
+  }
+
+  /** Un-stage a previously attached image by its gateway path. */
+  async detachImage(sessionId: string, path: string): Promise<{ detached: boolean }> {
+    return await this.rpc("image.detach", { session_id: sessionId, path });
+  }
+
   async interruptSession(sessionId: string): Promise<unknown> {
     return await this.rpc("session.interrupt", { session_id: sessionId });
   }

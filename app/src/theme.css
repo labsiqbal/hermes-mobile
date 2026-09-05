@@ -524,9 +524,10 @@ body {
 }
 
 /* Detail screens (chat) render the same floating header but reserve the
-   space in their own scroll container — no shell-body wrapper. */
+   space in their own scroll container — no shell-body wrapper. +12px keeps
+   the first message clear of the header edge. */
 .chat-view .body {
-  padding-top: calc(var(--shell-header-h) + env(safe-area-inset-top));
+  padding-top: calc(var(--shell-header-h) + env(safe-area-inset-top) + 12px);
 }
 
 /* ── bottom tab bar — the single navigation surface for root screens ─────
