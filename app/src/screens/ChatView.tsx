@@ -1,5 +1,6 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type ReactNode, type SyntheticEvent } from "react";
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ChangeEvent, type ReactNode, type SyntheticEvent } from "react";
 import "./chat-view.css";
+import { liveTurnEvents } from "./chat-resume-utils";
 import Header from "../components/Header";
 import { MessageContent } from "../components/MessageContent";
 import { ArrowUpIcon, ChevronDownIcon, FileIcon, ImageIcon, PlusIcon, SearchIcon, StopIcon, XIcon } from "../components/icons";
@@ -115,7 +116,7 @@ type Attachment = { kind: "image" | "file"; name: string; path: string };
 
 type TimelineItem =
   | { kind: "user"; id: string; text: string; entering?: boolean }
-  | { kind: "bot"; id: string; text: string; streaming: boolean; entering?: boolean }
+  | { kind: "bot"; id: string; text: string; streaming: boolean; entering?: boolean; instant?: boolean }
   | {
       kind: "tool";
       id: string;
@@ -324,13 +325,16 @@ const StreamingBotBubble = memo(function StreamingBotBubble({
   streaming,
   label,
   entering,
+  instant,
 }: {
   text: string;
   streaming: boolean;
   label: string;
   entering?: boolean;
+  instant?: boolean;
 }) {
-  const shown = useSmoothReveal(text, streaming);
+  const revealed = useSmoothReveal(text, streaming && !instant);
+  const shown = instant ? text : revealed;
   if (!shown && streaming) return null;
   return (
     <div className="botmsg">
@@ -362,6 +366,9 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   const [items, setItems] = useState<TimelineItem[]>([]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
+  // Resumed history stays hidden until cached live events have been folded in;
+  // user sees one latest-state paint instead of a replay.
+  const [initializing, setInitializing] = useState(Boolean(session));
   // true between prompt submit / message.start and the first message.delta —
   // drives the iMessage-style typing indicator bubble.
   const [awaiting, setAwaiting] = useState(false);
@@ -390,7 +397,12 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const sidRef = useRef("");
   const handledEventsRef = useRef(new WeakSet<GatewayEvent>());
+  const resumeReplayRef = useRef<GatewayEvent[]>([]);
+  const resumeHasInflightRef = useRef(false);
   const bodyRef = useRef<HTMLDivElement>(null);
+  // Existing sessions paint once at their latest point. No smooth trip through
+  // old history; only events arriving after open get live animation.
+  const initialSnapPendingRef = useRef(Boolean(session));
   // Sticky-scroll: only follow the stream while the user sits near the bottom.
   const stickRef = useRef(true);
   const lastCountRef = useRef(0);
@@ -496,14 +508,17 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
           client,
           opened.session_id,
           client.replayGeneration,
+        ) as GatewayEvent[];
+        const hasSettledTurn = cached.some(
+          (event) => event.type === "message.complete" || event.type === "error",
         );
-        if (cached.some((event) => event.type === "message.complete" || event.type === "error")) {
-          if (session) {
-            opened = await client.resumeSession(session.resolved_id || session.id);
-            if (cancelled) return;
-          }
-          clearSessionEvents(client, opened.session_id, client.replayGeneration);
+        if (hasSettledTurn && session) {
+          // Refresh persisted history once, then retain only a newer in-flight
+          // suffix (events after latest complete/error) as current live state.
+          opened = await client.resumeSession(session.resolved_id || session.id);
+          if (cancelled) return;
         }
+        resumeReplayRef.current = liveTurnEvents(cached);
         linkSessionAliases(
           conn.id,
           session?.id,
@@ -512,12 +527,41 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
           opened.session_id,
         );
         sidRef.current = opened.session_id;
+        if (session) {
+          initialSnapPendingRef.current = true;
+          setInitializing(true);
+        }
         setLiveSid(opened.session_id);
         setInfo(opened.info);
         const seeded: TimelineItem[] = (opened.messages ?? []).flatMap((m) =>
           historyItems(m as Record<string, unknown>),
         );
-        setItems(seeded);
+        const running = opened.running === true || opened.status === "streaming";
+        const inflightText = opened.inflight?.assistant?.trim() ?? "";
+        resumeHasInflightRef.current = Boolean(inflightText);
+        if (inflightText) {
+          // Resume envelope carries the full accumulated response. Keep replay
+          // only for activity events, otherwise cached deltas duplicate it.
+          resumeReplayRef.current = resumeReplayRef.current.filter(
+            (event) => event.type !== "message.start" && event.type !== "message.delta",
+          );
+        }
+        setItems(
+          running && inflightText
+            ? [
+                ...seeded,
+                {
+                  kind: "bot",
+                  id: nextItemId(),
+                  text: inflightText,
+                  streaming: true,
+                  instant: true,
+                },
+              ]
+            : seeded,
+        );
+        setStreaming(running);
+        setAwaiting(running && !inflightText);
         // Catch up on an approval that fired while we were away.
         const pending = await client.pendingApprovals(opened.session_id);
         if (!cancelled && pending.length > 0) setApproval(pending[0]);
@@ -531,24 +575,32 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [client, session?.id]);
 
-  // ── mid-turn catch-up: replay events cached while this view was away ─────
-  useEffect(() => {
+  // ── mid-turn catch-up: fold cached events before first paint ─────────────
+  useLayoutEffect(() => {
     if (isGroup || !liveSid) return;
-    const events = getSessionEvents(
-      client,
-      liveSid,
-      client.replayGeneration,
-    ) as GatewayEvent[];
+    // Re-read after liveSid lands to close the capture→subscribe race. Same
+    // event objects dedupe through handledEventsRef.
+    const fresh = liveTurnEvents(
+      getSessionEvents(client, liveSid, client.replayGeneration) as GatewayEvent[],
+    ).filter(
+      (event) =>
+        !resumeHasInflightRef.current ||
+        (event.type !== "message.start" && event.type !== "message.delta"),
+    );
+    const events = [...resumeReplayRef.current, ...fresh];
+    resumeReplayRef.current = [];
     for (const event of events) {
       if (handledEventsRef.current.has(event)) continue;
-      handleGatewayEvent(event);
+      handleGatewayEvent(event, true);
       handledEventsRef.current.add(event);
     }
+    clearSessionEvents(client, liveSid, client.replayGeneration);
+    setInitializing(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [liveSid, isGroup]);
 
   // ── gateway event stream ────────────────────────────────────────────────
-  const handleGatewayEvent = useCallback((event: GatewayEvent) => {
+  const handleGatewayEvent = useCallback((event: GatewayEvent, replay = false) => {
     const sid = sidRef.current;
     if (!sid || (event.session_id && event.session_id !== sid)) return;
     const p = event.payload as Record<string, unknown> | undefined;
@@ -582,7 +634,8 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
               id: nextItemId(),
               text: eventText(event.payload),
               streaming: true,
-              entering: true,
+              entering: !replay,
+              instant: replay,
             },
           ];
         });
@@ -613,7 +666,8 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
               id: nextItemId(),
               text,
               streaming: false,
-              entering: true,
+              entering: !replay,
+              instant: replay,
             } as TimelineItem);
           }
           return next;
@@ -621,6 +675,8 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
         break;
       }
       case "tool.start":
+        setAwaiting(false);
+        setStreaming(true);
         setItems((prev) => [
           ...prev,
           {
@@ -629,11 +685,14 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
             name: String(p?.name ?? "tool"),
             context: String(p?.context ?? ""),
             status: "running",
-            entering: true,
+            entering: !replay,
           },
         ]);
         break;
       case "tool.complete":
+        // Tool finished but turn is still open: agent returns to reasoning until
+        // another tool or response delta says otherwise.
+        setAwaiting(true);
         setItems((prev) => {
           const id = String(p?.tool_id ?? "");
           const next = [...prev];
@@ -657,7 +716,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
               name: String(p?.name ?? "tool"),
               context: String(p?.summary ?? ""),
               status: "done",
-              entering: true,
+              entering: !replay,
             },
           ];
         });
@@ -718,9 +777,21 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
     });
   }, [client, isGroup, handleGatewayEvent]);
 
-  // autoscroll — sticky: follow the stream only while the user is near the
-  // bottom (±80px). New items ease in with a smooth scroll; streaming deltas
-  // jump instantly so rapid updates don't lag. Reduced motion → always auto.
+  // Resumed sessions start at latest state before paint. useLayoutEffect avoids
+  // showing the top of history and then visibly travelling through it.
+  useLayoutEffect(() => {
+    if (initializing || !initialSnapPendingRef.current) return;
+    const el = bodyRef.current;
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
+    stickRef.current = true;
+    lastCountRef.current = items.length;
+    setStuck(false);
+    initialSnapPendingRef.current = false;
+  }, [initializing, items.length]);
+
+  // autoscroll — sticky: follow LIVE updates only while the user is near the
+  // bottom (±80px). Initial resume is handled synchronously above.
   useEffect(() => {
     const el = bodyRef.current;
     if (!el) return;
@@ -1081,7 +1152,9 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
         rows.push(
           <div key={t.id} className="toolcard">
             <span className={`toolcard-dot ${t.status}`} />
-            <span className="mono toolcard-name">{t.name}</span>
+            <span className="mono toolcard-name">
+              {t.status === "running" ? `Working · ${t.name}` : t.name}
+            </span>
             {t.duration !== undefined && (
               <span className="rowcard-meta">{t.duration.toFixed(1)}s</span>
             )}
@@ -1114,6 +1187,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
             streaming={item.streaming}
             label={botLabel}
             entering={item.entering}
+            instant={item.instant}
           />,
         );
         break;
@@ -1206,10 +1280,11 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
         {fatal && <div className="error-line">{fatal}</div>}
         {timeline}
         {awaiting && (
-          <div className="typing-bubble msg-enter" aria-label="Agent is thinking">
+          <div className={`typing-bubble${initializing ? "" : " msg-enter"}`} aria-label="Agent is thinking">
             <span className="typing-dot" />
             <span className="typing-dot" />
             <span className="typing-dot" />
+            <span className="typing-label">Thinking…</span>
           </div>
         )}
         {isGroup && groupTurn && (

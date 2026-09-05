@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
+    "check:chat-resume": "node scripts/check-chat-resume.mjs",
     "smoke": "node scripts/smoke.mjs"
   },
   "dependencies": {

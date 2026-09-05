@@ -125,6 +125,16 @@ export interface ResumeResult {
   stored_session_id?: string;
   messages: ChatMessage[];
   info?: SessionInfo;
+  /** Current runtime state when reopening an existing session. */
+  running?: boolean;
+  status?: "idle" | "resuming" | "streaming" | string;
+  hydrating?: boolean;
+  inflight?: {
+    assistant?: string;
+    streaming?: boolean;
+    user?: string;
+    error?: string;
+  } | null;
 }
 
 // ── Bot Mode (roster + canonical "Bot Chat") ────────────────────────────────
