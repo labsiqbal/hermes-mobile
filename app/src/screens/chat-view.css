@@ -42,6 +42,15 @@
 .msg-enter.replycard,
 .msg-enter.errorcard { transform-origin: 0 100%; }
 
+/* User + assistant body text share one type contract. Container treatment may
+   differ, but conversation hierarchy must not resize by sender. */
+.chat-view .bubble-user,
+.chat-view .bubble-bot {
+  font-size: var(--chat-font-size);
+  line-height: 1.5;
+  font-weight: 400;
+}
+
 /* user bubble styling lives in theme.css (.bubble-user) — single source */
 
 /* ── assistant message: label + full-width prose, no box ────────────────── */
