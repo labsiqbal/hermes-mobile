@@ -27,6 +27,34 @@ function Svg({ size = 18, children }: IconProps & { children: ReactNode }) {
   );
 }
 
+export function BoardIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="3" y="4" width="8" height="8" rx="2" />
+      <rect x="13" y="4" width="8" height="8" rx="2" />
+      <rect x="3" y="14" width="8" height="6" rx="2" />
+      <rect x="13" y="14" width="8" height="6" rx="2" />
+    </Svg>
+  );
+}
+
+export function ChevronLeftIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M15 18l-6-6 6-6" />
+    </Svg>
+  );
+}
+
+export function SearchIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <circle cx="11" cy="11" r="7" />
+      <path d="M21 21l-4.35-4.35" />
+    </Svg>
+  );
+}
+
 export function MenuIcon(props: IconProps) {
   return (
     <Svg {...props}>

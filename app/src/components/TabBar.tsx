@@ -1,5 +1,6 @@
 import type { ComponentType } from "react";
 import {
+  BoardIcon,
   BotIcon,
   ChatIcon,
   RunsIcon,
@@ -8,9 +9,10 @@ import {
   type IconProps,
 } from "./icons";
 
-export type NavId = "chats" | "groups" | "bots" | "runs" | "settings";
+export type NavId = "board" | "chats" | "groups" | "bots" | "runs" | "settings";
 
 const TABS: { id: NavId; label: string; icon: ComponentType<IconProps> }[] = [
+  { id: "board", label: "Board", icon: BoardIcon },
   { id: "chats", label: "Chats", icon: ChatIcon },
   { id: "groups", label: "Groups", icon: UsersIcon },
   { id: "bots", label: "Bots", icon: BotIcon },
@@ -37,7 +39,7 @@ export default function TabBar({
           aria-current={active === tab.id ? "page" : undefined}
           onClick={() => onNavigate(tab.id)}
         >
-          <tab.icon size={20} />
+          <tab.icon size={23} />
           <span>{tab.label}</span>
         </button>
       ))}

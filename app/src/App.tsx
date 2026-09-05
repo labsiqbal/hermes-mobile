@@ -34,9 +34,10 @@ const BotsScreen: ComponentType<BotsScreenProps> = loadBots
     })
   : BotsStub;
 
-type Screen = NavId | "chat" | "home";
+type Screen = NavId | "chat";
 
 const TITLES: Record<NavId, string> = {
+  board: "Hermes",
   chats: "Chats",
   groups: "Groups",
   bots: "Bots",
@@ -44,10 +45,19 @@ const TITLES: Record<NavId, string> = {
   settings: "Settings",
 };
 
+const SUBTITLES: Record<NavId, string | undefined> = {
+  board: undefined, // Board subtitle = connection line (filled from state below).
+  chats: "all sessions",
+  groups: "bot group rooms",
+  bots: "profiles on this machine",
+  runs: "cron & scheduled runs",
+  settings: "connection & preferences",
+};
+
 export default function App() {
   const store = useMemo(() => new ConnectionStore(), []);
-  // Entry point = Home board (devices + recent sessions); tap a session to chat.
-  const [screen, setScreen] = useState<Screen>("home");
+  // Entry point = Board (devices + recent sessions); tap a session to chat.
+  const [screen, setScreen] = useState<Screen>("board");
   const [activeConn, setActiveConn] = useState<SavedConnection | null>(null);
   const [client, setClient] = useState<HermesConnection | null>(null);
   const [activeSession, setActiveSession] = useState<SessionSummary | null>(null);
@@ -83,8 +93,8 @@ export default function App() {
     setActiveConn(conn);
     setClient(connected);
     setConnState(connected.connectionState);
-    // Land on the Home board, not the list: sessions are picked from the board.
-    setScreen("home");
+    // Land back on the Board: sessions are picked from the board.
+    setScreen("board");
   }
 
   function handleDisconnect() {
@@ -93,7 +103,7 @@ export default function App() {
     setActiveConn(null);
     setActiveSession(null);
     setConnState("idle");
-    setScreen("home");
+    setScreen("board");
   }
 
   function openChat(session: SessionSummary | null) {
@@ -119,7 +129,7 @@ export default function App() {
     setConnState(connected.connectionState);
     setActiveSession(session);
     setActiveGroup(null);
-    setChatReturnTo("home");
+    setChatReturnTo("board");
     setScreen("chat");
   }
 
@@ -140,20 +150,9 @@ export default function App() {
     setScreen(nav);
   }
 
-  // ── home: device picker with recent sessions ─────────────────────────────
-  if (screen === "home") {
-    return (
-      <Home
-        store={store}
-        onConnect={handleConnect}
-        onOpenSession={openSessionFromHome}
-        onManageDevices={() => setScreen("settings")}
-      />
-    );
-  }
-
-  // ── not connected: device picker only ────────────────────────────────────
-  if (!activeConn || !client) {
+  // ── Board without a connection: full-screen device picker (no tab bar —
+  //    there's nothing to navigate until a device is connected). ──────────
+  if (screen === "board" && (!activeConn || !client)) {
     return <Connections store={store} onConnect={handleConnect} />;
   }
 
@@ -163,8 +162,8 @@ export default function App() {
     return (
       <ChatView
         key={chatInstance}
-        conn={activeConn}
-        client={client}
+        conn={activeConn!}
+        client={client!}
         session={activeSession}
         group={activeGroup ? { roomId: activeGroup } : undefined}
         state={connState}
@@ -174,12 +173,22 @@ export default function App() {
     );
   }
 
+  // Everything below this line has an active connection.
+  const conn = activeConn!;
+  const liveClient = client!;
+
+  // Board subtitle mirrors the mockup: the connection line once connected.
+  const subtitle =
+    screen === "board"
+      ? `${conn.label} · ${conn.url.replace(/^https?:\/\//, "")}`
+      : SUBTITLES[screen];
+
   // ── unified shell: ONE header on every root screen + bottom tab bar ─────
   return (
     <div className="screen">
       <Header
-        title={TITLES[screen as NavId]}
-        subtitle={`${activeConn.label} · ${activeConn.url.replace(/^https?:\/\//, "")}`}
+        title={TITLES[screen]}
+        subtitle={subtitle}
         state={connState}
         right={
           screen === "chats" ? (
@@ -195,33 +204,43 @@ export default function App() {
         }
       />
       <div className="shell-body">
+        {screen === "board" && (
+          <Home
+            store={store}
+            conn={conn}
+            client={liveClient}
+            onConnect={handleConnect}
+            onOpenSession={openSessionFromHome}
+            onManageDevices={() => setScreen("settings")}
+          />
+        )}
         {screen === "chats" && (
           <ChatList
-            conn={activeConn}
-            client={client}
+            conn={conn}
+            client={liveClient}
             onOpenChat={openChat}
             onDisconnect={handleDisconnect}
           />
         )}
         {screen === "bots" && (
           <Suspense fallback={null}>
-            <BotsScreen onOpenChat={openChatById} client={client} conn={activeConn} />
+            <BotsScreen onOpenChat={openChatById} client={liveClient} conn={conn} />
           </Suspense>
         )}
         {screen === "groups" && (
-          <Groups client={client} conn={activeConn} onOpenGroup={openGroup} />
+          <Groups client={liveClient} conn={conn} onOpenGroup={openGroup} />
         )}
-        {screen === "runs" && <Runs client={client} conn={activeConn} />}
+        {screen === "runs" && <Runs client={liveClient} conn={conn} />}
         {screen === "settings" && (
           <Settings
-            conn={activeConn}
+            conn={conn}
             store={store}
             onConnect={handleConnect}
             onDisconnect={handleDisconnect}
           />
         )}
       </div>
-      <TabBar active={screen as NavId} onNavigate={handleNavigate} />
+      <TabBar active={screen} onNavigate={handleNavigate} />
     </div>
   );
 }

@@ -11,6 +11,7 @@ import {
 } from "./chat-list-utils";
 import { botTint } from "./bots-utils";
 import { isActive } from "../lib/active-sessions";
+import { SearchIcon } from "../components/icons";
 
 interface Props {
   conn: SavedConnection;
@@ -34,7 +35,6 @@ export default function ChatList({ conn, client, onOpenChat }: Props) {
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
-  const [refreshing, setRefreshing] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<SessionSummary | null>(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -51,15 +51,6 @@ export default function ChatList({ conn, client, onOpenChat }: Props) {
       setError(err instanceof Error ? err.message : String(err));
     }
   }, [client]);
-
-  const refresh = useCallback(async () => {
-    setRefreshing(true);
-    try {
-      await load();
-    } finally {
-      setRefreshing(false);
-    }
-  }, [load]);
 
   useEffect(() => {
     // oxlint-disable-next-line react/set-state-in-effect -- Sync initial gateway state on mount.
@@ -146,31 +137,19 @@ export default function ChatList({ conn, client, onOpenChat }: Props) {
 
   return (
     <div className="screen">
-      <div className="body">
-        <div style={{ display: "flex", gap: 8 }}>
-          <button
-            className="btn btn-primary"
-            style={{ flex: 1 }}
-            onClick={() => onOpenChat(null)}
-          >
-            + New chat
-          </button>
-          <button
-            className="iconbtn"
-            title="Reload"
-            onClick={() => void refresh()}
-            disabled={refreshing}
-          >
-            {refreshing ? "…" : "⟳"}
-          </button>
+      <div className="body chatlist">
+        <div className="search-wrap">
+          <span className="search-icon">
+            <SearchIcon size={15} />
+          </span>
+          <input
+            className="field"
+            type="search"
+            placeholder="Search sessions…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
         </div>
-        <input
-          className="field"
-          type="search"
-          placeholder="Search sessions…"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
         {error && <div className="error-line">{error}</div>}
         {sessions.length === 0 && !error && (
           <div className="hint">No sessions on this machine yet. Start one with the + button above.</div>
