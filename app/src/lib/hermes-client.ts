@@ -473,12 +473,19 @@ export class HermesConnection {
     const user = username ?? this.username;
     const pass = password ?? this.password;
     if (!user || !pass) throw new AuthError(0, "username and password are required");
-    const resp = await fetch(`${this.url}/auth/password-login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ provider: "basic", username: user, password: pass }),
-    });
+    const attempt = () =>
+      fetch(`${this.url}/auth/password-login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ provider: "basic", username: user, password: pass }),
+      });
+    let resp = await attempt();
+    if (resp.status === 429) {
+      // Gateway auth rate limit — one patient retry instead of failing fast.
+      await new Promise((r) => setTimeout(r, 2000));
+      resp = await attempt();
+    }
     if (!resp.ok) {
       throw new AuthError(resp.status, `login failed: HTTP ${resp.status}`);
     }
@@ -537,11 +544,24 @@ export class HermesConnection {
 
   private async openSocket(): Promise<void> {
     this.setState("connecting");
-    // (Re-)authenticate before minting a ticket: password sessions expire.
+    // Mint the ticket first — the session cookie often outlives a reconnect,
+    // so only fall back to password login when it has actually expired (401).
+    // Logging in on every reconnect trips the gateway auth rate limit (429).
+    let ticket: string;
     if (!this.bearerToken && this.username && this.password) {
-      await this.login();
+      try {
+        ticket = await this.mintWsTicket();
+      } catch (err) {
+        if (err instanceof AuthError && (err.status === 401 || err.status === 403)) {
+          await this.login();
+          ticket = await this.mintWsTicket();
+        } else {
+          throw err;
+        }
+      }
+    } else {
+      ticket = await this.mintWsTicket();
     }
-    const ticket = await this.mintWsTicket();
     const url = this.wsUrl(ticket);
 
     await new Promise<void>((resolve, reject) => {
