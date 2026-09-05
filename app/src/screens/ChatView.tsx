@@ -2,7 +2,7 @@ import { memo, useCallback, useEffect, useRef, useState, type ChangeEvent, type 
 import "./chat-view.css";
 import Header from "../components/Header";
 import { MessageContent } from "../components/MessageContent";
-import { ArrowUpIcon, FileIcon, ImageIcon, PlusIcon, StopIcon, XIcon } from "../components/icons";
+import { ArrowUpIcon, ChevronDownIcon, FileIcon, ImageIcon, PlusIcon, StopIcon, XIcon } from "../components/icons";
 import {
   clearSessionEvents,
   getSessionEvents,
@@ -14,6 +14,7 @@ import type {
   ConnectionState,
   GatewayEvent,
   HermesConnection,
+  ModelOptions,
   ProfileSummary,
   SavedConnection,
   SessionInfo,
@@ -377,6 +378,12 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   const [attachBusy, setAttachBusy] = useState(false);
   const [attachError, setAttachError] = useState("");
   const [attachMenuOpen, setAttachMenuOpen] = useState(false);
+  // Model picker (desktop parity: model.options catalog + config.set --session).
+  const [modelSheetOpen, setModelSheetOpen] = useState(false);
+  const [catalog, setCatalog] = useState<ModelOptions | null>(null);
+  const [catalogBusy, setCatalogBusy] = useState(false);
+  const [modelBusy, setModelBusy] = useState(false);
+  const [modelError, setModelError] = useState("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -546,6 +553,12 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
     const p = event.payload as Record<string, unknown> | undefined;
 
     switch (event.type) {
+      case "session.info": {
+        // A landed model/reasoning switch (or deferred mid-turn switch)
+        // publishes fresh session info — keep the pill honest.
+        if (p && typeof p === "object") setInfo((prev) => ({ ...prev, ...(p as SessionInfo) }));
+        break;
+      }
       case "message.start":
         setStreaming(true);
         setAwaiting(true);
@@ -855,6 +868,62 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
       }
     }
     setAttachments((prev) => (prev ?? []).filter((a) => a.path !== item.path));
+  }
+
+  // ── model picker (desktop parity: RPC model.options + config.set) ────────
+
+  async function openModelSheet() {
+    setModelSheetOpen(true);
+    setModelError("");
+    if (catalog) return; // one fetch per chat
+    setCatalogBusy(true);
+    try {
+      setCatalog(await client.modelOptions(sidRef.current));
+    } catch (err) {
+      setModelError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setCatalogBusy(false);
+    }
+  }
+
+  /** Session-scoped model switch — same wire format as the desktop composer. */
+  async function pickModel(provider: string, model: string) {
+    setModelBusy(true);
+    setModelError("");
+    try {
+      const result = await client.configSet(
+        sidRef.current,
+        "model",
+        `${model} --provider ${provider} --session`,
+      );
+      if (result.confirm_required) {
+        setModelError(result.confirm_message || "The gateway needs confirmation for this model.");
+        return;
+      }
+      if (!result.deferred) {
+        // Optimistic: paint the pick now; session.info re-syncs when it lands.
+        setInfo((prev) => ({ ...prev, model, provider }));
+      }
+      setModelSheetOpen(false);
+    } catch (err) {
+      setModelError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setModelBusy(false);
+    }
+  }
+
+  /** Session-scoped reasoning effort (`none` disables thinking). */
+  async function pickReasoning(effort: string) {
+    setModelBusy(true);
+    setModelError("");
+    try {
+      await client.configSet(sidRef.current, "reasoning", effort);
+      setInfo((prev) => ({ ...prev, reasoning_effort: effort }));
+    } catch (err) {
+      setModelError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setModelBusy(false);
+    }
   }
 
   async function send() {
@@ -1190,6 +1259,19 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
         {attachError && (
           <div className="error-line" style={{ marginBottom: 6 }}>{attachError}</div>
         )}
+        {!isGroup && liveSid && (
+          <div className="model-row">
+            <button type="button" className="model-pill" onClick={() => void openModelSheet()}>
+              <span className="model-pill-name">
+                {(info?.model || catalog?.model || "model").split("/").pop()}
+                {info?.reasoning_effort && info.reasoning_effort !== "none"
+                  ? ` · ${info.reasoning_effort.slice(0, 1).toUpperCase()}${info.reasoning_effort.slice(1, 3)}`
+                  : ""}
+              </span>
+              <ChevronDownIcon size={13} />
+            </button>
+          </div>
+        )}
         {attachments && attachments.length > 0 && (
           <div className="attach-chips">
             {attachments.map((item) => (
@@ -1318,6 +1400,70 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
           }}
         />
       </div>
+
+      {modelSheetOpen && (
+        <>
+          <div className="sheet-dim" onClick={() => setModelSheetOpen(false)} />
+          <div className="sheet model-sheet" role="dialog" aria-modal="true" aria-label="Model">
+            <div className="sheet-grab" />
+            <div className="rowcard-title">Model</div>
+            {modelError && <div className="error-line" style={{ margin: "6px 0" }}>{modelError}</div>}
+            {catalogBusy && <div className="hint">Loading models…</div>}
+            {!catalogBusy && catalog && (
+              <div className="model-sheet-body">
+                {(catalog.providers ?? []).map((provider) => (
+                  <div key={provider.slug}>
+                    <div className="section-label">{provider.name}</div>
+                    {(provider.models ?? []).map((model) => {
+                      const current =
+                        (info?.model ?? catalog.model ?? "") === model &&
+                        (info?.provider ?? catalog.provider ?? "") === provider.slug;
+                      return (
+                        <button
+                          key={model}
+                          type="button"
+                          className={`model-row-btn${current ? " current" : ""}`}
+                          disabled={modelBusy}
+                          onClick={() => void pickModel(provider.slug, model)}
+                        >
+                          <span className="model-row-name">{model}</span>
+                          {current && <span className="model-row-check">✓</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ))}
+                <div className="section-label">Reasoning</div>
+                <div className="reasoning-row">
+                  {["none", "minimal", "low", "medium", "high", "max"].map((effort) => (
+                    <button
+                      key={effort}
+                      type="button"
+                      className={`reasoning-chip${
+                        (info?.reasoning_effort ?? "medium") === effort ? " current" : ""
+                      }`}
+                      disabled={modelBusy}
+                      onClick={() => void pickReasoning(effort)}
+                    >
+                      {effort === "none" ? "Off" : effort}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {!catalogBusy && !catalog && !modelError && (
+              <div className="hint">No models available.</div>
+            )}
+            <button
+              className="btn btn-ghost"
+              style={{ marginTop: 12 }}
+              onClick={() => setModelSheetOpen(false)}
+            >
+              Close
+            </button>
+          </div>
+        </>
+      )}
 
       {shownApproval && (
         <>

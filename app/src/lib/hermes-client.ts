@@ -60,7 +60,32 @@ export interface SessionInfo {
   provider?: string;
   profile_name?: string;
   cwd?: string;
+  reasoning_effort?: string;
   [key: string]: unknown;
+}
+
+/** `model.options` catalog row (desktop ModelOptionProvider shape). */
+export interface ModelOptionProvider {
+  slug: string;
+  name: string;
+  models?: string[];
+  is_current?: boolean;
+}
+
+export interface ModelOptions {
+  model?: string;
+  provider?: string;
+  providers?: ModelOptionProvider[];
+}
+
+/** `config.set` envelope for the model/reasoning switch. */
+export interface ConfigSetResult {
+  key?: string;
+  value?: unknown;
+  deferred?: boolean;
+  confirm_required?: boolean;
+  confirm_message?: string;
+  warning?: string;
 }
 
 export interface ResumeResult {
@@ -964,6 +989,28 @@ export class HermesConnection {
   /** Un-stage a previously attached image by its gateway path. */
   async detachImage(sessionId: string, path: string): Promise<{ detached: boolean }> {
     return await this.rpc("image.detach", { session_id: sessionId, path });
+  }
+
+  /** Catalog for the model picker — same RPC the desktop composer uses. */
+  async modelOptions(sessionId: string): Promise<ModelOptions> {
+    return await this.rpc<ModelOptions>("model.options", {
+      session_id: sessionId,
+      explicit_only: true,
+    });
+  }
+
+  /** Set a session-scoped config key (model / reasoning). Value mirrors the
+   *  desktop composer: `"<model> --provider <provider> --session"`. */
+  async configSet(
+    sessionId: string,
+    key: string,
+    value: string,
+  ): Promise<ConfigSetResult> {
+    return await this.rpc<ConfigSetResult>("config.set", {
+      session_id: sessionId,
+      key,
+      value,
+    });
   }
 
   async interruptSession(sessionId: string): Promise<unknown> {

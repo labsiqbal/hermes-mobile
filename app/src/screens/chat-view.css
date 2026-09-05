@@ -404,6 +404,115 @@
   opacity: 0.5;
 }
 
+/* model picker pill (desktop composer parity) */
+.chat-view .model-row {
+  display: flex;
+  padding: 0 6px 8px;
+}
+
+.chat-view .model-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--line-soft);
+  background: var(--card);
+  color: var(--fg-dim);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chat-view .model-pill:active {
+  background: var(--elevated);
+}
+
+.chat-view .model-pill-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* model sheet: scrollable catalog */
+.chat-view .model-sheet .model-sheet-body {
+  max-height: 55dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin-top: 6px;
+}
+
+.chat-view .model-row-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 10px;
+  border: none;
+  border-radius: var(--r-row);
+  background: none;
+  color: var(--fg);
+  font: inherit;
+  font-size: 13.5px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.chat-view .model-row-btn:active {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.chat-view .model-row-btn:disabled {
+  opacity: 0.5;
+}
+
+.chat-view .model-row-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+}
+
+.chat-view .model-row-check {
+  color: var(--blue);
+  font-weight: 700;
+}
+
+.chat-view .reasoning-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 4px 0 6px;
+}
+
+.chat-view .reasoning-chip {
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line-soft);
+  background: var(--card);
+  color: var(--fg-dim);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chat-view .reasoning-chip.current {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: rgba(79, 140, 255, 0.1);
+}
+
+.chat-view .reasoning-chip:disabled {
+  opacity: 0.5;
+}
+
 .chat-view .composer-pill {
   display: flex;
   align-items: flex-end; /* button sits bottom-right as input grows */

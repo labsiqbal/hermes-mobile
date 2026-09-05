@@ -169,6 +169,14 @@ export function ChevronRightIcon(props: IconProps) {
   );
 }
 
+export function ChevronDownIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M6 9l6 6 6-6" />
+    </Svg>
+  );
+}
+
 export function ClockIcon(props: IconProps) {
   return (
     <Svg {...props}>

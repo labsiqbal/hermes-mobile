@@ -132,6 +132,28 @@ try {
   process.exit(1);
 }
 
+// 4b. model.options (composer model picker catalog)
+try {
+  const options = await client.modelOptions(sid);
+  const nProviders = (options.providers ?? []).length;
+  const nModels = (options.providers ?? []).reduce((n, p) => n + (p.models?.length ?? 0), 0);
+  if (nProviders === 0) throw new Error("empty provider catalog");
+  ok(`model.options → ${nProviders} provider(s), ${nModels} model(s), current ${options.provider ?? "?"}/${options.model ?? "?"}`);
+} catch (err) {
+  fail(`model.options: ${err.message}`);
+  process.exit(1);
+}
+
+// 4c. config.set reasoning — session-scoped, disposable smoke session
+try {
+  const set = await client.configSet(sid, "reasoning", "high");
+  if (set.key !== "reasoning") throw new Error(`unexpected envelope: ${JSON.stringify(set).slice(0, 120)}`);
+  ok(`config.set reasoning=high → ${JSON.stringify(set.value)}`);
+} catch (err) {
+  fail(`config.set reasoning: ${err.message}`);
+  process.exit(1);
+}
+
 // 5. prompt.submit + stream until message.complete
 const turn = new Promise((resolve) => {
   const timer = setTimeout(() => resolve({ done: false, reason: "timeout" }), TURN_TIMEOUT_MS);
