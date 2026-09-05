@@ -49,11 +49,11 @@ export function Settings({
   return (
     <div className="screen">
       <div className="body">
-        <div className="section-label">Koneksi aktif</div>
+        <div className="section-label">Active connection</div>
         <div className="card">
           <div className="title-row">
             <div className="rowcard-title">{conn.label}</div>
-            <span className="chip chip-green">Terhubung</span>
+            <span className="chip chip-green">Connected</span>
           </div>
           <div
             className="mono"
@@ -73,33 +73,33 @@ export function Settings({
             style={{ marginTop: 12 }}
             onClick={onDisconnect}
           >
-            Ganti device
+            Switch device
           </button>
         </div>
 
         <div className="section-label">Devices</div>
         <Connections store={store} onConnect={onConnect} embedded />
 
-        <div className="section-label">Penyimpanan</div>
+        <div className="section-label">Storage</div>
         <div className="card">
           <div className="hint" style={{ padding: 0 }}>
-            Kredensial (username &amp; password) disimpan sebagai teks biasa di
-            localStorage browser ini. Ini keterbatasan v1 — penyimpanan
-            terenkripsi masih di backlog. Jangan pakai di perangkat bersama.
+            Credentials (username &amp; password) are stored as plain text in
+            this browser's localStorage. This is a v1 limitation — encrypted
+            storage is still on the backlog. Don't use on shared devices.
           </div>
           <button
             className="btn btn-destructive"
             style={{ marginTop: 12 }}
             onClick={() => setConfirmWipe(true)}
           >
-            Hapus semua data lokal
+            Erase all local data
           </button>
         </div>
 
-        <div className="section-label">Tampilan</div>
+        <div className="section-label">Appearance</div>
         <div className="card">
           <div className="title-row">
-            <div className="rowcard-title">Ukuran teks chat</div>
+            <div className="rowcard-title">Chat text size</div>
             <span className="chip">{fontSize}px</span>
           </div>
           <input
@@ -112,19 +112,19 @@ export function Settings({
             style={{ width: "100%", marginTop: 8 }}
           />
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
-            <span className="hint" style={{ padding: 0 }}>Kecil</span>
-            <span className="hint" style={{ padding: 0 }}>Besar</span>
+            <span className="hint" style={{ padding: 0 }}>Small</span>
+            <span className="hint" style={{ padding: 0 }}>Large</span>
           </div>
         </div>
 
-        <div className="section-label">Tentang</div>
+        <div className="section-label">About</div>
         <div className="card">
           <div className="title-row">
             <div className="rowcard-title">Hermes Mobile</div>
             <span className="chip">v{APP_VERSION}</span>
           </div>
           <div className="hint" style={{ padding: 0, marginTop: 4 }}>
-            Klien unofficial untuk Hermes-Agent.
+            Unofficial client for Hermes-Agent.
           </div>
           <a
             className="mono"
@@ -151,21 +151,21 @@ export function Settings({
           <div className="sheet-dim" onClick={() => setConfirmWipe(false)} />
           <div className="sheet" role="dialog" aria-modal="true">
             <div className="sheet-grab" />
-            <div className="rowcard-title">Hapus semua data lokal?</div>
+            <div className="rowcard-title">Erase all local data?</div>
             <div className="hint" style={{ margin: "8px 0 14px" }}>
-              Seluruh koneksi tersimpan dan data lokal lain di browser ini akan
-              dihapus permanen, lalu aplikasi dimuat ulang. Tidak bisa
-              dibatalkan.
+              All saved connections and other local data in this browser will
+              be permanently erased, and the app will reload. This can't be
+              undone.
             </div>
             <div className="sheet-actions">
               <button className="btn btn-destructive" onClick={wipeLocalData}>
-                Hapus &amp; muat ulang
+                Erase &amp; reload
               </button>
               <button
                 className="btn btn-ghost"
                 onClick={() => setConfirmWipe(false)}
               >
-                Batal
+                Cancel
               </button>
             </div>
           </div>

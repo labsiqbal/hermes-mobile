@@ -18,14 +18,14 @@ export function sessionTime(s: SessionSummary): number {
 }
 
 const DAY_MS = 86_400_000;
-const DAY_NAMES = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
+const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTH_NAMES = [
-  "Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
-  "Jul", "Agu", "Sep", "Okt", "Nov", "Des",
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
 
 /**
- * Kelompokkan sesi per waktu: Hari ini / Kemarin / Minggu ini / Lebih lama.
+ * Kelompokkan sesi per waktu: Today / Yesterday / This week / Older.
  * Di dalam tiap grup, sesi relay ("Bot Chat") di-pin di atas, sisanya terbaru dulu.
  */
 export function groupSessionsByTime(
@@ -46,7 +46,7 @@ export function groupSessionsByTime(
     else buckets[3].push(s);
   }
 
-  const labels = ["Hari ini", "Kemarin", "Minggu ini", "Lebih lama"];
+  const labels = ["Today", "Yesterday", "This week", "Older"];
   return buckets
     .map((list, i) => ({
       label: labels[i],
@@ -67,9 +67,9 @@ export function formatSessionTime(
   const d = new Date(sessionTime(s));
   const hh = String(d.getHours()).padStart(2, "0");
   const mm = String(d.getMinutes()).padStart(2, "0");
-  if (groupLabel === "Hari ini") return `${hh}.${mm}`;
-  if (groupLabel === "Kemarin") return `Kem ${hh}.${mm}`;
-  if (groupLabel === "Minggu ini") return DAY_NAMES[d.getDay()];
+  if (groupLabel === "Today") return `${hh}.${mm}`;
+  if (groupLabel === "Yesterday") return `Yest ${hh}.${mm}`;
+  if (groupLabel === "This week") return DAY_NAMES[d.getDay()];
   const date = `${d.getDate()} ${MONTH_NAMES[d.getMonth()]}`;
   return d.getFullYear() === new Date(now).getFullYear()
     ? date

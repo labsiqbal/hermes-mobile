@@ -281,7 +281,7 @@ export class GroupDriver {
         profiles.map((p) => p.name).filter((name): name is string => Boolean(name)),
       );
     } catch (error) {
-      console.warn("[group-driver] profiles.list gagal; anggap semua member lokal:", error);
+      console.warn("[group-driver] profiles.list failed; assuming all members are local:", error);
       this.localProfiles = new Set(this.room.members.map((m) => m.name));
     }
     return this.localProfiles;

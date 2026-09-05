@@ -410,7 +410,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
         const loaded = await loadGroupRoom(client, group.roomId);
         if (cancelled) return;
         if (!loaded) {
-          setFatal("Group room tidak ditemukan di registry gateway ini.");
+          setFatal("Group room not found in this gateway's registry.");
           return;
         }
         setGroupRoom(loaded);
@@ -427,8 +427,8 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
             if (reason === "replied") return;
             const text =
               reason === "all_passed"
-                ? "Tidak ada member yang merespon."
-                : `Ronde group gagal: ${reason.slice("error:".length)}`;
+                ? "No member responded."
+                : `Group round failed: ${reason.slice("error:".length)}`;
             setItems((prev) => [
               ...prev,
               { kind: "notice", id: nextItemId(), text, entering: true },
@@ -1050,8 +1050,8 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
           <div className="hint">
             {isGroup
               ? groupRoom
-                ? "Mulai percakapan — kosongkan mention untuk semua member."
-                : "Memuat room…"
+                ? "Start the conversation — leave out the mention to address all members."
+                : "Loading room…"
               : liveSid
                 ? "Say something — the agent runs on " + conn.label + "."
                 : "Opening session…"}
@@ -1106,11 +1106,11 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
             placeholder={
               isGroup
                 ? groupRoom
-                  ? "Ketik ke grup…"
-                  : "Memuat room…"
+                  ? "Message the group…"
+                  : "Loading room…"
                 : liveSid
                   ? room
-                    ? "Ketik ke room…"
+                    ? "Message the room…"
                     : "Message…"
                   : "Opening session…"
             }

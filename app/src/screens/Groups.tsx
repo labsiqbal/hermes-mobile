@@ -220,7 +220,7 @@ export function Groups({
       <div className="screen">
         <div className="body" style={{ alignItems: "center", justifyContent: "center" }}>
           <div className="hint" style={{ textAlign: "center", maxWidth: 260 }}>
-            Tidak ada koneksi gateway aktif — sambungkan device dulu.
+            No active gateway connection — connect a device first.
           </div>
         </div>
       </div>
@@ -233,14 +233,14 @@ export function Groups({
         {mode === "list" ? (
           <>
             <button className="btn btn-primary" onClick={() => setMode("create")}>
-              + Group baru
+              + New group
             </button>
             {error && <div className="error-line">{error}</div>}
 
             {profiles !== null && rooms.length > 0 && (
               <>
                 <div className="section-label">
-                  Group · {conn?.label ?? client.url}
+                  Groups · {conn?.label ?? client.url}
                 </div>
                 {rooms.map((room) => (
                   <GroupRow
@@ -263,9 +263,9 @@ export function Groups({
                 ))}
                 <div style={{ flex: 1 }} />
                 <div className="hint">
-                  Registry dibaca dari <span className="mono">ui_meta</span> profile{" "}
-                  <span className="mono">default</span> — group yang sama muncul di Desktop.
-                  Tahan lama sebuah group untuk menghapusnya.
+                  The registry is read from the <span className="mono">default</span> profile's{" "}
+                  <span className="mono">ui_meta</span> — the same groups appear on Desktop.
+                  Long-press a group to delete it.
                 </div>
               </>
             )}
@@ -286,12 +286,12 @@ export function Groups({
                   Group Chat
                 </div>
                 <div className="hint" style={{ textAlign: "center", maxWidth: 260 }}>
-                  Belum ada group — bikin grup bot pertamamu.
+                  No groups yet — create your first bot group.
                 </div>
               </div>
             )}
 
-            {profiles === null && !error && <div className="hint">Memuat group…</div>}
+            {profiles === null && !error && <div className="hint">Loading groups…</div>}
           </>
         ) : (
           <CreateGroupCard
@@ -325,10 +325,10 @@ export function Groups({
           />
           <div className="sheet" role="dialog" aria-modal="true">
             <div className="sheet-grab" />
-            <div className="rowcard-title">Hapus group?</div>
+            <div className="rowcard-title">Delete this group?</div>
             <div className="hint" style={{ margin: "8px 0 14px" }}>
-              “{pendingDelete.name}” dibubarkan dari registry bersama. Sesi tiap
-              member tetap ada di server — hanya room-nya yang dihapus.
+              “{pendingDelete.name}” will be dissolved from the shared registry. Each
+              member's sessions stay on the server — only the room is removed.
             </div>
             <div className="sheet-actions">
               <button
@@ -336,14 +336,14 @@ export function Groups({
                 disabled={deleting}
                 onClick={() => void confirmDelete()}
               >
-                {deleting ? "Menghapus…" : "Hapus group"}
+                {deleting ? "Deleting…" : "Delete group"}
               </button>
               <button
                 className="btn btn-ghost"
                 disabled={deleting}
                 onClick={() => setPendingDelete(null)}
               >
-                Batal
+                Cancel
               </button>
             </div>
           </div>
@@ -545,7 +545,7 @@ function CreateGroupCard({
                 @{handle}
                 <span
                   role="button"
-                  aria-label={`hapus ${handle}`}
+                  aria-label={`remove ${handle}`}
                   style={{ marginLeft: 2, opacity: 0.65, cursor: "pointer" }}
                   onClick={() => toggle(bot)}
                 >
@@ -559,17 +559,17 @@ function CreateGroupCard({
       <input
         className="field"
         type="search"
-        placeholder="Cari bot…"
+        placeholder="Search bots…"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
       {bots.length === 0 && (
         <div className="hint">
-          Belum ada bot-managed profile — tambah bot lewat Desktop dulu.
+          No bot-managed profiles yet — add bots via Desktop first.
         </div>
       )}
       {bots.length > 0 && visible.length === 0 && (
-        <div className="hint">Tidak ada bot yang cocok dengan “{query.trim()}”.</div>
+        <div className="hint">No bots match “{query.trim()}”.</div>
       )}
       {visible.map((bot) => {
         const handle = botHandle(bot);
@@ -617,7 +617,7 @@ function CreateGroupCard({
       })}
       <input
         className="field"
-        placeholder={defaultName || "Nama group"}
+        placeholder={defaultName || "Group name"}
         value={name}
         maxLength={64}
         onChange={(e) => setName(e.target.value)}
@@ -629,15 +629,15 @@ function CreateGroupCard({
           disabled={!canCreate}
           onClick={() => void create()}
         >
-          {busy ? "Membuat…" : `Create Group (${selected.length})`}
+          {busy ? "Creating…" : `Create Group (${selected.length})`}
         </button>
         <button className="btn btn-ghost" disabled={busy} onClick={onCancel}>
-          Batal
+          Cancel
         </button>
       </div>
       <div className="hint">
-        Nama kosong → pakai gabungan nama member. Kalau nama sudah dipakai,
-        suffix “ 2”, “ 3”, … ditambahkan otomatis.
+        Empty name → the members' names are combined. If a name is taken,
+        a “ 2”, “ 3”, … suffix is added automatically.
       </div>
     </>
   );

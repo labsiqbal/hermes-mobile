@@ -157,7 +157,7 @@ export default function ChatList({ conn, client, onOpenChat }: Props) {
           </button>
           <button
             className="iconbtn"
-            title="Muat ulang"
+            title="Reload"
             onClick={() => void refresh()}
             disabled={refreshing}
           >
@@ -167,17 +167,17 @@ export default function ChatList({ conn, client, onOpenChat }: Props) {
         <input
           className="field"
           type="search"
-          placeholder="Cari sesi…"
+          placeholder="Search sessions…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
         {error && <div className="error-line">{error}</div>}
         {sessions.length === 0 && !error && (
-          <div className="hint">Belum ada sesi di mesin ini. Mulai dari tombol di atas.</div>
+          <div className="hint">No sessions on this machine yet. Start one with the + button above.</div>
         )}
         {sessions.length > 0 && groups.length === 0 && filtering && (
           <div className="hint">
-            Tidak ada sesi yang cocok dengan “{query.trim()}”.
+            No sessions match “{query.trim()}”.
           </div>
         )}
         {groups.map((g) => (
@@ -224,7 +224,7 @@ export default function ChatList({ conn, client, onOpenChat }: Props) {
                     {isActive(conn.id, s.id, s.resolved_id) && (
                       <>
                         {" "}
-                        <span className="chip chip-amber chip-live">proses</span>
+                        <span className="chip chip-amber chip-live">active</span>
                       </>
                     )}
                   </div>
@@ -252,26 +252,26 @@ export default function ChatList({ conn, client, onOpenChat }: Props) {
             <div className="sheet-grab" />
             {isRelaySession(pendingDelete) ? (
               <>
-                <div className="rowcard-title">Sesi relay sistem</div>
+                <div className="rowcard-title">System relay session</div>
                 <div className="hint" style={{ margin: "8px 0 14px" }}>
-                  “Bot Chat” adalah sesi relay Bot Mode milik sistem — tidak bisa
-                  dihapus dari sini.
+                  “Bot Chat” is the Bot Mode relay session owned by the system —
+                  it can't be deleted from here.
                 </div>
                 <div className="sheet-actions">
                   <button
                     className="btn btn-ghost"
                     onClick={() => setPendingDelete(null)}
                   >
-                    Tutup
+                    Close
                   </button>
                 </div>
               </>
             ) : (
               <>
-                <div className="rowcard-title">Hapus sesi ini?</div>
+                <div className="rowcard-title">Delete this session?</div>
                 <div className="hint" style={{ margin: "8px 0 14px" }}>
-                  “{pendingDelete.title || "Untitled"}” dan seluruh riwayatnya akan
-                  dihapus permanen. Tidak bisa dibatalkan.
+                  “{pendingDelete.title || "Untitled"}” and its entire history
+                  will be permanently deleted. This can't be undone.
                 </div>
                 <div className="sheet-actions">
                   <button
@@ -279,14 +279,14 @@ export default function ChatList({ conn, client, onOpenChat }: Props) {
                     disabled={deleting}
                     onClick={() => void confirmDelete()}
                   >
-                    {deleting ? "Menghapus…" : "Hapus"}
+                    {deleting ? "Deleting…" : "Delete"}
                   </button>
                   <button
                     className="btn btn-ghost"
                     disabled={deleting}
                     onClick={() => setPendingDelete(null)}
                   >
-                    Batal
+                    Cancel
                   </button>
                 </div>
               </>

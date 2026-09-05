@@ -114,7 +114,7 @@ export function BotsScreen({
       <div className="screen">
         <div className="body" style={{ alignItems: "center", justifyContent: "center" }}>
           <div className="hint" style={{ textAlign: "center", maxWidth: 260 }}>
-            Tidak ada koneksi gateway aktif — sambungkan device dulu.
+            No active gateway connection — connect a device first.
           </div>
         </div>
       </div>
@@ -128,7 +128,7 @@ export function BotsScreen({
 
         {profiles !== null && bots.length > 0 && (
           <>
-            <div className="section-label">Device ini · {conn?.label ?? client.url}</div>
+            <div className="section-label">This device · {conn?.label ?? client.url}</div>
 
             {bots.map((bot) => (
               <BotRow
@@ -142,8 +142,8 @@ export function BotsScreen({
             ))}
             <div style={{ flex: 1 }} />
             <div className="hint">
-              Roster dibaca dari <span className="mono">profiles.list</span> gateway ini. Bot
-              offline = fail-fast, tugas tidak diantrekan.
+              The roster is read from this gateway's <span className="mono">profiles.list</span>. An
+              offline bot = fail-fast; tasks are not queued.
             </div>
           </>
         )}
@@ -164,12 +164,12 @@ export function BotsScreen({
               Bot Mode
             </div>
             <div className="hint" style={{ textAlign: "center", maxWidth: 260 }}>
-              Belum ada bot — tambah profile bot-managed di Desktop.
+              No bots yet — add a bot-managed profile on Desktop.
             </div>
           </div>
         )}
 
-        {profiles === null && !error && <div className="hint">Memuat roster…</div>}
+        {profiles === null && !error && <div className="hint">Loading roster…</div>}
       </div>
     </div>
   );

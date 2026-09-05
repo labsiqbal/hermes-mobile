@@ -162,11 +162,11 @@ export function Rooms({
     if (!client || creating) return;
     const name = roomName.trim();
     if (!name) {
-      setError("Nama room belum diisi.");
+      setError("Room name is required.");
       return;
     }
     if (selected.size === 0) {
-      setError("Pilih minimal satu bot sebagai member.");
+      setError("Pick at least one bot as a member.");
       return;
     }
     setCreating(true);
@@ -210,7 +210,7 @@ export function Rooms({
       <div className="screen">
         <div className="body" style={{ alignItems: "center", justifyContent: "center" }}>
           <div className="hint" style={{ textAlign: "center", maxWidth: 260 }}>
-            Tidak ada koneksi gateway aktif — sambungkan device dulu.
+            No active gateway connection — connect a device first.
           </div>
         </div>
       </div>
@@ -227,25 +227,25 @@ export function Rooms({
             setError("");
           }}
         >
-          + Room baru
+          + New room
         </button>
 
         {error && <div className="error-line">{error}</div>}
 
         {formOpen && (
           <div className="card" style={{ padding: 16, display: "flex", flexDirection: "column", gap: 10 }}>
-            <div className="rowcard-title">Room baru</div>
+            <div className="rowcard-title">New room</div>
             <input
               className="field"
               type="text"
-              placeholder="Nama room…"
+              placeholder="Room name…"
               value={roomName}
               onChange={(e) => setRoomName(e.target.value)}
             />
-            <div className="section-label">Member bot</div>
-            {bots === null && <div className="hint">Memuat daftar bot…</div>}
+            <div className="section-label">Bot members</div>
+            {bots === null && <div className="hint">Loading bot roster…</div>}
             {bots !== null && bots.length === 0 && (
-              <div className="hint">Belum ada bot-managed profile di gateway ini.</div>
+              <div className="hint">No bot-managed profiles on this gateway yet.</div>
             )}
             {bots?.map((bot) => {
               const handle = botHandle(bot);
@@ -284,7 +284,7 @@ export function Rooms({
                         : undefined
                     }
                   >
-                    {checked ? "✓ dipilih" : "pilih"}
+                    {checked ? "✓ selected" : "select"}
                   </span>
                 </button>
               );
@@ -295,7 +295,7 @@ export function Rooms({
                 disabled={creating}
                 onClick={() => void createRoom()}
               >
-                {creating ? "Membuat…" : "Buat"}
+                {creating ? "Creating…" : "Create"}
               </button>
               <button
                 className="btn btn-ghost"
@@ -305,7 +305,7 @@ export function Rooms({
                   setError("");
                 }}
               >
-                Batal
+                Cancel
               </button>
             </div>
           </div>
@@ -324,7 +324,7 @@ export function Rooms({
           >
             <span className="chip chip-warm">rooms</span>
             <div className="hint" style={{ textAlign: "center", maxWidth: 260 }}>
-              Belum ada room — bikin grup bot pertamamu.
+              No rooms yet — create your first bot group.
             </div>
           </div>
         )}
@@ -397,35 +397,35 @@ export function Rooms({
               <>
                 <div className="rowcard-title">{sheet.room.name}</div>
                 <div className="hint" style={{ margin: "8px 0 14px" }}>
-                  {sheet.room.members.length} member · sesi “Bot Chat” di server
+                  {sheet.room.members.length} members · the “Bot Chat” session on the server
                 </div>
                 <div className="sheet-actions">
                   <button
                     className="btn btn-ghost"
                     onClick={() => setSheet({ ...sheet, mode: "rename" })}
                   >
-                    Ubah nama
+                    Rename
                   </button>
                   <button
                     className="btn btn-destructive"
                     onClick={() => setSheet({ ...sheet, mode: "confirm-delete" })}
                   >
-                    Hapus room
+                    Delete room
                   </button>
                   <button className="btn btn-ghost" onClick={() => setSheet(null)}>
-                    Batal
+                    Cancel
                   </button>
                 </div>
               </>
             )}
             {sheet.mode === "rename" && (
               <>
-                <div className="rowcard-title">Ubah nama room</div>
+                <div className="rowcard-title">Rename room</div>
                 <input
                   className="field"
                   type="text"
                   style={{ margin: "10px 0 14px" }}
-                  placeholder="Nama room…"
+                  placeholder="Room name…"
                   value={renameDraft}
                   autoFocus
                   onChange={(e) => setRenameDraft(e.target.value)}
@@ -439,28 +439,28 @@ export function Rooms({
                     disabled={!renameDraft.trim()}
                     onClick={commitRename}
                   >
-                    Simpan
+                    Save
                   </button>
                   <button className="btn btn-ghost" onClick={() => setSheet(null)}>
-                    Batal
+                    Cancel
                   </button>
                 </div>
               </>
             )}
             {sheet.mode === "confirm-delete" && (
               <>
-                <div className="rowcard-title">Hapus room ini?</div>
+                <div className="rowcard-title">Delete this room?</div>
                 <div className="hint" style={{ margin: "8px 0 14px" }}>
-                  Hanya mapping lokal “{sheet.room.name}” yang dihapus. Sesi
-                  chat-nya tetap ada di server (judul “Bot Chat”) dan bisa
-                  dihapus dari daftar chat bila perlu.
+                  Only the local mapping “{sheet.room.name}” is removed. The chat
+                  session itself stays on the server (titled “Bot Chat”) and can
+                  be deleted from the chat list if needed.
                 </div>
                 <div className="sheet-actions">
                   <button className="btn btn-destructive" onClick={commitRemove}>
-                    Hapus
+                    Delete
                   </button>
                   <button className="btn btn-ghost" onClick={() => setSheet(null)}>
-                    Batal
+                    Cancel
                   </button>
                 </div>
               </>

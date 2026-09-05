@@ -248,7 +248,7 @@ export function uniqueGroupName(base: string, reg: GroupRegistry): string {
     const candidate = trimmed.slice(0, 64 - suffix.length) + suffix;
     if (!taken.has(candidate)) return candidate;
   }
-  throw new Error("Tidak ada nama bebas untuk group.");
+  throw new Error("No free name available for the group.");
 }
 
 /** Append one entry to a room's log with the server-side mirror caps

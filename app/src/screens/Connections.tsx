@@ -211,11 +211,11 @@ export default function Connections({ store, onConnect, embedded }: Props) {
         {!showForm ? (
           <button className="btn btn-ghost btn-icon" onClick={() => setShowForm(true)}>
             <PlusIcon size={14} />
-            Tambah device
+            Add device
           </button>
         ) : (
           <>
-            <div className="section-label">Tambah device</div>
+            <div className="section-label">Add device</div>
             <div className="card form-stack">
               <input
                 className="field"

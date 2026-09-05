@@ -29,14 +29,14 @@ const EVENTS_TIMEOUT_MS = 8_000;
 const ACTIVE_STATUSES = new Set(["queued", "running", "waiting_for_approval", "stopping"]);
 
 const STATUS_LABEL: Record<string, string> = {
-  queued: "antre",
-  running: "berjalan",
-  waiting_for_approval: "menunggu approval",
-  stopping: "berhenti…",
-  completed: "selesai",
-  failed: "gagal",
-  cancelled: "dibatalkan",
-  unknown: "tidak dikenal",
+  queued: "queued",
+  running: "running",
+  waiting_for_approval: "waiting for approval",
+  stopping: "stopping…",
+  completed: "completed",
+  failed: "failed",
+  cancelled: "cancelled",
+  unknown: "unknown",
 };
 
 interface DetailState {
@@ -95,21 +95,21 @@ function eventLine(e: RunEvent): string {
       return `${ts}  reasoning`;
     case "text.delta":
     case "message.delta":
-      return `${ts}  teks`;
+      return `${ts}  text`;
     case "approval.request":
-      return `${ts}  menunggu approval`;
+      return `${ts}  waiting for approval`;
     case "run.started":
-      return `${ts}  run mulai`;
+      return `${ts}  run started`;
     case "run.completed":
-      return `${ts}  run selesai`;
+      return `${ts}  run completed`;
     case "run.failed":
-      return `${ts}  run gagal`;
+      return `${ts}  run failed`;
     case "run.cancelled":
-      return `${ts}  run dibatalkan`;
+      return `${ts}  run cancelled`;
     case "subagent.start":
-      return `${ts}  subagent mulai`;
+      return `${ts}  subagent started`;
     case "subagent.complete":
-      return `${ts}  subagent selesai${e.status ? ` (${e.status})` : ""}`;
+      return `${ts}  subagent completed${e.status ? ` (${e.status})` : ""}`;
     default:
       return `${ts}  ${e.event}`;
   }
@@ -248,18 +248,18 @@ export function Runs({ client, conn }: { client?: HermesConnection; conn?: Saved
           <div className="section-label">API Server</div>
           <div className="card form-stack">
             <div className="hint">
-              API key (dari server <span className="mono">~/.hermes/.env</span>{" "}
+              API key (from the server's <span className="mono">~/.hermes/.env</span>{" "}
               <span className="mono">API_SERVER_KEY</span>)
             </div>
             {keyRejected && (
               <div className="error-line">
-                Key ditolak server (401) — masukkan ulang key yang benar.
+                The server rejected this key (401) — re-enter the correct key.
               </div>
             )}
             <input
               className="field mono"
               type="password"
-              placeholder="tempel API key…"
+              placeholder="paste API key…"
               value={keyDraft}
               onChange={(e) => setKeyDraft(e.target.value)}
               onKeyDown={(e) => {
@@ -270,11 +270,11 @@ export function Runs({ client, conn }: { client?: HermesConnection; conn?: Saved
               <div className={keyMsg.kind === "error" ? "error-line" : "ok-line"}>{keyMsg.text}</div>
             )}
             <button className="btn btn-primary" disabled={!keyDraft.trim() || keyBusy} onClick={() => void saveKey()}>
-              {keyBusy ? "Menguji…" : "Simpan & tes"}
+              {keyBusy ? "Testing…" : "Save & test"}
             </button>
           </div>
           <div className="hint">
-            Key disimpan lokal di device ini dan dipakai sebagai Bearer token ke{" "}
+            The key is stored locally on this device and used as a Bearer token for{" "}
             <span className="mono">/v1</span> (same-origin).
           </div>
         </div>
@@ -290,13 +290,13 @@ export function Runs({ client, conn }: { client?: HermesConnection; conn?: Saved
         <div className="section-label">Runs{conn?.label ? ` · ${conn.label}` : ""}</div>
         {source === "tracked" && (
           <div className="hint">
-            Server belum menyediakan daftar run — menampilkan run yang dilacak device ini.
+            The server doesn't expose a run list yet — showing runs tracked on this device.
           </div>
         )}
         {listError && <div className="error-line">{listError}</div>}
 
         <div className="card form-stack">
-          <div className="hint">Lacak run berdasarkan ID (mis. dari client lain):</div>
+          <div className="hint">Track a run by ID (e.g. from another client):</div>
           <div style={{ display: "flex", gap: 8 }}>
             <input
               className="field mono"
@@ -314,16 +314,16 @@ export function Runs({ client, conn }: { client?: HermesConnection; conn?: Saved
               disabled={!trackDraft.trim()}
               onClick={addTracked}
             >
-              Lacak
+              Track
             </button>
           </div>
         </div>
 
-        {runs === null && !listError && <div className="hint">Memuat…</div>}
+        {runs === null && !listError && <div className="hint">Loading…</div>}
         {runs !== null && runs.length === 0 && (
           <div className="hint">
-            Belum ada run yang dilacak. Buat run lewat <span className="mono">POST /v1/runs</span>{" "}
-            dari client lain, lalu lacak ID-nya di sini.
+            No tracked runs yet. Create a run via <span className="mono">POST /v1/runs</span>{" "}
+            from another client, then track its ID here.
           </div>
         )}
 
@@ -352,7 +352,7 @@ export function Runs({ client, conn }: { client?: HermesConnection; conn?: Saved
                   <div className="rowcard-sub">
                     {STATUS_LABEL[status] ?? status}
                     {run.model ? ` · ${run.model}` : ""}
-                    {run.expired ? " · status kedaluwarsa" : ""}
+                    {run.expired ? " · status expired" : ""}
                   </div>
                 </div>
                 <div className="rowcard-meta">
@@ -367,7 +367,7 @@ export function Runs({ client, conn }: { client?: HermesConnection; conn?: Saved
                   <div className="rowcard-meta" style={{ textAlign: "left", whiteSpace: "normal" }}>
                     {run.run_id}
                   </div>
-                  {detail?.loading && <div className="hint">Memuat timeline…</div>}
+                  {detail?.loading && <div className="hint">Loading timeline…</div>}
                   {detail?.error && <div className="error-line">{detail.error}</div>}
                   {detail?.run?.error && <div className="error-line">{detail.run.error}</div>}
 
@@ -399,7 +399,7 @@ export function Runs({ client, conn }: { client?: HermesConnection; conn?: Saved
                   )}
                   {detail?.events && detail.events.length === 0 && !detail.loading && (
                     <div className="hint">
-                      Stream events tidak tersedia (run sudah selesai) — menampilkan status saja.
+                      Stream events aren't available (run already finished) — showing status only.
                     </div>
                   )}
 
