@@ -1,0 +1,118 @@
+{
+  "status": "passed",
+  "evidence": "HARNESS NEGATIVE CANARIES ONLY — not production app evidence",
+  "cases": [
+    {
+      "name": "positive exact-root control",
+      "status": "passed"
+    },
+    {
+      "name": "legacy roots rejected",
+      "status": "passed"
+    },
+    {
+      "name": "missing root rejected",
+      "status": "passed"
+    },
+    {
+      "name": "missing journey rejected: login-connect",
+      "status": "passed"
+    },
+    {
+      "name": "missing journey rejected: root-navigation",
+      "status": "passed"
+    },
+    {
+      "name": "missing journey rejected: project-resume",
+      "status": "passed"
+    },
+    {
+      "name": "missing journey rejected: workspace-history-draft",
+      "status": "passed"
+    },
+    {
+      "name": "missing journey rejected: bot-profile-draft",
+      "status": "passed"
+    },
+    {
+      "name": "missing journey rejected: groups",
+      "status": "passed"
+    },
+    {
+      "name": "missing journey rejected: activity-runs",
+      "status": "passed"
+    },
+    {
+      "name": "missing journey rejected: manage-sections",
+      "status": "passed"
+    },
+    {
+      "name": "missing journey rejected: chat-controls-approval",
+      "status": "passed"
+    },
+    {
+      "name": "missing journey rejected: transport-states",
+      "status": "passed"
+    },
+    {
+      "name": "missing journey rejected: responsive",
+      "status": "passed"
+    },
+    {
+      "name": "missing journey rejected: palette-focus",
+      "status": "passed"
+    },
+    {
+      "name": "missing journey rejected: created-session-navigation",
+      "status": "passed"
+    },
+    {
+      "name": "missing journey rejected: manage-navigation-context",
+      "status": "passed"
+    },
+    {
+      "name": "missing journey rejected: transport-audit",
+      "status": "passed"
+    },
+    {
+      "name": "console error rejected",
+      "status": "passed"
+    },
+    {
+      "name": "early mutation rejected",
+      "status": "passed"
+    },
+    {
+      "name": "profile leak rejected",
+      "status": "passed"
+    },
+    {
+      "name": "actual browser DOM wrong root rejected",
+      "status": "passed"
+    },
+    {
+      "name": "actual Chrome console error and blocked outbound captured",
+      "status": "passed"
+    },
+    {
+      "name": "exact final management contracts accept current-profile read and reject guessed schema/wrong scope/extra query",
+      "status": "passed"
+    },
+    {
+      "name": "resume honors exact omit_messages; create requires permit; truly fresh REST is 404",
+      "status": "passed"
+    },
+    {
+      "name": "actual injected transport rejects immediate mutation and serves explicit auth/file contracts",
+      "status": "passed"
+    }
+  ],
+  "cleanup": {
+    "exited": true,
+    "profileRemoved": true,
+    "exitCode": 0,
+    "signal": null,
+    "profile": "/tmp/hm-parent-final-self-test/.chrome-profile-jkhEIs"
+  },
+  "serverClosed": true
+}

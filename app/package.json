@@ -8,8 +8,18 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
+    "check:chat-reveal": "node scripts/check-chat-reveal.mjs",
+    "check:shell-navigation": "node scripts/check-shell-navigation.mjs",
     "check:chat-resume": "node scripts/check-chat-resume.mjs",
     "check:bots": "node scripts/check-bots-utils.mjs",
+    "check:shell-state": "node scripts/check-shell-state.mjs",
+    "check:management": "node scripts/check-management.mjs",
+    "check:management:browser": "node scripts/check-management.mjs --browser",
+    "check:workspace": "node scripts/check-workspace.mjs",
+    "test:unit": "npm run check:bots && npm run check:chat-resume && npm run check:shell-state && npm run check:management && npm run check:workspace",
+    "test": "npm run test:unit",
+    "check:production-browser": "node scripts/check-production-browser.mjs --app-dir .",
+    "check:production-browser:self-test": "node scripts/check-production-browser.mjs --app-dir . --self-test",
     "smoke": "node scripts/smoke.mjs"
   },
   "dependencies": {

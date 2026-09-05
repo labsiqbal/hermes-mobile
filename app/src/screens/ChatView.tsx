@@ -2,6 +2,7 @@ import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useStat
 import "./chat-view.css";
 import { acceptLiveEvent, allowSmoothAutoScroll, freshHistoryMessages, historyMessageKey, preservedScrollTop, resumeCatchupEvents, shouldFetchSessionHistory } from "./chat-resume-utils";
 import Header from "../components/Header";
+import type { ConversationViews } from "../lib/shell-state";
 import { MessageContent } from "../components/MessageContent";
 import { ArrowUpIcon, ChevronDownIcon, FileIcon, ImageIcon, PlusIcon, SearchIcon, StopIcon, XIcon } from "../components/icons";
 import {
@@ -144,6 +145,12 @@ interface Props {
   state: ConnectionState;
   onBack: () => void;
   onNewChat: () => void;
+  onWorkspace?: () => void;
+  onPalette?: () => void;
+  onSessionReady?: (session: SessionSummary) => void;
+  viewKey: string;
+  views: ConversationViews;
+  visible?: boolean;
 }
 
 let itemSeq = 0;
@@ -275,50 +282,37 @@ function useReducedMotion(): boolean {
 }
 
 function useSmoothReveal(target: string, active: boolean): string {
-  const [shown, setShown] = useState(0);
-  const [displayed, setDisplayed] = useState(target);
-  const targetRef = useRef(target);
-  const heldRef = useRef(target);
-  const shownRef = useRef(0);
-  const activeRef = useRef(active);
+  const [shown, setShown] = useState(active ? 0 : target.length);
+  const shownRef = useRef(active ? 0 : target.length);
   const reducedMotion = useReducedMotion();
 
   useEffect(() => {
-    targetRef.current = target;
-    if (target) heldRef.current = target;
-  }, [target]);
-
-  useEffect(() => {
-    if (active && !activeRef.current) {
-      shownRef.current = 0;
-      setShown(0);
+    // Settled/restored text is a snapshot, not a stream. Keep the reveal
+    // baseline in sync too, so toggling reduced motion cannot replay it.
+    if (!active || reducedMotion) {
+      shownRef.current = target.length;
+      setShown(target.length);
+      return;
     }
-    activeRef.current = active;
-    if (reducedMotion) return;
 
+    shownRef.current = Math.min(shownRef.current, target.length);
     let frame = 0;
     const tick = () => {
-      const goal = active ? targetRef.current : heldRef.current;
       const previous = shownRef.current;
-      if (previous < goal.length) {
-        const remaining = goal.length - previous;
-        const next = previous + Math.min(remaining, Math.max(2, Math.min(6, Math.ceil(remaining / 12))));
-        shownRef.current = next;
-        setDisplayed(goal);
-        setShown(next);
-      } else if (!active) {
-        shownRef.current = 0;
-        setShown(0);
-        return;
-      }
-      frame = requestAnimationFrame(tick);
+      const remaining = target.length - previous;
+      if (remaining <= 0) return;
+      const next = previous + Math.min(remaining, Math.max(2, Math.min(6, Math.ceil(remaining / 12))));
+      shownRef.current = next;
+      setShown(next);
+      if (next < target.length) frame = requestAnimationFrame(tick);
     };
-    frame = requestAnimationFrame(tick);
+    if (shownRef.current < target.length) frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
   }, [active, reducedMotion, target]);
 
-  if (reducedMotion) return target;
-  return active ? displayed.slice(0, shown) : shown > 0 ? displayed.slice(0, shown) : target;
+  // This render guard is necessary even before the effect cancels an old RAF:
+  // completion must paint authoritative final text on its very first render.
+  return !active || reducedMotion ? target : target.slice(0, shown);
 }
 
 const StreamingBotBubble = memo(function StreamingBotBubble({
@@ -348,7 +342,11 @@ const StreamingBotBubble = memo(function StreamingBotBubble({
   );
 });
 
-export default function ChatView({ conn, client, session, group, state, onBack, onNewChat }: Props) {
+export default function ChatView({ conn, client, session, group, state, onBack, onNewChat, onWorkspace, onPalette, onSessionReady, viewKey, views, visible = true }: Props) {
+  const [savedView] = useState(() => views.read(viewKey));
+  const sessionReadyRef = useRef(onSessionReady);
+  const readySummaryRef = useRef<SessionSummary | null>(null);
+  useLayoutEffect(() => { sessionReadyRef.current = onSessionReady; }, [onSessionReady]);
   // Apply saved font size on mount
   useEffect(() => {
     try {
@@ -365,7 +363,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   const [liveSid, setLiveSid] = useState("");
   const [info, setInfo] = useState<SessionInfo | undefined>();
   const [items, setItems] = useState<TimelineItem[]>([]);
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState(savedView.draft);
   const [streaming, setStreaming] = useState(false);
   // History resume disembunyikan sampai cache live terlipat dan snap awal selesai.
   const [initializing, setInitializing] = useState(Boolean(session));
@@ -386,7 +384,8 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   const [botRoster, setBotRoster] = useState<ProfileSummary[] | null>(null);
   const [mention, setMention] = useState<MentionToken | null>(null);
   // Attachments staged on the gateway (consumed on the next prompt.submit).
-  const [attachments, setAttachments] = useState<Attachment[] | null>(null);
+  const [attachments, setAttachments] = useState<Attachment[] | null>(savedView.attachments ?? null);
+  useLayoutEffect(() => { views.update(viewKey, {draft:input, attachments:attachments ?? []}); }, [views, viewKey, input, attachments]);
   const [attachBusy, setAttachBusy] = useState(false);
   const [attachError, setAttachError] = useState("");
   const [attachMenuOpen, setAttachMenuOpen] = useState(false);
@@ -523,6 +522,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
     initialSnapPendingRef.current = Boolean(session);
     sidRef.current = "";
     storedSidRef.current = "";
+    readySummaryRef.current = null;
     loadedMessageCountRef.current = 0;
     loadedMessageKeysRef.current = new Set<string>();
     profileRef.current = "";
@@ -554,7 +554,12 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
         const storedSid = opened.session_key || opened.stored_session_id || session?.resolved_id || session?.id || "";
         const profile = opened.info?.profile_name || session?.profile || "";
         let rawMessages = opened.messages ?? [];
-        if (shouldFetchSessionHistory(Boolean(session), storedSid, session?.unpersisted)) {
+        // A fresh-only hint cannot override newer gateway evidence (including a
+        // turn that settled while this view was unmounted).
+        const persisted = (opened.message_count ?? 0) > 0 || rawMessages.length > 0
+          || cached.some(event => event.type === "message.complete");
+        const unpersisted = (session?.unpersisted ?? !session) && !persisted;
+        if (shouldFetchSessionHistory(Boolean(session), storedSid, unpersisted)) {
           const page = await client.sessionMessages(storedSid, { profile });
           if (cancelled) return;
           rawMessages = page.messages;
@@ -586,6 +591,16 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
         }
         setLiveSid(opened.session_id);
         setInfo(opened.info);
+        readySummaryRef.current = {
+          title: '', preview: '', started_at: 0, message_count: 0, source: 'mobile',
+          ...session,
+          id: session?.id || storedSid || opened.session_id,
+          resolved_id: opened.session_id,
+          profile: profile || session?.profile || 'default',
+          cwd: opened.info?.cwd || session?.cwd,
+          unpersisted,
+        };
+        sessionReadyRef.current?.(readySummaryRef.current);
         const seeded: TimelineItem[] = rawMessages.flatMap((m) =>
           historyItems(m as Record<string, unknown>),
         );
@@ -686,7 +701,9 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
           for (let i = next.length - 1; i >= 0; i--) {
             const item = next[i];
             if (item.kind === "bot" && item.streaming) {
-              next[i] = { ...item, text: item.text + eventText(event.payload) };
+              // Only catch-up is instant. Later live deltas reveal from the
+              // already-painted restored prefix, never from zero.
+              next[i] = { ...item, text: item.text + eventText(event.payload), instant: replay };
               return next;
             }
           }
@@ -704,6 +721,10 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
         });
         break;
       case "message.complete": {
+        if (readySummaryRef.current?.unpersisted) {
+          readySummaryRef.current = { ...readySummaryRef.current, unpersisted: false };
+          sessionReadyRef.current?.(readySummaryRef.current);
+        }
         setStreaming(false);
         setAwaiting(false);
         const text = eventText(event.payload);
@@ -816,7 +837,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
         setStreaming(false);
         setAwaiting(false);
         setItems((prev) => [
-          ...prev,
+          ...prev.map((item) => item.kind === "bot" && item.streaming ? { ...item, streaming: false } : item),
           {
             kind: "error",
             id: nextItemId(),
@@ -851,21 +872,22 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
     if (initializing || !initialSnapPendingRef.current) return;
     const el = bodyRef.current;
     if (!el) return;
-    el.scrollTop = el.scrollHeight;
-    stickRef.current = true;
+    const saved = savedView.scroll;
+    el.scrollTop = saved && !saved.atBottom ? saved.top : el.scrollHeight;
+    stickRef.current = saved?.atBottom ?? true;
     lastCountRef.current = items.length;
-    setStuck(false);
+    setStuck(!stickRef.current);
     initialSnapPendingRef.current = false;
-    bottomPinUntilRef.current = performance.now() + 350;
+    bottomPinUntilRef.current = stickRef.current ? performance.now() + 350 : 0;
     setTranscriptReady(true);
     const pin = () => {
       const body = bodyRef.current;
-      if (!body || performance.now() >= bottomPinUntilRef.current) return;
+      if (!body || !stickRef.current || performance.now() >= bottomPinUntilRef.current) return;
       body.scrollTop = body.scrollHeight;
       settleTimerRef.current = setTimeout(pin, 50);
     };
     settleTimerRef.current = setTimeout(pin, 50);
-  }, [initializing, items.length]);
+  }, [initializing, items.length, savedView.scroll]);
 
   // Pulihkan viewport tepat setelah baris lama ditambahkan di atas.
   useLayoutEffect(() => {
@@ -883,7 +905,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
     if (!el) return;
     const grew = items.length !== lastCountRef.current;
     lastCountRef.current = items.length;
-    if (!stickRef.current || initializing || initialSnapPendingRef.current) return;
+    if (!visible || !stickRef.current || initializing || initialSnapPendingRef.current) return;
     const smooth =
       performance.now() >= bottomPinUntilRef.current &&
       allowSmoothAutoScroll(
@@ -893,13 +915,33 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
         reduceMotionRef.current,
       );
     el.scrollTo({ top: el.scrollHeight, behavior: smooth ? "smooth" : "auto" });
-  }, [items, approval, initializing]);
+  }, [items, approval, initializing, visible]);
+
+  // Workspace is a sibling pane, not a new chat mount. Restore the exact
+  // reading position after it was hidden; live growth must not move a reader.
+  useLayoutEffect(() => {
+    if (!visible || initializing || initialSnapPendingRef.current) return;
+    const el = bodyRef.current;
+    const saved = views.read(viewKey).scroll;
+    if (!el || !saved) return;
+    el.scrollTop = saved.atBottom ? el.scrollHeight : saved.top;
+    stickRef.current = saved.atBottom;
+    setStuck(!saved.atBottom);
+  }, [visible, initializing, views, viewKey]);
 
   function handleBodyScroll() {
     const el = bodyRef.current;
-    if (!el) return;
+    if (!el || !visible || initializing || initialSnapPendingRef.current) return;
     const near = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+    // The initial Markdown measurement pin must yield as soon as the reader
+    // scrolls away, even inside its brief settling window.
+    if (!near) {
+      bottomPinUntilRef.current = 0;
+      if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
+      settleTimerRef.current = null;
+    }
     stickRef.current = near;
+    views.update(viewKey, {scroll:{top:el.scrollTop, atBottom:near}});
     setStuck(!near);
   }
 
@@ -1147,7 +1189,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   async function steer() {
     const text = input.trim();
     const sid = sidRef.current;
-    if (!text || !sid || runActionBusy) return;
+    if (state !== "open" || !text || !sid || runActionBusy) return;
     setRunActionBusy(true);
     setComposerStatus("");
     setInput("");
@@ -1164,7 +1206,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   }
 
   async function stop() {
-    if (!sidRef.current) return;
+    if (state !== "open" || !sidRef.current) return;
     setComposerStatus("");
     try {
       await client.interruptSession(sidRef.current);
@@ -1174,6 +1216,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   }
 
   async function send() {
+    if (state !== "open") return;
     const text = input.trim();
     if (!text) return;
     if (streaming && !isGroup) {
@@ -1220,6 +1263,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   }
 
   async function answerApproval(choice: string) {
+    if (state !== "open") return;
     const current = approval;
     setApproval(null);
     if (current) {
@@ -1413,9 +1457,10 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
         state={state}
         onBack={onBack}
         right={
-          <button className="iconbtn" onClick={onNewChat} aria-label="New chat" title="New chat">
-            <PlusIcon size={16} />
-          </button>
+          <>
+            <button className="iconbtn" onClick={onNewChat} aria-label="New chat" title="New chat"><PlusIcon size={20} /></button>
+            {onPalette && <button className="iconbtn" onClick={onPalette} aria-label="Open command palette"><SearchIcon size={20} /></button>}
+          </>
         }
       />
 
@@ -1474,7 +1519,9 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
               ? groupRoom
                 ? "Start the conversation — leave out the mention to address all members."
                 : "Loading room…"
-              : liveSid
+              : state !== "open"
+                ? "Connect to continue this conversation. You can keep writing your draft below."
+                : liveSid
                 ? "Say something — the agent runs on " + conn.label + "."
                 : "Opening session…"}
           </div>
@@ -1520,6 +1567,9 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
       )}
 
       <div className="composer-wrap">
+        {initializing && state === "open" && <div className="composer-status" role="status">Restoring conversation…</div>}
+        {state !== 'open' && <div className="composer-status" role="status">{state === 'connecting' ? 'Reconnecting…' : 'Gateway unavailable.'} Your draft stays here; sending is disabled.</div>}
+        {onWorkspace && <nav className="conversation-tools" aria-label="Conversation tools"><button onClick={onWorkspace} disabled={!liveSid || initializing}><FileIcon size={18} />Workspace · files &amp; Git</button></nav>}
         {composerStatus && (
           <div className="composer-status" role="status">{composerStatus}</div>
         )}
@@ -1575,7 +1625,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
             <button
               type="button"
               className="composer-plus"
-              disabled={!liveSid || attachBusy}
+              disabled={state !== "open" || !liveSid || attachBusy}
               onClick={() => setAttachMenuOpen((v) => !v)}
               aria-label="Attach"
               title="Attach"
@@ -1587,8 +1637,9 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
             ref={inputRef}
             className="composer-input"
             rows={1}
+            aria-label="Message draft"
             placeholder={
-              isGroup
+              state !== "open" ? "Draft a message…" : isGroup
                 ? groupRoom
                   ? "Message the group…"
                   : "Loading room…"
@@ -1601,13 +1652,12 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
                     : "Opening session…"
             }
             value={input}
-            disabled={isGroup ? !groupRoom : !liveSid}
             onChange={handleComposerChange}
             onSelect={handleComposerSelect}
             onBlur={() => setMention(null)}
             onKeyDown={(e) => {
               // Enter sends, Shift+Enter inserts a newline.
-              if (e.key === "Enter" && !e.shiftKey) {
+              if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
                 e.preventDefault();
                 void send();
               }
@@ -1617,7 +1667,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
           {streaming && !isGroup && input.trim() && (
             <button
               className="composer-action composer-send"
-              disabled={runActionBusy}
+              disabled={state !== "open" || runActionBusy}
               title="Steer"
               aria-label="Steer active run"
               onClick={() => void steer()}
@@ -1628,7 +1678,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
           {streaming && !isGroup ? (
             <button
               className="composer-action composer-stop"
-              disabled={runActionBusy}
+              disabled={state !== "open" || runActionBusy}
               title="Stop"
               aria-label="Stop active run"
               onClick={() => void stop()}
@@ -1638,8 +1688,9 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
           ) : (
             <button
               className="composer-action composer-send"
+              aria-label="Send message"
               disabled={
-                isGroup ? !groupRoom || groupBusy || !input.trim() : !liveSid || !input.trim()
+                state !== "open" || (isGroup ? !groupRoom || groupBusy || !input.trim() : !liveSid || !input.trim())
               }
               onClick={() => void send()}
             >
@@ -1649,7 +1700,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
         </div>
         {!isGroup && liveSid && (
           <div className="model-row model-row-below">
-            <button type="button" className="model-pill" onClick={() => void openModelSheet()}>
+            <button type="button" className="model-pill" disabled={state !== "open"} onClick={() => void openModelSheet()}>
               <span className="model-pill-name">
                 {(info?.model || catalog?.model || "model").split("/").pop()}
                 {info?.reasoning_effort && info.reasoning_effort !== "none"

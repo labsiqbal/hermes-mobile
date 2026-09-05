@@ -1,0 +1,400 @@
+{
+  "evidence": "BUILT-REACT-FICTIONAL-TRANSPORT-NAVIGATION-REGRESSION",
+  "journeys": [
+    {
+      "id": "created-session-navigation",
+      "status": "passed"
+    },
+    {
+      "id": "manage-navigation-context",
+      "status": "passed"
+    }
+  ],
+  "layout": [],
+  "screenshots": [
+    {
+      "file": "/tmp/hm-parent-final-navigation/created-session-restored.png",
+      "bytes": 27692,
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "artifact": [
+    {
+      "path": "/assets/Bots-CLatOz21.js",
+      "sha256": "9145c6695df02597457e6af4d286e44cbb36981940d10fce65c7eb99ecafd4dc",
+      "bytes": 3324
+    },
+    {
+      "path": "/assets/Manage-CM5gyP7I.css",
+      "sha256": "2f3faa1fa11cb691db6bc5323f12b78d2d5990407b068359182548d1b3789593",
+      "bytes": 5449
+    },
+    {
+      "path": "/assets/Manage-DLwTut4g.js",
+      "sha256": "e7c5cf4f1764ae7ff510da9b71767d47145403727f39b0989f21a06e1dabdf7c",
+      "bytes": 31603
+    },
+    {
+      "path": "/assets/Workspace-CqGyTPxR.css",
+      "sha256": "870dc60a117e7a1e7747343198455da2ba6d4875ef78133aa0581ef7ed410072",
+      "bytes": 3486
+    },
+    {
+      "path": "/assets/Workspace-HFlfx1vy.js",
+      "sha256": "2874068b0d4c7153df27b5b9dd99e2315e70d7a559f224b3c6e151a896afd9e7",
+      "bytes": 22103
+    },
+    {
+      "path": "/assets/index-C1XuVG8v.css",
+      "sha256": "92999231c4d3b8118df804fe2a9375036fc26abb25921634048ce471b28f09af",
+      "bytes": 30144
+    },
+    {
+      "path": "/assets/index-D3oIXUXY.js",
+      "sha256": "10f90d3d4f6eaa9cc0207f31c0a970d32777034c6c38ac46935a0f6e9ae4d5b9",
+      "bytes": 468893
+    },
+    {
+      "path": "/assets/refresh-cw-DYmkRgmW.js",
+      "sha256": "b562763c89b99198fcbf29e5474606ad805768477516373da52184beeff63f40",
+      "bytes": 310
+    },
+    {
+      "path": "/index.html",
+      "sha256": "9783bf21c838108f53e837f1dcf307631f7100a09096ccfebe0048ea5b4c9fd0",
+      "bytes": 805
+    },
+    {
+      "path": "/logo.png",
+      "sha256": "2eaff911b9da9b1f1fcc81adb02f4992bb9ea6b781f4dd048cd79349927ddb7a",
+      "bytes": 1319989
+    },
+    {
+      "path": "/manifest.webmanifest",
+      "sha256": "3d22b80afea0926ace467d10607775eb49be77abe8d78b3dfcfff10a8d44db95",
+      "bytes": 444
+    }
+  ],
+  "fixture": {
+    "trace": [
+      {
+        "transport": "fetch",
+        "route": "GET /api/status",
+        "query": "",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "POST /api/auth/ws-ticket",
+        "query": "",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "POST /auth/password-login",
+        "query": "",
+        "body": {
+          "provider": "basic",
+          "username": "fixture-user",
+          "password": "NOT-A-REAL-PASSWORD"
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "POST /api/auth/ws-ticket",
+        "query": "",
+        "body": null
+      },
+      {
+        "transport": "websocket",
+        "event": "constructed",
+        "url": "wss://gateway.production-qa.invalid/api/ws?ticket=FICTIONAL-ONE-USE-TICKET"
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {
+          "limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {}
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.tree",
+        "params": {
+          "preview_limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.create",
+        "params": {}
+      },
+      {
+        "transport": "rpc",
+        "method": "approval.pending",
+        "params": {
+          "session_id": "qa-created-session"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {}
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.tree",
+        "params": {
+          "preview_limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.resume",
+        "params": {
+          "session_id": "qa-created-session",
+          "omit_messages": true,
+          "profile": "default"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "approval.pending",
+        "params": {
+          "session_id": "qa-created-session"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {}
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.tree",
+        "params": {
+          "preview_limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.resume",
+        "params": {
+          "session_id": "qa-created-session",
+          "omit_messages": true,
+          "profile": "default"
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/sessions/qa-created-session/messages",
+        "query": "?limit=120&offset=0&order=latest&include_compacted=true",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "approval.pending",
+        "params": {
+          "session_id": "qa-created-session"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {}
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.tree",
+        "params": {
+          "preview_limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {
+          "limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.resume",
+        "params": {
+          "session_id": "qa-created-session",
+          "omit_messages": true,
+          "profile": "default"
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/sessions/qa-created-session/messages",
+        "query": "?limit=120&offset=0&order=latest&include_compacted=true",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "approval.pending",
+        "params": {
+          "session_id": "qa-created-session"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {
+          "limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {}
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.tree",
+        "params": {
+          "preview_limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.resume",
+        "params": {
+          "session_id": "qa-created-session",
+          "omit_messages": true,
+          "profile": "default"
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/sessions/qa-created-session/messages",
+        "query": "?limit=120&offset=0&order=latest&include_compacted=true",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "approval.pending",
+        "params": {
+          "session_id": "qa-created-session"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {}
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.tree",
+        "params": {
+          "preview_limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": false
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/status",
+        "query": "",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": false
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.describe",
+        "params": {
+          "name": "qa-bot"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.describe",
+        "params": {
+          "name": "qa-bot"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {}
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.tree",
+        "params": {
+          "preview_limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": false
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.describe",
+        "params": {
+          "name": "qa-bot"
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/status",
+        "query": "",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": false
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/status",
+        "query": "",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": false
+        }
+      }
+    ],
+    "violations": []
+  },
+  "status": "passed",
+  "diagnostics": [],
+  "cleanup": {
+    "exited": true,
+    "profileRemoved": true,
+    "exitCode": 0,
+    "signal": null,
+    "profile": "/tmp/hm-parent-final-navigation/.chrome-profile-NuD84P"
+  },
+  "serverClosed": true
+}

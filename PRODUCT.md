@@ -16,15 +16,15 @@ Owner (Iqbal) — power user Hermes yang punya beberapa mesin (T14, NUC `linc-nu
 
 ## Product Purpose
 
-Mobile client untuk Hermes-Agent yang jalan di mesin sendiri, dijangkau lewat Tailscale. Bikin agent (dan jaringan bot-nya) bisa dipakai dari HP dengan sesi yang tersync dengan Desktop.
+Mobile client untuk Hermes Agent yang berjalan di mesin sendiri, dijangkau lewat Tailnet HTTPS. Target produk: seluruh fitur resmi Hermes Desktop dapat diakses dari HP, termasuk bundled Bot Mode, Kanban, dan Accent. Desain A — Shell dipilih Owner; implementasi browser yang tersedia, aksi yang belum diimplementasikan, dan batas native dibedakan secara eksplisit. Kontrak penerimaan: `docs/production/shell-a-spec.md`.
 
 ## Positioning
 
-Bukan chatbot cloud — client tipis ke agent self-hosted: semua sesi, tool, dan eksekusi terjadi di mesin user; HP cuma layar. Satu-satunya mobile client dengan Bot Mode (agent-to-agent delegation) Hermes.
+Bukan chatbot cloud — client tipis ke agent self-hosted: sesi, tool, dan eksekusi terjadi di gateway; HP menampilkan dan mengendalikan fitur melalui kontrak yang didukung. Klaim paritas mengikuti bukti per aksi, bukan jumlah layar.
 
 ## Operating Context
 
-- Koneksi: Tailscale tailnet (CGNAT 100.64.0.0/10), plain HTTP di dalam tailnet.
+- Koneksi browser production: Tailnet HTTPS satu origin untuk app dan `/api`, `/auth`, serta `/v1`; backend proxy internal mengikuti konfigurasi serving yang sudah ada.
 - Backend: `hermes serve` / gateway Hermes (`/api/ws` JSON-RPC, Sessions API, bot_relay RPCs).
 - Bot Mode: sesi berjudul "Bot Chat", tool `message_agent`, relay daemon headless mengantar envelope antar-gateway; reply datang async sebagai turn baru.
 - Multi-device: user memilih device (connection) dulu, sesi scoped per gateway.
@@ -37,7 +37,7 @@ Bukan chatbot cloud — client tipis ke agent self-hosted: semua sesi, tool, dan
 
 ## Brand Commitments
 
-Arah visual dipin user: mengikuti Hermes Desktop (dark, agent/terminal vibe). Token asli: chrome `#0d0d0e`, sidebar `#0a0a0b`, card `#161618`, primary `#0053fd`, warm `#cf806d`, selection amber `#ffd24a`; font display "Collapse", mono "JetBrains Mono".
+Arah visual dipin user: mengikuti Hermes Desktop (dark, agent/terminal vibe). Token dan tipografi aktual mengikuti `DESIGN.md` dan CSS app. Referensi desain A dibekukan pada commit `46c10ad4c206fd04c5b13ed593deeb1c11e9aecc` di branch `ux/mobile-parity-review`; data prototype tidak digunakan sebagai data production.
 
 ## Evidence on Hand
 

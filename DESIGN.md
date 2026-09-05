@@ -90,6 +90,12 @@ components:
 
 # Design System: Hermes Mobile
 
+## Selected information architecture
+
+Owner selected **A — Shell** for the production migration on 2026-09-06. Its acceptance contract is `docs/production/shell-a-spec.md`; the frozen reference is the `design/parity-shell/` artifact at review commit `46c10ad4c206fd04c5b13ed593deeb1c11e9aecc`. The earlier board in `design/index.html` is historical, not the current root-navigation contract.
+
+Five root destinations: **Home / Chats / Bots / Activity / Manage**. Groups belongs within Chats; Files, Git, Terminal boundaries and Preview belong to contextual Workspace tools, not extra permanent tabs. Management details preserve the selected gateway/profile. Browser Back restores the actual context, not just a route name; the conversation keeps its draft and scroll when returning from tools. A screen with an unsupported backend remains explicitly unavailable rather than populated with demonstration data.
+
 ## Overview
 
 **Creative North Star: "The Relay Console"**
@@ -158,13 +164,13 @@ Palet gelap beraksen tunggal: satu keluarga netral nyaris-hitam di bawah, enam w
 ### Named Rules
 **The Mono Is Data Rule.** JetBrains Mono hanya untuk data mesin: `@handle`, `npm run build`, `100.64.0.14`, `ttl 900s`. Prosa tidak pernah mono; mono tidak pernah untuk dekorasi.
 
-**The Small Screen Scale Rule.** Semua ukuran di bawah 18px — tidak ada display type besar di dalam app. Teks terbesar (17px) hanya untuk judul layar; teks terkecil (8.5px) hanya untuk badge angka di tab.
+**Phone hierarchy.** Shell A memakai heading Home yang lebih besar untuk orientasi; detail chat dan management tetap padat tetapi terbaca. Ukuran teks tidak menentukan ukuran sentuh: kontrol utama tetap minimal 44px. Nilai aktual mengikuti CSS app dan pilihan ukuran chat di Settings.
 
 ## Layout
 
-Setiap layar hidup dalam phone frame 340×720px (radius 34px) dengan struktur vertikal tetap: statusbar (34px) → appbar → body scroll → composer/tabbar. Appbar layar dalam selalu menjaga konteks mesin. Pada ChatView, appbar membawa tombol kembali, judul, chip model, subtitle mesin atau room, aksi chat baru, dan menu opsi chat.
+Production memakai viewport browser responsif, bukan phone frame atau statusbar OS simulasi. Struktur root: satu Header → body scroll → lima tab. Detail memakai Header dengan Back dan body/composer, tanpa tab root. Safe area dan tinggi visual viewport menjaga kontrol tetap terlihat; konteks gateway/profile/conversation dipertahankan saat berpindah ke Workspace.
 
-Body memakai padding 16px, gap antar elemen 8–14px, dan pola penumpukan yang sama di semua layar: section header mono uppercase → kartu → kartu → hint line. Daftar selalu berbasis kartu penuh (bukan divider list). Sheet approval menempel di bawah sebagai overlay absolut dengan dim gelap di atas seluruh layar.
+Body memakai padding 16px, gap antar elemen 8–14px, dan pola penumpukan yang sama di semua layar: section header mono uppercase → kartu → kartu → hint line. Home memakai kartu untuk kepemilikan device; Chats, Bots dan Groups memakai daftar datar dengan divider. Form, dialog dan sheet tetap mempunyai surface tersendiri. Sheet approval menempel di bawah sebagai overlay absolut dengan dim gelap di atas seluruh layar.
 
 ## Elevation & Depth
 
@@ -242,7 +248,7 @@ Border selalu hairline 1px translusen putih; tidak ada border opaque abu-abu, ti
 ## Do's and Don'ts
 
 ### Do:
-- **Do** tampilkan nama device + IP di setiap konteks yang berganti mesin (appbar subtitle, device switch, section header roster) — multi-device harus eksplisit.
+- **Do** tampilkan nama device + hostname MagicDNS di setiap konteks yang berganti mesin (appbar subtitle, device switch, section header roster) — multi-device harus eksplisit; jangan mengganti hostname dengan IP Tailnet literal.
 - **Do** render tool calls, relay envelope, dan approval sebagai kartu terstruktur dengan header + isi mono — plumbing adalah konten.
 - **Do** pakai trio tint + border + teks aksen untuk semua elemen berwarna selain fill Deep Action Blue (contoh: chip memakai tint + border + teks dari aksen yang sama).
 - **Do** pakai JetBrains Mono untuk handle, perintah, IP, ID, timestamp — dan hanya untuk itu.

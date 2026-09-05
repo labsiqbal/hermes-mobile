@@ -1,0 +1,4669 @@
+{
+  "evidence": "BUILT-REACT-WITH-FICTIONAL-TRANSPORT (not live-gateway proof)",
+  "appDir": "/home/iqbal/workspace/.worktrees/hermes-mobile/shell-production/app",
+  "journeys": [
+    {
+      "id": "login-connect",
+      "status": "passed"
+    },
+    {
+      "id": "root-navigation",
+      "status": "passed"
+    },
+    {
+      "id": "project-resume",
+      "status": "passed"
+    },
+    {
+      "id": "workspace-history-draft",
+      "status": "passed"
+    },
+    {
+      "id": "bot-profile-draft",
+      "status": "passed"
+    },
+    {
+      "id": "groups",
+      "status": "passed"
+    },
+    {
+      "id": "activity-runs",
+      "status": "passed"
+    },
+    {
+      "id": "manage-sections",
+      "status": "passed"
+    },
+    {
+      "id": "chat-controls-approval",
+      "status": "passed"
+    },
+    {
+      "id": "transport-states",
+      "status": "passed"
+    },
+    {
+      "id": "responsive",
+      "status": "passed"
+    },
+    {
+      "id": "palette-focus",
+      "status": "passed"
+    },
+    {
+      "id": "created-session-navigation",
+      "status": "passed"
+    },
+    {
+      "id": "manage-navigation-context",
+      "status": "passed"
+    },
+    {
+      "id": "transport-audit",
+      "status": "passed"
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "/tmp/hm-parent-final-browser/connected.png",
+      "bytes": 52513,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/root-home.png",
+      "bytes": 52513,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/root-chats.png",
+      "bytes": 28559,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/root-bots.png",
+      "bytes": 16172,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/root-activity.png",
+      "bytes": 37483,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/root-manage.png",
+      "bytes": 17488,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/project-resumed.png",
+      "bytes": 82198,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/workspace-context.png",
+      "bytes": 45485,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/workspace-native-boundary.png",
+      "bytes": 60247,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/group-resumed.png",
+      "bytes": 20213,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/activity-run-details.png",
+      "bytes": 44739,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/manage-capabilities.png",
+      "bytes": 53434,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/manage-memory.png",
+      "bytes": 57191,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/manage-schedules-cron.png",
+      "bytes": 54633,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/manage-messaging.png",
+      "bytes": 53647,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/manage-webhooks.png",
+      "bytes": 60341,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/manage-kanban.png",
+      "bytes": 57721,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/manage-appearance-preferences.png",
+      "bytes": 67681,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/manage-native-capabilities.png",
+      "bytes": 66186,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/approval-confirmation.png",
+      "bytes": 85759,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/state-loading.png",
+      "bytes": 15827,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/state-error.png",
+      "bytes": 16530,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/state-unsupported.png",
+      "bytes": 18333,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/state-empty.png",
+      "bytes": 19642,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/state-offline.png",
+      "bytes": 47523,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/home-360x844.png",
+      "bytes": 51848,
+      "width": 360,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/chats-360x844.png",
+      "bytes": 34596,
+      "width": 360,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/bots-360x844.png",
+      "bytes": 33494,
+      "width": 360,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/activity-360x844.png",
+      "bytes": 37482,
+      "width": 360,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/manage-360x844.png",
+      "bytes": 62665,
+      "width": 360,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/chat-360x844.png",
+      "bytes": 82963,
+      "width": 360,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/workspace-360x844.png",
+      "bytes": 45434,
+      "width": 360,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/home-390x844.png",
+      "bytes": 52513,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/chats-390x844.png",
+      "bytes": 35660,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/bots-390x844.png",
+      "bytes": 33648,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/activity-390x844.png",
+      "bytes": 37483,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/manage-390x844.png",
+      "bytes": 62927,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/chat-390x844.png",
+      "bytes": 81315,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/workspace-390x844.png",
+      "bytes": 45485,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/home-430x844.png",
+      "bytes": 53149,
+      "width": 430,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/chats-430x844.png",
+      "bytes": 35491,
+      "width": 430,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/bots-430x844.png",
+      "bytes": 33023,
+      "width": 430,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/activity-430x844.png",
+      "bytes": 37013,
+      "width": 430,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/manage-430x844.png",
+      "bytes": 64862,
+      "width": 430,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/chat-430x844.png",
+      "bytes": 81055,
+      "width": 430,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/workspace-430x844.png",
+      "bytes": 45267,
+      "width": 430,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/home-844x390.png",
+      "bytes": 31908,
+      "width": 844,
+      "height": 390
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/chats-844x390.png",
+      "bytes": 27664,
+      "width": 844,
+      "height": 390
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/bots-844x390.png",
+      "bytes": 31434,
+      "width": 844,
+      "height": 390
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/activity-844x390.png",
+      "bytes": 32193,
+      "width": 844,
+      "height": 390
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/manage-844x390.png",
+      "bytes": 37893,
+      "width": 844,
+      "height": 390
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/chat-844x390.png",
+      "bytes": 46505,
+      "width": 844,
+      "height": 390
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/workspace-844x390.png",
+      "bytes": 31045,
+      "width": 844,
+      "height": 390
+    },
+    {
+      "file": "/tmp/hm-parent-final-browser/created-session-restored.png",
+      "bytes": 27692,
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "layout": [
+    {
+      "name": "Home-360x844",
+      "viewport": [
+        360,
+        844
+      ],
+      "pageWidth": 360,
+      "bodyWidth": 360,
+      "controls": [
+        {
+          "label": "Open command palette",
+          "x": 300,
+          "y": 4,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Q QA Project conversation Fictional project history 15 Nov",
+          "x": 21,
+          "y": 465.34375,
+          "w": 318,
+          "h": 72,
+          "disabled": false
+        },
+        {
+          "label": "Q QA Recent conversation Fictional recent history 15 Nov",
+          "x": 21,
+          "y": 537.34375,
+          "w": 318,
+          "h": 72,
+          "disabled": false
+        },
+        {
+          "label": "Add device",
+          "x": 20,
+          "y": 626.34375,
+          "w": 320,
+          "h": 55,
+          "disabled": false
+        },
+        {
+          "label": "Home",
+          "x": 0,
+          "y": 785,
+          "w": 72,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Chats",
+          "x": 72,
+          "y": 785,
+          "w": 72,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Bots",
+          "x": 144,
+          "y": 785,
+          "w": 72,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Activity",
+          "x": 216,
+          "y": 785,
+          "w": 72,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Manage",
+          "x": 288,
+          "y": 785,
+          "w": 72,
+          "h": 59,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "name": "Chats-360x844",
+      "viewport": [
+        360,
+        844
+      ],
+      "pageWidth": 360,
+      "bodyWidth": 360,
+      "controls": [
+        {
+          "label": "New chat",
+          "x": 248,
+          "y": 4,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Open command palette",
+          "x": 300,
+          "y": 4,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Groups Shared bot conversations →",
+          "x": 0,
+          "y": 97,
+          "w": 360,
+          "h": 71.5,
+          "disabled": false
+        },
+        {
+          "label": "QA Project 1",
+          "x": 20,
+          "y": 192.5,
+          "w": 320,
+          "h": 52,
+          "disabled": false
+        },
+        {
+          "label": "Q QA Project conversation Fictional project history 15 Nov 2023 2 msg",
+          "x": 20,
+          "y": 245.5,
+          "w": 320,
+          "h": 68,
+          "disabled": false
+        },
+        {
+          "label": "Recent 1",
+          "x": 20,
+          "y": 322.5,
+          "w": 320,
+          "h": 52,
+          "disabled": false
+        },
+        {
+          "label": "Q QA Recent conversation Fictional recent history 15 Nov 2023 2 msg",
+          "x": 20,
+          "y": 375.5,
+          "w": 320,
+          "h": 68,
+          "disabled": false
+        },
+        {
+          "label": "Home",
+          "x": 0,
+          "y": 785,
+          "w": 72,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Chats",
+          "x": 72,
+          "y": 785,
+          "w": 72,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Bots",
+          "x": 144,
+          "y": 785,
+          "w": 72,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Activity",
+          "x": 216,
+          "y": 785,
+          "w": 72,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Manage",
+          "x": 288,
+          "y": 785,
+          "w": 72,
+          "h": 59,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "name": "Bots-360x844",
+      "viewport": [
+        360,
+        844
+      ],
+      "pageWidth": 360,
+      "bodyWidth": 360,
+      "controls": [
+        {
+          "label": "Open command palette",
+          "x": 300,
+          "y": 4,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "qa QA Fixture Bot @qa-bot · Fictional bot history",
+          "x": 20,
+          "y": 150,
+          "w": 320,
+          "h": 66.03125,
+          "disabled": false
+        },
+        {
+          "label": "he Hermes @hermes",
+          "x": 20,
+          "y": 224.03125,
+          "w": 320,
+          "h": 65.03125,
+          "disabled": false
+        },
+        {
+          "label": "Home",
+          "x": 0,
+          "y": 785,
+          "w": 72,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Chats",
+          "x": 72,
+          "y": 785,
+          "w": 72,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Bots",
+          "x": 144,
+          "y": 785,
+          "w": 72,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Activity",
+          "x": 216,
+          "y": 785,
+          "w": 72,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Manage",
+          "x": 288,
+          "y": 785,
+          "w": 72,
+          "h": 59,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "name": "Activity-360x844",
+      "viewport": [
+        360,
+        844
+      ],
+      "pageWidth": 360,
+      "bodyWidth": 360,
+      "controls": [
+        {
+          "label": "Open command palette",
+          "x": 300,
+          "y": 4,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "run_…",
+          "x": 39,
+          "y": 292.5625,
+          "w": 204.203125,
+          "h": 46,
+          "disabled": false
+        },
+        {
+          "label": "Track",
+          "x": 251.203125,
+          "y": 292.5625,
+          "w": 69.796875,
+          "h": 46,
+          "disabled": true
+        },
+        {
+          "label": "QA tracked run completed · fixture-model 05:13:20 0s",
+          "x": 20,
+          "y": 367.5625,
+          "w": 320,
+          "h": 75.03125,
+          "disabled": false
+        },
+        {
+          "label": "Ganti API key",
+          "x": 20,
+          "y": 454.59375,
+          "w": 320,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Home",
+          "x": 0,
+          "y": 785,
+          "w": 72,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Chats",
+          "x": 72,
+          "y": 785,
+          "w": 72,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Bots",
+          "x": 144,
+          "y": 785,
+          "w": 72,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Activity",
+          "x": 216,
+          "y": 785,
+          "w": 72,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Manage",
+          "x": 288,
+          "y": 785,
+          "w": 72,
+          "h": 59,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "name": "Manage-360x844",
+      "viewport": [
+        360,
+        844
+      ],
+      "pageWidth": 360,
+      "bodyWidth": 360,
+      "controls": [
+        {
+          "label": "Open command palette",
+          "x": 300,
+          "y": 4,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Management profile",
+          "x": 18,
+          "y": 356.6875,
+          "w": 326,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Devices & gateways Saved connections and authentication",
+          "x": 0,
+          "y": 516.6875,
+          "w": 360,
+          "h": 76,
+          "disabled": false
+        },
+        {
+          "label": "Profiles 2 profiles reported by this gateway",
+          "x": 0,
+          "y": 592.6875,
+          "w": 360,
+          "h": 76,
+          "disabled": false
+        },
+        {
+          "label": "Memory Read profile notes from MEMORY.md and USER.md",
+          "x": 0,
+          "y": 668.6875,
+          "w": 360,
+          "h": 94.6875,
+          "disabled": false
+        },
+        {
+          "label": "Capabilities Installed skills, toolsets and MCP configuration",
+          "x": 0,
+          "y": 816.375,
+          "w": 360,
+          "h": 94.6875,
+          "disabled": false
+        },
+        {
+          "label": "Home",
+          "x": 0,
+          "y": 785,
+          "w": 72,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Chats",
+          "x": 72,
+          "y": 785,
+          "w": 72,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Bots",
+          "x": 144,
+          "y": 785,
+          "w": 72,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Activity",
+          "x": 216,
+          "y": 785,
+          "w": 72,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Manage",
+          "x": 288,
+          "y": 785,
+          "w": 72,
+          "h": 59,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "name": "Chat-360x844",
+      "viewport": [
+        360,
+        844
+      ],
+      "pageWidth": 360,
+      "bodyWidth": 360,
+      "controls": [
+        {
+          "label": "Back",
+          "x": 16,
+          "y": 4,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "New chat",
+          "x": 248,
+          "y": 4,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Open command palette",
+          "x": 300,
+          "y": 4,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Scroll to bottom",
+          "x": 300,
+          "y": 722,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Workspace · files & Git",
+          "x": 14,
+          "y": 682,
+          "w": 188.328125,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Attach",
+          "x": 23,
+          "y": 732,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Message draft",
+          "x": 73,
+          "y": 732,
+          "w": 217,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Send message",
+          "x": 296,
+          "y": 732,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "fixture-alternative · Med",
+          "x": 20,
+          "y": 790,
+          "w": 188.75,
+          "h": 44,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "name": "Workspace-360x844",
+      "viewport": [
+        360,
+        844
+      ],
+      "pageWidth": 360,
+      "bodyWidth": 360,
+      "controls": [
+        {
+          "label": "Back",
+          "x": 16,
+          "y": 4,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Open command palette",
+          "x": 300,
+          "y": 4,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Files",
+          "x": 18,
+          "y": 245,
+          "w": 65.59375,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Git",
+          "x": 87.59375,
+          "y": 245,
+          "w": 58,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Preview",
+          "x": 149.59375,
+          "y": 245,
+          "w": 90.5625,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Terminal",
+          "x": 244.15625,
+          "y": 245,
+          "w": 97.84375,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Refresh workspace",
+          "x": 232.640625,
+          "y": 309,
+          "w": 109.359375,
+          "h": 46,
+          "disabled": false
+        },
+        {
+          "label": "README.md 27 bytes · inspect text",
+          "x": 18,
+          "y": 413,
+          "w": 324,
+          "h": 70,
+          "disabled": false
+        },
+        {
+          "label": "Back to conversation",
+          "x": 18,
+          "y": 587.390625,
+          "w": 208.5,
+          "h": 46,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "name": "Home-390x844",
+      "viewport": [
+        390,
+        844
+      ],
+      "pageWidth": 390,
+      "bodyWidth": 390,
+      "controls": [
+        {
+          "label": "Open command palette",
+          "x": 330,
+          "y": 4,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Q QA Project conversation Fictional project history 15 Nov",
+          "x": 21,
+          "y": 457.84375,
+          "w": 348,
+          "h": 72,
+          "disabled": false
+        },
+        {
+          "label": "Q QA Recent conversation Fictional recent history 15 Nov",
+          "x": 21,
+          "y": 529.84375,
+          "w": 348,
+          "h": 72,
+          "disabled": false
+        },
+        {
+          "label": "Add device",
+          "x": 20,
+          "y": 618.84375,
+          "w": 350,
+          "h": 55,
+          "disabled": false
+        },
+        {
+          "label": "Home",
+          "x": 0,
+          "y": 785,
+          "w": 78,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Chats",
+          "x": 78,
+          "y": 785,
+          "w": 78,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Bots",
+          "x": 156,
+          "y": 785,
+          "w": 78,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Activity",
+          "x": 234,
+          "y": 785,
+          "w": 78,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Manage",
+          "x": 312,
+          "y": 785,
+          "w": 78,
+          "h": 59,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "name": "Chats-390x844",
+      "viewport": [
+        390,
+        844
+      ],
+      "pageWidth": 390,
+      "bodyWidth": 390,
+      "controls": [
+        {
+          "label": "New chat",
+          "x": 278,
+          "y": 4,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Open command palette",
+          "x": 330,
+          "y": 4,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Groups Shared bot conversations →",
+          "x": 0,
+          "y": 97,
+          "w": 390,
+          "h": 71.5,
+          "disabled": false
+        },
+        {
+          "label": "QA Project 1",
+          "x": 20,
+          "y": 192.5,
+          "w": 350,
+          "h": 52,
+          "disabled": false
+        },
+        {
+          "label": "Q QA Project conversation Fictional project history 15 Nov 2023 2 msg",
+          "x": 20,
+          "y": 245.5,
+          "w": 350,
+          "h": 68,
+          "disabled": false
+        },
+        {
+          "label": "Recent 1",
+          "x": 20,
+          "y": 322.5,
+          "w": 350,
+          "h": 52,
+          "disabled": false
+        },
+        {
+          "label": "Q QA Recent conversation Fictional recent history 15 Nov 2023 2 msg",
+          "x": 20,
+          "y": 375.5,
+          "w": 350,
+          "h": 68,
+          "disabled": false
+        },
+        {
+          "label": "Home",
+          "x": 0,
+          "y": 785,
+          "w": 78,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Chats",
+          "x": 78,
+          "y": 785,
+          "w": 78,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Bots",
+          "x": 156,
+          "y": 785,
+          "w": 78,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Activity",
+          "x": 234,
+          "y": 785,
+          "w": 78,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Manage",
+          "x": 312,
+          "y": 785,
+          "w": 78,
+          "h": 59,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "name": "Bots-390x844",
+      "viewport": [
+        390,
+        844
+      ],
+      "pageWidth": 390,
+      "bodyWidth": 390,
+      "controls": [
+        {
+          "label": "Open command palette",
+          "x": 330,
+          "y": 4,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "qa QA Fixture Bot @qa-bot · Fictional bot history",
+          "x": 20,
+          "y": 150,
+          "w": 350,
+          "h": 66.03125,
+          "disabled": false
+        },
+        {
+          "label": "he Hermes @hermes",
+          "x": 20,
+          "y": 224.03125,
+          "w": 350,
+          "h": 65.03125,
+          "disabled": false
+        },
+        {
+          "label": "Home",
+          "x": 0,
+          "y": 785,
+          "w": 78,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Chats",
+          "x": 78,
+          "y": 785,
+          "w": 78,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Bots",
+          "x": 156,
+          "y": 785,
+          "w": 78,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Activity",
+          "x": 234,
+          "y": 785,
+          "w": 78,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Manage",
+          "x": 312,
+          "y": 785,
+          "w": 78,
+          "h": 59,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "name": "Activity-390x844",
+      "viewport": [
+        390,
+        844
+      ],
+      "pageWidth": 390,
+      "bodyWidth": 390,
+      "controls": [
+        {
+          "label": "Open command palette",
+          "x": 330,
+          "y": 4,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "run_…",
+          "x": 39,
+          "y": 270.171875,
+          "w": 234.203125,
+          "h": 46,
+          "disabled": false
+        },
+        {
+          "label": "Track",
+          "x": 281.203125,
+          "y": 270.171875,
+          "w": 69.796875,
+          "h": 46,
+          "disabled": true
+        },
+        {
+          "label": "QA tracked run completed · fixture-model 05:13:20 0s",
+          "x": 20,
+          "y": 345.171875,
+          "w": 350,
+          "h": 75.03125,
+          "disabled": false
+        },
+        {
+          "label": "Ganti API key",
+          "x": 20,
+          "y": 432.203125,
+          "w": 350,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Home",
+          "x": 0,
+          "y": 785,
+          "w": 78,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Chats",
+          "x": 78,
+          "y": 785,
+          "w": 78,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Bots",
+          "x": 156,
+          "y": 785,
+          "w": 78,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Activity",
+          "x": 234,
+          "y": 785,
+          "w": 78,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Manage",
+          "x": 312,
+          "y": 785,
+          "w": 78,
+          "h": 59,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "name": "Manage-390x844",
+      "viewport": [
+        390,
+        844
+      ],
+      "pageWidth": 390,
+      "bodyWidth": 390,
+      "controls": [
+        {
+          "label": "Open command palette",
+          "x": 330,
+          "y": 4,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Management profile",
+          "x": 18,
+          "y": 356.6875,
+          "w": 356,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Devices & gateways Saved connections and authentication",
+          "x": 0,
+          "y": 516.6875,
+          "w": 390,
+          "h": 76,
+          "disabled": false
+        },
+        {
+          "label": "Profiles 2 profiles reported by this gateway",
+          "x": 0,
+          "y": 592.6875,
+          "w": 390,
+          "h": 76,
+          "disabled": false
+        },
+        {
+          "label": "Memory Read profile notes from MEMORY.md and USER.md",
+          "x": 0,
+          "y": 668.6875,
+          "w": 390,
+          "h": 94.6875,
+          "disabled": false
+        },
+        {
+          "label": "Capabilities Installed skills, toolsets and MCP configuration",
+          "x": 0,
+          "y": 816.375,
+          "w": 390,
+          "h": 76,
+          "disabled": false
+        },
+        {
+          "label": "Home",
+          "x": 0,
+          "y": 785,
+          "w": 78,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Chats",
+          "x": 78,
+          "y": 785,
+          "w": 78,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Bots",
+          "x": 156,
+          "y": 785,
+          "w": 78,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Activity",
+          "x": 234,
+          "y": 785,
+          "w": 78,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Manage",
+          "x": 312,
+          "y": 785,
+          "w": 78,
+          "h": 59,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "name": "Chat-390x844",
+      "viewport": [
+        390,
+        844
+      ],
+      "pageWidth": 390,
+      "bodyWidth": 390,
+      "controls": [
+        {
+          "label": "Back",
+          "x": 16,
+          "y": 4,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "New chat",
+          "x": 278,
+          "y": 4,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Open command palette",
+          "x": 330,
+          "y": 4,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Scroll to bottom",
+          "x": 330,
+          "y": 722,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Workspace · files & Git",
+          "x": 14,
+          "y": 682,
+          "w": 188.328125,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Attach",
+          "x": 23,
+          "y": 732,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Message draft",
+          "x": 73,
+          "y": 732,
+          "w": 247,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Send message",
+          "x": 326,
+          "y": 732,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "fixture-alternative · Med",
+          "x": 20,
+          "y": 790,
+          "w": 188.75,
+          "h": 44,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "name": "Workspace-390x844",
+      "viewport": [
+        390,
+        844
+      ],
+      "pageWidth": 390,
+      "bodyWidth": 390,
+      "controls": [
+        {
+          "label": "Back",
+          "x": 16,
+          "y": 4,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Open command palette",
+          "x": 330,
+          "y": 4,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Files",
+          "x": 18,
+          "y": 245,
+          "w": 74.109375,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Git",
+          "x": 96.109375,
+          "y": 245,
+          "w": 62.4375,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Preview",
+          "x": 162.546875,
+          "y": 245,
+          "w": 99.078125,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Terminal",
+          "x": 265.625,
+          "y": 245,
+          "w": 106.375,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Refresh workspace",
+          "x": 262.640625,
+          "y": 309,
+          "w": 109.359375,
+          "h": 46,
+          "disabled": false
+        },
+        {
+          "label": "README.md 27 bytes · inspect text",
+          "x": 18,
+          "y": 413,
+          "w": 354,
+          "h": 70,
+          "disabled": false
+        },
+        {
+          "label": "Back to conversation",
+          "x": 18,
+          "y": 587.390625,
+          "w": 208.5,
+          "h": 46,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "name": "Home-430x844",
+      "viewport": [
+        430,
+        844
+      ],
+      "pageWidth": 430,
+      "bodyWidth": 430,
+      "controls": [
+        {
+          "label": "Open command palette",
+          "x": 370,
+          "y": 4,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Q QA Project conversation Fictional project history 15 Nov",
+          "x": 21,
+          "y": 457.84375,
+          "w": 388,
+          "h": 72,
+          "disabled": false
+        },
+        {
+          "label": "Q QA Recent conversation Fictional recent history 15 Nov",
+          "x": 21,
+          "y": 529.84375,
+          "w": 388,
+          "h": 72,
+          "disabled": false
+        },
+        {
+          "label": "Add device",
+          "x": 20,
+          "y": 618.84375,
+          "w": 390,
+          "h": 55,
+          "disabled": false
+        },
+        {
+          "label": "Home",
+          "x": 0,
+          "y": 785,
+          "w": 86,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Chats",
+          "x": 86,
+          "y": 785,
+          "w": 86,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Bots",
+          "x": 172,
+          "y": 785,
+          "w": 86,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Activity",
+          "x": 258,
+          "y": 785,
+          "w": 86,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Manage",
+          "x": 344,
+          "y": 785,
+          "w": 86,
+          "h": 59,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "name": "Chats-430x844",
+      "viewport": [
+        430,
+        844
+      ],
+      "pageWidth": 430,
+      "bodyWidth": 430,
+      "controls": [
+        {
+          "label": "New chat",
+          "x": 318,
+          "y": 4,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Open command palette",
+          "x": 370,
+          "y": 4,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Groups Shared bot conversations →",
+          "x": 0,
+          "y": 97,
+          "w": 430,
+          "h": 71.5,
+          "disabled": false
+        },
+        {
+          "label": "QA Project 1",
+          "x": 20,
+          "y": 192.5,
+          "w": 390,
+          "h": 52,
+          "disabled": false
+        },
+        {
+          "label": "Q QA Project conversation Fictional project history 15 Nov 2023 2 msg",
+          "x": 20,
+          "y": 245.5,
+          "w": 390,
+          "h": 68,
+          "disabled": false
+        },
+        {
+          "label": "Recent 1",
+          "x": 20,
+          "y": 322.5,
+          "w": 390,
+          "h": 52,
+          "disabled": false
+        },
+        {
+          "label": "Q QA Recent conversation Fictional recent history 15 Nov 2023 2 msg",
+          "x": 20,
+          "y": 375.5,
+          "w": 390,
+          "h": 68,
+          "disabled": false
+        },
+        {
+          "label": "Home",
+          "x": 0,
+          "y": 785,
+          "w": 86,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Chats",
+          "x": 86,
+          "y": 785,
+          "w": 86,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Bots",
+          "x": 172,
+          "y": 785,
+          "w": 86,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Activity",
+          "x": 258,
+          "y": 785,
+          "w": 86,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Manage",
+          "x": 344,
+          "y": 785,
+          "w": 86,
+          "h": 59,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "name": "Bots-430x844",
+      "viewport": [
+        430,
+        844
+      ],
+      "pageWidth": 430,
+      "bodyWidth": 430,
+      "controls": [
+        {
+          "label": "Open command palette",
+          "x": 370,
+          "y": 4,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "qa QA Fixture Bot @qa-bot · Fictional bot history",
+          "x": 20,
+          "y": 150,
+          "w": 390,
+          "h": 66.03125,
+          "disabled": false
+        },
+        {
+          "label": "he Hermes @hermes",
+          "x": 20,
+          "y": 224.03125,
+          "w": 390,
+          "h": 65.03125,
+          "disabled": false
+        },
+        {
+          "label": "Home",
+          "x": 0,
+          "y": 785,
+          "w": 86,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Chats",
+          "x": 86,
+          "y": 785,
+          "w": 86,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Bots",
+          "x": 172,
+          "y": 785,
+          "w": 86,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Activity",
+          "x": 258,
+          "y": 785,
+          "w": 86,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Manage",
+          "x": 344,
+          "y": 785,
+          "w": 86,
+          "h": 59,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "name": "Activity-430x844",
+      "viewport": [
+        430,
+        844
+      ],
+      "pageWidth": 430,
+      "bodyWidth": 430,
+      "controls": [
+        {
+          "label": "Open command palette",
+          "x": 370,
+          "y": 4,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "run_…",
+          "x": 39,
+          "y": 270.171875,
+          "w": 274.203125,
+          "h": 46,
+          "disabled": false
+        },
+        {
+          "label": "Track",
+          "x": 321.203125,
+          "y": 270.171875,
+          "w": 69.796875,
+          "h": 46,
+          "disabled": true
+        },
+        {
+          "label": "QA tracked run completed · fixture-model 05:13:20 0s",
+          "x": 20,
+          "y": 345.171875,
+          "w": 390,
+          "h": 75.03125,
+          "disabled": false
+        },
+        {
+          "label": "Ganti API key",
+          "x": 20,
+          "y": 432.203125,
+          "w": 390,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Home",
+          "x": 0,
+          "y": 785,
+          "w": 86,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Chats",
+          "x": 86,
+          "y": 785,
+          "w": 86,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Bots",
+          "x": 172,
+          "y": 785,
+          "w": 86,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Activity",
+          "x": 258,
+          "y": 785,
+          "w": 86,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Manage",
+          "x": 344,
+          "y": 785,
+          "w": 86,
+          "h": 59,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "name": "Manage-430x844",
+      "viewport": [
+        430,
+        844
+      ],
+      "pageWidth": 430,
+      "bodyWidth": 430,
+      "controls": [
+        {
+          "label": "Open command palette",
+          "x": 370,
+          "y": 4,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Management profile",
+          "x": 18,
+          "y": 332.6875,
+          "w": 396,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Devices & gateways Saved connections and authentication",
+          "x": 0,
+          "y": 492.6875,
+          "w": 430,
+          "h": 76,
+          "disabled": false
+        },
+        {
+          "label": "Profiles 2 profiles reported by this gateway",
+          "x": 0,
+          "y": 568.6875,
+          "w": 430,
+          "h": 76,
+          "disabled": false
+        },
+        {
+          "label": "Memory Read profile notes from MEMORY.md and USER.md",
+          "x": 0,
+          "y": 644.6875,
+          "w": 430,
+          "h": 76,
+          "disabled": false
+        },
+        {
+          "label": "Capabilities Installed skills, toolsets and MCP configuration",
+          "x": 0,
+          "y": 773.6875,
+          "w": 430,
+          "h": 76,
+          "disabled": false
+        },
+        {
+          "label": "Home",
+          "x": 0,
+          "y": 785,
+          "w": 86,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Chats",
+          "x": 86,
+          "y": 785,
+          "w": 86,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Bots",
+          "x": 172,
+          "y": 785,
+          "w": 86,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Activity",
+          "x": 258,
+          "y": 785,
+          "w": 86,
+          "h": 59,
+          "disabled": false
+        },
+        {
+          "label": "Manage",
+          "x": 344,
+          "y": 785,
+          "w": 86,
+          "h": 59,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "name": "Chat-430x844",
+      "viewport": [
+        430,
+        844
+      ],
+      "pageWidth": 430,
+      "bodyWidth": 430,
+      "controls": [
+        {
+          "label": "Back",
+          "x": 16,
+          "y": 4,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "New chat",
+          "x": 318,
+          "y": 4,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Open command palette",
+          "x": 370,
+          "y": 4,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Scroll to bottom",
+          "x": 370,
+          "y": 722,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Workspace · files & Git",
+          "x": 14,
+          "y": 682,
+          "w": 188.328125,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Attach",
+          "x": 23,
+          "y": 732,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Message draft",
+          "x": 73,
+          "y": 732,
+          "w": 287,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Send message",
+          "x": 366,
+          "y": 732,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "fixture-alternative · Med",
+          "x": 20,
+          "y": 790,
+          "w": 188.75,
+          "h": 44,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "name": "Workspace-430x844",
+      "viewport": [
+        430,
+        844
+      ],
+      "pageWidth": 430,
+      "bodyWidth": 430,
+      "controls": [
+        {
+          "label": "Back",
+          "x": 16,
+          "y": 4,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Open command palette",
+          "x": 370,
+          "y": 4,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Files",
+          "x": 18,
+          "y": 245,
+          "w": 84.109375,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Git",
+          "x": 106.109375,
+          "y": 245,
+          "w": 72.4375,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Preview",
+          "x": 182.546875,
+          "y": 245,
+          "w": 109.078125,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Terminal",
+          "x": 295.625,
+          "y": 245,
+          "w": 116.375,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Refresh workspace",
+          "x": 302.640625,
+          "y": 309,
+          "w": 109.359375,
+          "h": 46,
+          "disabled": false
+        },
+        {
+          "label": "README.md 27 bytes · inspect text",
+          "x": 18,
+          "y": 413,
+          "w": 394,
+          "h": 70,
+          "disabled": false
+        },
+        {
+          "label": "Back to conversation",
+          "x": 18,
+          "y": 566.59375,
+          "w": 208.5,
+          "h": 46,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "name": "Home-844x390",
+      "viewport": [
+        844,
+        390
+      ],
+      "pageWidth": 844,
+      "bodyWidth": 844,
+      "controls": [
+        {
+          "label": "Open command palette",
+          "x": 730,
+          "y": 0,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Home",
+          "x": 42,
+          "y": 343,
+          "w": 152,
+          "h": 47,
+          "disabled": false
+        },
+        {
+          "label": "Chats",
+          "x": 194,
+          "y": 343,
+          "w": 152,
+          "h": 47,
+          "disabled": false
+        },
+        {
+          "label": "Bots",
+          "x": 346,
+          "y": 343,
+          "w": 152,
+          "h": 47,
+          "disabled": false
+        },
+        {
+          "label": "Activity",
+          "x": 498,
+          "y": 343,
+          "w": 152,
+          "h": 47,
+          "disabled": false
+        },
+        {
+          "label": "Manage",
+          "x": 650,
+          "y": 343,
+          "w": 152,
+          "h": 47,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "name": "Chats-844x390",
+      "viewport": [
+        844,
+        390
+      ],
+      "pageWidth": 844,
+      "bodyWidth": 844,
+      "controls": [
+        {
+          "label": "New chat",
+          "x": 678,
+          "y": 0,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Open command palette",
+          "x": 730,
+          "y": 0,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Groups Shared bot conversations →",
+          "x": 42,
+          "y": 77,
+          "w": 760,
+          "h": 71.5,
+          "disabled": false
+        },
+        {
+          "label": "QA Project 1",
+          "x": 74,
+          "y": 164.5,
+          "w": 696,
+          "h": 52,
+          "disabled": false
+        },
+        {
+          "label": "Q QA Project conversation Fictional project history 15 Nov 2023 2 msg",
+          "x": 74,
+          "y": 217.5,
+          "w": 696,
+          "h": 68,
+          "disabled": false
+        },
+        {
+          "label": "Recent 1",
+          "x": 74,
+          "y": 294.5,
+          "w": 696,
+          "h": 52,
+          "disabled": false
+        },
+        {
+          "label": "Q QA Recent conversation Fictional recent history 15 Nov 2023 2 msg",
+          "x": 74,
+          "y": 347.5,
+          "w": 696,
+          "h": 68,
+          "disabled": false
+        },
+        {
+          "label": "Home",
+          "x": 42,
+          "y": 343,
+          "w": 152,
+          "h": 47,
+          "disabled": false
+        },
+        {
+          "label": "Chats",
+          "x": 194,
+          "y": 343,
+          "w": 152,
+          "h": 47,
+          "disabled": false
+        },
+        {
+          "label": "Bots",
+          "x": 346,
+          "y": 343,
+          "w": 152,
+          "h": 47,
+          "disabled": false
+        },
+        {
+          "label": "Activity",
+          "x": 498,
+          "y": 343,
+          "w": 152,
+          "h": 47,
+          "disabled": false
+        },
+        {
+          "label": "Manage",
+          "x": 650,
+          "y": 343,
+          "w": 152,
+          "h": 47,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "name": "Bots-844x390",
+      "viewport": [
+        844,
+        390
+      ],
+      "pageWidth": 844,
+      "bodyWidth": 844,
+      "controls": [
+        {
+          "label": "Open command palette",
+          "x": 730,
+          "y": 0,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "qa QA Fixture Bot @qa-bot · Fictional bot history",
+          "x": 74,
+          "y": 122,
+          "w": 696,
+          "h": 66.03125,
+          "disabled": false
+        },
+        {
+          "label": "he Hermes @hermes",
+          "x": 74,
+          "y": 196.03125,
+          "w": 696,
+          "h": 65.03125,
+          "disabled": false
+        },
+        {
+          "label": "Home",
+          "x": 42,
+          "y": 343,
+          "w": 152,
+          "h": 47,
+          "disabled": false
+        },
+        {
+          "label": "Chats",
+          "x": 194,
+          "y": 343,
+          "w": 152,
+          "h": 47,
+          "disabled": false
+        },
+        {
+          "label": "Bots",
+          "x": 346,
+          "y": 343,
+          "w": 152,
+          "h": 47,
+          "disabled": false
+        },
+        {
+          "label": "Activity",
+          "x": 498,
+          "y": 343,
+          "w": 152,
+          "h": 47,
+          "disabled": false
+        },
+        {
+          "label": "Manage",
+          "x": 650,
+          "y": 343,
+          "w": 152,
+          "h": 47,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "name": "Activity-844x390",
+      "viewport": [
+        844,
+        390
+      ],
+      "pageWidth": 844,
+      "bodyWidth": 844,
+      "controls": [
+        {
+          "label": "Open command palette",
+          "x": 730,
+          "y": 0,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "run_…",
+          "x": 93,
+          "y": 219.78125,
+          "w": 580.203125,
+          "h": 46,
+          "disabled": false
+        },
+        {
+          "label": "Track",
+          "x": 681.203125,
+          "y": 219.78125,
+          "w": 69.796875,
+          "h": 46,
+          "disabled": true
+        },
+        {
+          "label": "QA tracked run completed · fixture-model 05:13:20 0s",
+          "x": 74,
+          "y": 294.78125,
+          "w": 696,
+          "h": 75.03125,
+          "disabled": false
+        },
+        {
+          "label": "Ganti API key",
+          "x": 74,
+          "y": 381.8125,
+          "w": 696,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Home",
+          "x": 42,
+          "y": 343,
+          "w": 152,
+          "h": 47,
+          "disabled": false
+        },
+        {
+          "label": "Chats",
+          "x": 194,
+          "y": 343,
+          "w": 152,
+          "h": 47,
+          "disabled": false
+        },
+        {
+          "label": "Bots",
+          "x": 346,
+          "y": 343,
+          "w": 152,
+          "h": 47,
+          "disabled": false
+        },
+        {
+          "label": "Activity",
+          "x": 498,
+          "y": 343,
+          "w": 152,
+          "h": 47,
+          "disabled": false
+        },
+        {
+          "label": "Manage",
+          "x": 650,
+          "y": 343,
+          "w": 152,
+          "h": 47,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "name": "Manage-844x390",
+      "viewport": [
+        844,
+        390
+      ],
+      "pageWidth": 844,
+      "bodyWidth": 844,
+      "controls": [
+        {
+          "label": "Open command palette",
+          "x": 730,
+          "y": 0,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Management profile",
+          "x": 60,
+          "y": 330.59375,
+          "w": 726,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Home",
+          "x": 42,
+          "y": 343,
+          "w": 152,
+          "h": 47,
+          "disabled": false
+        },
+        {
+          "label": "Chats",
+          "x": 194,
+          "y": 343,
+          "w": 152,
+          "h": 47,
+          "disabled": false
+        },
+        {
+          "label": "Bots",
+          "x": 346,
+          "y": 343,
+          "w": 152,
+          "h": 47,
+          "disabled": false
+        },
+        {
+          "label": "Activity",
+          "x": 498,
+          "y": 343,
+          "w": 152,
+          "h": 47,
+          "disabled": false
+        },
+        {
+          "label": "Manage",
+          "x": 650,
+          "y": 343,
+          "w": 152,
+          "h": 47,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "name": "Chat-844x390",
+      "viewport": [
+        844,
+        390
+      ],
+      "pageWidth": 844,
+      "bodyWidth": 844,
+      "controls": [
+        {
+          "label": "Back",
+          "x": 70,
+          "y": 0,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "New chat",
+          "x": 678,
+          "y": 0,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Open command palette",
+          "x": 730,
+          "y": 0,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Scroll to bottom",
+          "x": 742,
+          "y": 268,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Workspace · files & Git",
+          "x": 56,
+          "y": 228,
+          "w": 188.328125,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Attach",
+          "x": 65,
+          "y": 278,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Message draft",
+          "x": 115,
+          "y": 278,
+          "w": 617,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Send message",
+          "x": 738,
+          "y": 278,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "fixture-alternative · Med",
+          "x": 62,
+          "y": 336,
+          "w": 188.75,
+          "h": 44,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "name": "Workspace-844x390",
+      "viewport": [
+        844,
+        390
+      ],
+      "pageWidth": 844,
+      "bodyWidth": 844,
+      "controls": [
+        {
+          "label": "Back",
+          "x": 70,
+          "y": 0,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Open command palette",
+          "x": 730,
+          "y": 0,
+          "w": 44,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Files",
+          "x": 60,
+          "y": 225,
+          "w": 166.609375,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Git",
+          "x": 230.609375,
+          "y": 225,
+          "w": 154.9375,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Preview",
+          "x": 389.546875,
+          "y": 225,
+          "w": 191.578125,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Terminal",
+          "x": 585.125,
+          "y": 225,
+          "w": 198.875,
+          "h": 44,
+          "disabled": false
+        },
+        {
+          "label": "Refresh workspace",
+          "x": 674.640625,
+          "y": 289,
+          "w": 109.359375,
+          "h": 46,
+          "disabled": false
+        }
+      ]
+    }
+  ],
+  "diagnostics": [],
+  "limitations": [
+    "No live gateway/authentication, prompts, mutations, native filesystem bridge, physical iOS/Android or assistive-technology proof.",
+    "Screenshots require independent visual review. Existing pure client/resume tests remain separate release gates."
+  ],
+  "artifact": {
+    "dist": "/home/iqbal/workspace/.worktrees/hermes-mobile/shell-production/app/dist",
+    "hashes": [
+      {
+        "path": "/assets/Bots-CLatOz21.js",
+        "sha256": "9145c6695df02597457e6af4d286e44cbb36981940d10fce65c7eb99ecafd4dc",
+        "bytes": 3324
+      },
+      {
+        "path": "/assets/Manage-CM5gyP7I.css",
+        "sha256": "2f3faa1fa11cb691db6bc5323f12b78d2d5990407b068359182548d1b3789593",
+        "bytes": 5449
+      },
+      {
+        "path": "/assets/Manage-DLwTut4g.js",
+        "sha256": "e7c5cf4f1764ae7ff510da9b71767d47145403727f39b0989f21a06e1dabdf7c",
+        "bytes": 31603
+      },
+      {
+        "path": "/assets/Workspace-CqGyTPxR.css",
+        "sha256": "870dc60a117e7a1e7747343198455da2ba6d4875ef78133aa0581ef7ed410072",
+        "bytes": 3486
+      },
+      {
+        "path": "/assets/Workspace-HFlfx1vy.js",
+        "sha256": "2874068b0d4c7153df27b5b9dd99e2315e70d7a559f224b3c6e151a896afd9e7",
+        "bytes": 22103
+      },
+      {
+        "path": "/assets/index-C1XuVG8v.css",
+        "sha256": "92999231c4d3b8118df804fe2a9375036fc26abb25921634048ce471b28f09af",
+        "bytes": 30144
+      },
+      {
+        "path": "/assets/index-D3oIXUXY.js",
+        "sha256": "10f90d3d4f6eaa9cc0207f31c0a970d32777034c6c38ac46935a0f6e9ae4d5b9",
+        "bytes": 468893
+      },
+      {
+        "path": "/assets/refresh-cw-DYmkRgmW.js",
+        "sha256": "b562763c89b99198fcbf29e5474606ad805768477516373da52184beeff63f40",
+        "bytes": 310
+      },
+      {
+        "path": "/index.html",
+        "sha256": "9783bf21c838108f53e837f1dcf307631f7100a09096ccfebe0048ea5b4c9fd0",
+        "bytes": 805
+      },
+      {
+        "path": "/logo.png",
+        "sha256": "2eaff911b9da9b1f1fcc81adb02f4992bb9ea6b781f4dd048cd79349927ddb7a",
+        "bytes": 1319989
+      },
+      {
+        "path": "/manifest.webmanifest",
+        "sha256": "3d22b80afea0926ace467d10607775eb49be77abe8d78b3dfcfff10a8d44db95",
+        "bytes": 444
+      }
+    ]
+  },
+  "chrome": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/152.0.7977.64",
+    "revision": "@506c834ecceaa943c5f41e6cfe7f68acb5c45346",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36",
+    "jsVersion": "15.2.124.18"
+  },
+  "paletteFocus": [
+    {
+      "tab": 1,
+      "inside": true,
+      "tag": "INPUT",
+      "label": "Find a destination",
+      "html": "<input aria-label=\"Find a destination\" placeholder=\"Search destinations…\" type=\"search\" value=\"\">"
+    },
+    {
+      "tab": 2,
+      "inside": true,
+      "tag": "BUTTON",
+      "label": "Home Devices and recent conversations →",
+      "html": "<button class=\"collection-link\"><span>Home<small>Devices and recent conversations</small></span><span aria-hidden=\"true\">→</span></button>"
+    },
+    {
+      "tab": 3,
+      "inside": true,
+      "tag": "BUTTON",
+      "label": "Chats Projects, conversations and groups →",
+      "html": "<button class=\"collection-link\"><span>Chats<small>Projects, conversations and groups</small></span><span aria-hidden=\"true\">→</span></button>"
+    },
+    {
+      "tab": 4,
+      "inside": true,
+      "tag": "BUTTON",
+      "label": "Bots Profiles and canonical bot conversations →",
+      "html": "<button class=\"collection-link\"><span>Bots<small>Profiles and canonical bot conversations</small></span><span aria-hidden=\"true\">→</span></button>"
+    },
+    {
+      "tab": 5,
+      "inside": true,
+      "tag": "BUTTON",
+      "label": "Activity Runs, schedules and routines →",
+      "html": "<button class=\"collection-link\"><span>Activity<small>Runs, schedules and routines</small></span><span aria-hidden=\"true\">→</span></button>"
+    },
+    {
+      "tab": 6,
+      "inside": true,
+      "tag": "BUTTON",
+      "label": "Manage Capabilities, identity and workspace tools →",
+      "html": "<button class=\"collection-link\"><span>Manage<small>Capabilities, identity and workspace tools</small></span><span aria-hidden=\"true\">→</span></button>"
+    },
+    {
+      "tab": 7,
+      "inside": true,
+      "tag": "BUTTON",
+      "label": "Groups Shared bot conversations →",
+      "html": "<button class=\"collection-link\"><span>Groups<small>Shared bot conversations</small></span><span aria-hidden=\"true\">→</span></button>"
+    },
+    {
+      "tab": 8,
+      "inside": true,
+      "tag": "BUTTON",
+      "label": "Settings Devices and local preferences →",
+      "html": "<button class=\"collection-link\"><span>Settings<small>Devices and local preferences</small></span><span aria-hidden=\"true\">→</span></button>"
+    },
+    {
+      "tab": 9,
+      "inside": true,
+      "tag": "BUTTON",
+      "label": "Close command palette",
+      "html": "<button class=\"iconbtn\" aria-label=\"Close command palette\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-x\" aria-hidden=\"true\"><path d=\"M18 6 "
+    },
+    {
+      "tab": 10,
+      "inside": true,
+      "tag": "INPUT",
+      "label": "Find a destination",
+      "html": "<input aria-label=\"Find a destination\" placeholder=\"Search destinations…\" type=\"search\" value=\"\">"
+    },
+    {
+      "tab": 11,
+      "inside": true,
+      "tag": "BUTTON",
+      "label": "Home Devices and recent conversations →",
+      "html": "<button class=\"collection-link\"><span>Home<small>Devices and recent conversations</small></span><span aria-hidden=\"true\">→</span></button>"
+    },
+    {
+      "tab": 12,
+      "inside": true,
+      "tag": "BUTTON",
+      "label": "Chats Projects, conversations and groups →",
+      "html": "<button class=\"collection-link\"><span>Chats<small>Projects, conversations and groups</small></span><span aria-hidden=\"true\">→</span></button>"
+    }
+  ],
+  "fixture": {
+    "trace": [
+      {
+        "transport": "fetch",
+        "route": "GET /api/status",
+        "query": "",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "POST /api/auth/ws-ticket",
+        "query": "",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "POST /auth/password-login",
+        "query": "",
+        "body": {
+          "provider": "basic",
+          "username": "fixture-user",
+          "password": "NOT-A-REAL-PASSWORD"
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "POST /api/auth/ws-ticket",
+        "query": "",
+        "body": null
+      },
+      {
+        "transport": "websocket",
+        "event": "constructed",
+        "url": "wss://gateway.production-qa.invalid/api/ws?ticket=FICTIONAL-ONE-USE-TICKET"
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {
+          "limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {}
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.tree",
+        "params": {
+          "preview_limit": 3
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /v1/runs",
+        "query": "",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /v1/runs/qa-run",
+        "query": "",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {
+          "limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {}
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.tree",
+        "params": {
+          "preview_limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.project_sessions",
+        "params": {
+          "project_id": "qa-project"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.resume",
+        "params": {
+          "session_id": "qa-project-session",
+          "omit_messages": true,
+          "profile": "default"
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/sessions/qa-project-session/messages",
+        "query": "?limit=120&offset=0&order=latest&include_compacted=true",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "approval.pending",
+        "params": {
+          "session_id": "qa-project-session"
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/files",
+        "query": "?path=%2Ffictional%2Fqa-project&profile=default",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/files",
+        "query": "?path=%2Ffictional%2Fqa-project&profile=default",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/files",
+        "query": "?path=%2Ffictional%2Fqa-project&profile=default",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/files/read",
+        "query": "?path=%2Ffictional%2Fqa-project%2FREADME.md&profile=default",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/files",
+        "query": "?path=%2Ffictional%2Fqa-project&profile=default",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/git/status",
+        "query": "?path=%2Ffictional%2Fqa-project&profile=default",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/files",
+        "query": "?path=%2Ffictional%2Fqa-project&profile=default",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/git/file-diff",
+        "query": "?path=%2Ffictional%2Fqa-project&file=README.md&profile=default",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/files",
+        "query": "?path=%2Ffictional%2Fqa-project&profile=default",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/files",
+        "query": "?path=%2Ffictional%2Fqa-project&profile=default",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/files",
+        "query": "?path=%2Ffictional%2Fqa-project&profile=default",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "model.options",
+        "params": {
+          "session_id": "qa-project-session",
+          "explicit_only": true
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "config.set",
+        "params": {
+          "session_id": "qa-project-session",
+          "key": "model",
+          "value": "fixture-alternative --provider fixture --session"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {}
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.tree",
+        "params": {
+          "preview_limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.project_sessions",
+        "params": {
+          "project_id": "qa-project"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": true
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.resume",
+        "params": {
+          "session_id": "qa-bot-session",
+          "omit_messages": true,
+          "profile": "qa-bot"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": false
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/sessions/qa-bot-session/messages",
+        "query": "?limit=120&offset=0&order=latest&include_compacted=true&profile=qa-bot",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "approval.pending",
+        "params": {
+          "session_id": "qa-bot-session"
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/files",
+        "query": "?path=%2Ffictional%2Fqa-bot&profile=qa-bot",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": true
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {}
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.tree",
+        "params": {
+          "preview_limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.project_sessions",
+        "params": {
+          "project_id": "qa-project"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.resume",
+        "params": {
+          "session_id": "qa-project-session",
+          "omit_messages": true,
+          "profile": "default"
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/sessions/qa-project-session/messages",
+        "query": "?limit=120&offset=0&order=latest&include_compacted=true",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "approval.pending",
+        "params": {
+          "session_id": "qa-project-session"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {}
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.tree",
+        "params": {
+          "preview_limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.project_sessions",
+        "params": {
+          "project_id": "qa-project"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": true
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.resume",
+        "params": {
+          "session_id": "qa-bot-session",
+          "omit_messages": true,
+          "profile": "qa-bot"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": false
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/sessions/qa-bot-session/messages",
+        "query": "?limit=120&offset=0&order=latest&include_compacted=true&profile=qa-bot",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "approval.pending",
+        "params": {
+          "session_id": "qa-bot-session"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": true
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.resume",
+        "params": {
+          "session_id": "qa-bot-session",
+          "omit_messages": true,
+          "profile": "qa-bot"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": false
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/sessions/qa-bot-session/messages",
+        "query": "?limit=120&offset=0&order=latest&include_compacted=true&profile=qa-bot",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "approval.pending",
+        "params": {
+          "session_id": "qa-bot-session"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": true
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {}
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.tree",
+        "params": {
+          "preview_limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.project_sessions",
+        "params": {
+          "project_id": "qa-project"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": false
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": false
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": false
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {}
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.tree",
+        "params": {
+          "preview_limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.project_sessions",
+        "params": {
+          "project_id": "qa-project"
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /v1/runs",
+        "query": "",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /v1/runs/qa-run",
+        "query": "",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /v1/runs/qa-run",
+        "query": "",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /v1/runs/qa-run/events",
+        "query": "",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": false
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/status",
+        "query": "",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": false
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.describe",
+        "params": {
+          "name": "qa-bot"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.describe",
+        "params": {
+          "name": "qa-bot"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.describe",
+        "params": {
+          "name": "qa-bot"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.describe",
+        "params": {
+          "name": "qa-bot"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.configure",
+        "params": {
+          "name": "qa-bot",
+          "description": "QA reviewed fictional description"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.describe",
+        "params": {
+          "name": "qa-bot"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.describe",
+        "params": {
+          "name": "default"
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/profiles/active",
+        "query": "",
+        "body": null,
+        "responseCurrent": "default"
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/learning/graph",
+        "query": "?profile=default",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/profiles/active",
+        "query": "",
+        "body": null,
+        "responseCurrent": "default"
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/profiles/active",
+        "query": "",
+        "body": null,
+        "responseCurrent": "default"
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/learning/node",
+        "query": "?id=memory%3Amemory%3A0&profile=default",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/profiles/active",
+        "query": "",
+        "body": null,
+        "responseCurrent": "default"
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/profiles/active",
+        "query": "",
+        "body": null,
+        "responseCurrent": "default"
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/profiles/active",
+        "query": "",
+        "body": null,
+        "responseCurrent": "default"
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/learning/graph",
+        "query": "?profile=default",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/profiles/active",
+        "query": "",
+        "body": null,
+        "responseCurrent": "default"
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/profiles/active",
+        "query": "",
+        "body": null,
+        "responseCurrent": "default"
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/learning/graph",
+        "query": "?profile=default",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/profiles/active",
+        "query": "",
+        "body": null,
+        "responseCurrent": "qa-bot"
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/profiles/active",
+        "query": "",
+        "body": null,
+        "responseCurrent": "default"
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/learning/graph",
+        "query": "?profile=default",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/profiles/active",
+        "query": "",
+        "body": null,
+        "responseCurrent": "default"
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/cron/jobs",
+        "query": "?profile=default",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/cron/jobs",
+        "query": "?profile=default",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/cron/jobs",
+        "query": "?profile=default",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/profiles/active",
+        "query": "",
+        "body": null,
+        "responseCurrent": "default"
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/messaging/platforms",
+        "query": "?profile=default",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/profiles/active",
+        "query": "",
+        "body": null,
+        "responseCurrent": "default"
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/profiles/active",
+        "query": "",
+        "body": null,
+        "responseCurrent": "default"
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/profiles/active",
+        "query": "",
+        "body": null,
+        "responseCurrent": "default"
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/messaging/platforms",
+        "query": "?profile=default",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/profiles/active",
+        "query": "",
+        "body": null,
+        "responseCurrent": "default"
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/profiles/active",
+        "query": "",
+        "body": null,
+        "responseCurrent": "default"
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/messaging/platforms",
+        "query": "?profile=default",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/profiles/active",
+        "query": "",
+        "body": null,
+        "responseCurrent": "qa-bot"
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/profiles/active",
+        "query": "",
+        "body": null,
+        "responseCurrent": "default"
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/messaging/platforms",
+        "query": "?profile=default",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/profiles/active",
+        "query": "",
+        "body": null,
+        "responseCurrent": "default"
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/plugins/kanban/boards",
+        "query": "?include_archived=false",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/plugins/kanban/boards",
+        "query": "?include_archived=false",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/plugins/kanban/board",
+        "query": "?board=qa-board&include_archived=false",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.describe",
+        "params": {
+          "name": "default"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.describe",
+        "params": {
+          "name": "default"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.describe",
+        "params": {
+          "name": "default"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": false
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": true
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {
+          "limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.resume",
+        "params": {
+          "session_id": "qa-project-session",
+          "omit_messages": true,
+          "profile": "default"
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/sessions/qa-project-session/messages",
+        "query": "?limit=120&offset=0&order=latest&include_compacted=true",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "approval.pending",
+        "params": {
+          "session_id": "qa-project-session"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "model.options",
+        "params": {
+          "session_id": "qa-project-session",
+          "explicit_only": true
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "approval.respond",
+        "params": {
+          "session_id": "qa-project-session",
+          "choice": "deny",
+          "request_id": "qa-approval"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {
+          "limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": true
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {
+          "limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": true
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {
+          "limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": true
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {
+          "limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": true
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {
+          "limit": 3
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "POST /api/auth/ws-ticket",
+        "query": "",
+        "body": null
+      },
+      {
+        "transport": "websocket",
+        "event": "constructed",
+        "url": "wss://gateway.production-qa.invalid/api/ws?ticket=FICTIONAL-ONE-USE-TICKET"
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {
+          "limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": true
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {
+          "limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {}
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.tree",
+        "params": {
+          "preview_limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.project_sessions",
+        "params": {
+          "project_id": "qa-project"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": true
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /v1/runs",
+        "query": "",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /v1/runs/qa-run",
+        "query": "",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": false
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {
+          "limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.resume",
+        "params": {
+          "session_id": "qa-project-session",
+          "omit_messages": true,
+          "profile": "default"
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/sessions/qa-project-session/messages",
+        "query": "?limit=120&offset=0&order=latest&include_compacted=true",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "approval.pending",
+        "params": {
+          "session_id": "qa-project-session"
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/files",
+        "query": "?path=%2Ffictional%2Fqa-project&profile=default",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {
+          "limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {}
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.tree",
+        "params": {
+          "preview_limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.project_sessions",
+        "params": {
+          "project_id": "qa-project"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": true
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /v1/runs",
+        "query": "",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /v1/runs/qa-run",
+        "query": "",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": false
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {
+          "limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.resume",
+        "params": {
+          "session_id": "qa-project-session",
+          "omit_messages": true,
+          "profile": "default"
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/sessions/qa-project-session/messages",
+        "query": "?limit=120&offset=0&order=latest&include_compacted=true",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "approval.pending",
+        "params": {
+          "session_id": "qa-project-session"
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/files",
+        "query": "?path=%2Ffictional%2Fqa-project&profile=default",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {
+          "limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {}
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.tree",
+        "params": {
+          "preview_limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.project_sessions",
+        "params": {
+          "project_id": "qa-project"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": true
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /v1/runs",
+        "query": "",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /v1/runs/qa-run",
+        "query": "",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": false
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {
+          "limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.resume",
+        "params": {
+          "session_id": "qa-project-session",
+          "omit_messages": true,
+          "profile": "default"
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/sessions/qa-project-session/messages",
+        "query": "?limit=120&offset=0&order=latest&include_compacted=true",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "approval.pending",
+        "params": {
+          "session_id": "qa-project-session"
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/files",
+        "query": "?path=%2Ffictional%2Fqa-project&profile=default",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {
+          "limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {}
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.tree",
+        "params": {
+          "preview_limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.project_sessions",
+        "params": {
+          "project_id": "qa-project"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": true
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /v1/runs",
+        "query": "",
+        "body": null
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /v1/runs/qa-run",
+        "query": "",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": false
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {
+          "limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.resume",
+        "params": {
+          "session_id": "qa-project-session",
+          "omit_messages": true,
+          "profile": "default"
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/sessions/qa-project-session/messages",
+        "query": "?limit=120&offset=0&order=latest&include_compacted=true",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "approval.pending",
+        "params": {
+          "session_id": "qa-project-session"
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/files",
+        "query": "?path=%2Ffictional%2Fqa-project&profile=default",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {
+          "limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {}
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.tree",
+        "params": {
+          "preview_limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.project_sessions",
+        "params": {
+          "project_id": "qa-project"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.create",
+        "params": {}
+      },
+      {
+        "transport": "rpc",
+        "method": "approval.pending",
+        "params": {
+          "session_id": "qa-created-session"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {}
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.tree",
+        "params": {
+          "preview_limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.project_sessions",
+        "params": {
+          "project_id": "qa-project"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.resume",
+        "params": {
+          "session_id": "qa-created-session",
+          "omit_messages": true,
+          "profile": "default"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "approval.pending",
+        "params": {
+          "session_id": "qa-created-session"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {}
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.tree",
+        "params": {
+          "preview_limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.project_sessions",
+        "params": {
+          "project_id": "qa-project"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.resume",
+        "params": {
+          "session_id": "qa-created-session",
+          "omit_messages": true,
+          "profile": "default"
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/sessions/qa-created-session/messages",
+        "query": "?limit=120&offset=0&order=latest&include_compacted=true",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "approval.pending",
+        "params": {
+          "session_id": "qa-created-session"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {}
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.tree",
+        "params": {
+          "preview_limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.project_sessions",
+        "params": {
+          "project_id": "qa-project"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {
+          "limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.resume",
+        "params": {
+          "session_id": "qa-created-session",
+          "omit_messages": true,
+          "profile": "default"
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/sessions/qa-created-session/messages",
+        "query": "?limit=120&offset=0&order=latest&include_compacted=true",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "approval.pending",
+        "params": {
+          "session_id": "qa-created-session"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {
+          "limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {}
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.tree",
+        "params": {
+          "preview_limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.project_sessions",
+        "params": {
+          "project_id": "qa-project"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.resume",
+        "params": {
+          "session_id": "qa-created-session",
+          "omit_messages": true,
+          "profile": "default"
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/sessions/qa-created-session/messages",
+        "query": "?limit=120&offset=0&order=latest&include_compacted=true",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "approval.pending",
+        "params": {
+          "session_id": "qa-created-session"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {}
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.tree",
+        "params": {
+          "preview_limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.project_sessions",
+        "params": {
+          "project_id": "qa-project"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": false
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/status",
+        "query": "",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": false
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.describe",
+        "params": {
+          "name": "qa-bot"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.describe",
+        "params": {
+          "name": "qa-bot"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "session.list",
+        "params": {}
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.tree",
+        "params": {
+          "preview_limit": 3
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "projects.project_sessions",
+        "params": {
+          "project_id": "qa-project"
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": false
+        }
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.describe",
+        "params": {
+          "name": "qa-bot"
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/status",
+        "query": "",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": false
+        }
+      },
+      {
+        "transport": "fetch",
+        "route": "GET /api/status",
+        "query": "",
+        "body": null
+      },
+      {
+        "transport": "rpc",
+        "method": "profiles.list",
+        "params": {
+          "include_sessions": false
+        }
+      }
+    ],
+    "violations": []
+  },
+  "network": [
+    {
+      "url": "http://127.0.0.1:44795/",
+      "type": "Document",
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:44795/assets/index-D3oIXUXY.js",
+      "type": "Script",
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:44795/assets/index-C1XuVG8v.css",
+      "type": "Stylesheet",
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:44795/manifest.webmanifest",
+      "type": "Manifest",
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:44795/logo.png",
+      "type": "Other",
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:44795/logo.png",
+      "type": "Other",
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:44795/logo.png",
+      "type": "Other",
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:44795/assets/Bots-CLatOz21.js",
+      "type": "Script",
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:44795/assets/Manage-DLwTut4g.js",
+      "type": "Script",
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:44795/assets/refresh-cw-DYmkRgmW.js",
+      "type": "Script",
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:44795/assets/Manage-CM5gyP7I.css",
+      "type": "Stylesheet",
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:44795/assets/Workspace-HFlfx1vy.js",
+      "type": "Script",
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:44795/assets/Workspace-CqGyTPxR.css",
+      "type": "Stylesheet",
+      "method": "GET"
+    }
+  ],
+  "cleanup": {
+    "exited": true,
+    "profileRemoved": true,
+    "exitCode": 0,
+    "signal": null,
+    "profile": "/tmp/hm-parent-final-browser/.chrome-profile-QEzGLD"
+  },
+  "serverClosed": true,
+  "status": "passed"
+}
