@@ -67,9 +67,10 @@ export function formatSessionTime(
   const d = new Date(sessionTime(s));
   const hh = String(d.getHours()).padStart(2, "0");
   const mm = String(d.getMinutes()).padStart(2, "0");
-  if (groupLabel === "Today") return `${hh}:${mm}`;
-  if (groupLabel === "Yesterday") return `Yest ${hh}:${mm}`;
-  if (groupLabel === "This week") return DAY_NAMES[d.getDay()];
+  const startOfToday = new Date(new Date(now).getFullYear(), new Date(now).getMonth(), new Date(now).getDate()).getTime();
+  if (groupLabel === "Today" || (!groupLabel && sessionTime(s) >= startOfToday)) return `${hh}:${mm}`;
+  if (groupLabel === "Yesterday" || (!groupLabel && sessionTime(s) >= startOfToday - DAY_MS)) return `Yest ${hh}:${mm}`;
+  if (groupLabel === "This week" || (!groupLabel && sessionTime(s) >= startOfToday - 6 * DAY_MS)) return DAY_NAMES[d.getDay()];
   const date = `${d.getDate()} ${MONTH_NAMES[d.getMonth()]}`;
   return d.getFullYear() === new Date(now).getFullYear()
     ? date

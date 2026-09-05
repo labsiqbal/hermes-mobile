@@ -47,6 +47,37 @@ export interface SessionSummary {
   started_at: number;
   message_count: number;
   source: string;
+  cwd?: string | null;
+  git_repo_root?: string | null;
+  git_branch?: string | null;
+}
+
+/** Authoritative project tree served by the same gateway RPC as Desktop. */
+export interface ProjectLane {
+  id: string;
+  label: string;
+  sessions?: SessionSummary[];
+}
+
+export interface ProjectRepo {
+  id: string;
+  label: string;
+  groups?: ProjectLane[];
+}
+
+export interface ProjectTreeItem {
+  id: string;
+  label: string;
+  sessionCount: number;
+  previewSessions?: SessionSummary[];
+  repos?: ProjectRepo[];
+  isNoProject?: boolean;
+}
+
+export interface ProjectTreeResult {
+  projects: ProjectTreeItem[];
+  active_id?: string | null;
+  scoped_session_ids?: string[];
 }
 
 export interface ChatMessage {
@@ -945,6 +976,20 @@ export class HermesConnection {
       ...(options.title ? { title: options.title } : {}),
     });
     return result.sessions ?? [];
+  }
+
+  /** Same authoritative project overview consumed by Hermes Desktop. */
+  async projectTree(previewLimit = 3): Promise<ProjectTreeResult> {
+    return await this.rpc<ProjectTreeResult>("projects.tree", { preview_limit: previewLimit });
+  }
+
+  /** Hydrated project lanes/sessions, fetched only when a project expands. */
+  async projectSessions(projectId: string): Promise<ProjectTreeItem | null> {
+    const result = await this.rpc<{ project?: ProjectTreeItem | null }>(
+      "projects.project_sessions",
+      { project_id: projectId },
+    );
+    return result.project ?? null;
   }
 
   async createSession(options: { title?: string; cwd?: string; model?: string } = {}): Promise<CreateResult> {

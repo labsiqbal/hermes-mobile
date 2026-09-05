@@ -630,6 +630,71 @@ body {
   min-width: 0;
 }
 
+/* Project-grouped session list — hierarchy mirrors Desktop, adapted to
+   full-width mobile rows. */
+.project-group {
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-card);
+  overflow: hidden;
+  background: var(--card);
+}
+
+.project-group-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 12px;
+  border: 0;
+  background: transparent;
+  color: var(--fg);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.project-group-head:active {
+  background: var(--card-hover);
+}
+
+.project-group-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.project-group-count {
+  min-width: 24px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--bg-soft);
+  color: var(--fg-dim);
+  font: 600 10px/1.5 var(--font-mono);
+  text-align: center;
+}
+
+.project-group-rows {
+  border-top: 1px solid var(--line-soft);
+}
+
+.project-group-rows .rowcard {
+  border-radius: 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.project-group-rows .rowcard:last-child {
+  border-bottom: 0;
+}
+
+.project-group-rows > .hint {
+  padding: 14px;
+}
+
 .rowcard {
   display: flex;
   align-items: center;

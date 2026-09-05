@@ -121,6 +121,21 @@ try {
   process.exit(1);
 }
 
+// 3b. projects.tree + project drill-in (same grouping RPC as Desktop)
+try {
+  const tree = await client.projectTree();
+  if (!Array.isArray(tree.projects)) throw new Error("projects is not an array");
+  const populated = tree.projects.find((project) => project.sessionCount > 0);
+  if (populated) {
+    const full = await client.projectSessions(populated.id);
+    if (!full || !Array.isArray(full.repos)) throw new Error("hydrated project missing repos");
+  }
+  ok(`projects.tree → ${tree.projects.length} project(s)${populated ? ", drill-in OK" : ""}`);
+} catch (err) {
+  fail(`projects.tree: ${err.message}`);
+  process.exit(1);
+}
+
 // 4. session.create
 let sid = "";
 try {

@@ -1,17 +1,17 @@
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
   HermesConnection,
+  ProjectTreeItem,
   SavedConnection,
   SessionSummary,
 } from "../lib/hermes-client";
 import {
   formatSessionTime,
-  groupSessionsByTime,
   isRelaySession,
 } from "./chat-list-utils";
 import { botTint } from "./bots-utils";
 import { isActive } from "../lib/active-sessions";
-import { SearchIcon } from "../components/icons";
+import { ChevronDownIcon, ChevronRightIcon, SearchIcon } from "../components/icons";
 
 interface Props {
   conn: SavedConnection;
@@ -33,6 +33,17 @@ const LONG_PRESS_MOVE_TOLERANCE = 10;
 
 export default function ChatList({ conn, client, onOpenChat }: Props) {
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
+  const [projects, setProjects] = useState<ProjectTreeItem[]>([]);
+  const [scopedIds, setScopedIds] = useState<Set<string>>(new Set());
+  const [hydrated, setHydrated] = useState<Record<string, ProjectTreeItem>>({});
+  const [expanded, setExpanded] = useState<Set<string>>(() => {
+    try {
+      return new Set(JSON.parse(localStorage.getItem(`hermes-projects-expanded:${conn.id}`) || "[]") as string[]);
+    } catch {
+      return new Set();
+    }
+  });
+  const [loadingProject, setLoadingProject] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
   const [pendingDelete, setPendingDelete] = useState<SessionSummary | null>(null);
@@ -45,7 +56,13 @@ export default function ChatList({ conn, client, onOpenChat }: Props) {
 
   const load = useCallback(async () => {
     try {
-      setSessions(await client.listSessions());
+      const [nextSessions, tree] = await Promise.all([
+        client.listSessions(),
+        client.projectTree().catch(() => ({ projects: [], scoped_session_ids: [] })),
+      ]);
+      setSessions(nextSessions);
+      setProjects(tree.projects);
+      setScopedIds(new Set(tree.scoped_session_ids ?? []));
       setError("");
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -125,15 +142,112 @@ export default function ChatList({ conn, client, onOpenChat }: Props) {
     }
   }, [client, pendingDelete, deleting, load]);
 
-  const groups = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const visible = q
-      ? sessions.filter((s) => (s.title || "").toLowerCase().includes(q))
-      : sessions;
-    return groupSessionsByTime(visible);
-  }, [sessions, query]);
+  const projectSessions = useCallback((project: ProjectTreeItem): SessionSummary[] => {
+    const full = hydrated[project.id];
+    const rows = full?.repos?.flatMap((repo) =>
+      (repo.groups ?? []).flatMap((lane) => lane.sessions ?? []),
+    ) ?? project.previewSessions ?? [];
+    return [...new Map(rows.map((session) => [session.id, session])).values()];
+  }, [hydrated]);
 
-  const filtering = query.trim().length > 0;
+  const toggleProject = useCallback(async (project: ProjectTreeItem) => {
+    const opening = !expanded.has(project.id);
+    setExpanded((previous) => {
+      const next = new Set(previous);
+      if (opening) next.add(project.id);
+      else next.delete(project.id);
+      localStorage.setItem(`hermes-projects-expanded:${conn.id}`, JSON.stringify([...next]));
+      return next;
+    });
+    if (!opening || hydrated[project.id] || project.sessionCount === 0) return;
+    setLoadingProject(project.id);
+    try {
+      const full = await client.projectSessions(project.id);
+      if (full) setHydrated((previous) => ({ ...previous, [project.id]: full }));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setLoadingProject(null);
+    }
+  }, [client, conn.id, expanded, hydrated]);
+
+  // Search must cover every session, not only the three-row project previews.
+  useEffect(() => {
+    if (!query.trim() || projects.length === 0) return;
+    const missing = projects.filter((project) => project.sessionCount > 0 && !hydrated[project.id]);
+    if (missing.length === 0) return;
+    let cancelled = false;
+    void Promise.all(missing.map((project) => client.projectSessions(project.id)))
+      .then((rows) => {
+        if (cancelled) return;
+        setHydrated((previous) => {
+          const next = { ...previous };
+          rows.forEach((project) => { if (project) next[project.id] = project; });
+          return next;
+        });
+      })
+      .catch((err) => { if (!cancelled) setError(err instanceof Error ? err.message : String(err)); });
+    return () => { cancelled = true; };
+  }, [client, hydrated, projects, query]);
+
+  const q = query.trim().toLowerCase();
+  const filtering = q.length > 0;
+  const projectRows = useMemo(() => projects.map((project) => ({
+    project,
+    sessions: projectSessions(project).filter((session) =>
+      !q || `${session.title} ${session.preview}`.toLowerCase().includes(q),
+    ),
+  })).filter(({ sessions: rows }) => !filtering || rows.length > 0),
+  [filtering, projectSessions, projects, q]);
+  const fallbackSessions = projects.length === 0
+    ? sessions.filter((session) => !q || `${session.title} ${session.preview}`.toLowerCase().includes(q))
+    : sessions.filter((session) => !scopedIds.has(session.id) && (!q || `${session.title} ${session.preview}`.toLowerCase().includes(q)));
+
+  function renderSessionRow(session: SessionSummary) {
+    return (
+      <button
+        key={session.id}
+        className="rowcard"
+        onClick={() => {
+          if (longPressFired.current) {
+            longPressFired.current = false;
+            return;
+          }
+          onOpenChat(session);
+        }}
+        onPointerDown={(event) => onRowPointerDown(event, session)}
+        onPointerMove={onRowPointerMove}
+        onPointerUp={cancelPress}
+        onPointerCancel={cancelPress}
+        onPointerLeave={cancelPress}
+      >
+        <span
+          className="sess-avatar"
+          style={{
+            background: botTint(session.title || "?").bg,
+            color: botTint(session.title || "?").fg,
+          }}
+        >
+          {(session.title || "?").trim().charAt(0)}
+        </span>
+        <div className="rowcard-main">
+          <div className="rowcard-title">
+            {session.title || "Untitled"}
+            {isRelaySession(session) && <span className="chip" style={RELAY_CHIP_STYLE}>relay</span>}
+            {isActive(conn.id, session.id, session.resolved_id) && (
+              <span className="chip chip-amber chip-live">active</span>
+            )}
+          </div>
+          <div className="rowcard-sub">{session.preview || "—"}</div>
+        </div>
+        <div className="rowcard-meta">
+          {formatSessionTime(session, "")}
+          <br />
+          {session.message_count} msg
+        </div>
+      </button>
+    );
+  }
 
   return (
     <div className="screen">
@@ -154,70 +268,51 @@ export default function ChatList({ conn, client, onOpenChat }: Props) {
         {sessions.length === 0 && !error && (
           <div className="hint">No sessions on this machine yet. Start one with the + button above.</div>
         )}
-        {sessions.length > 0 && groups.length === 0 && filtering && (
-          <div className="hint">
-            No sessions match “{query.trim()}”.
-          </div>
+        {sessions.length > 0 && projectRows.length === 0 && fallbackSessions.length === 0 && filtering && (
+          <div className="hint">No sessions match “{query.trim()}”.</div>
         )}
-        {groups.map((g) => (
-          <Fragment key={g.label}>
-            <div className="section-label">{g.label}</div>
-            {g.sessions.map((s) => (
+        {projectRows.map(({ project, sessions: rows }) => {
+          const open = filtering || expanded.has(project.id);
+          const visibleRows = hydrated[project.id] ? rows : rows.slice(0, 3);
+          return (
+            <section key={project.id} className="project-group">
               <button
-                key={s.id}
-                className="rowcard"
-                onClick={() => {
-                  // Click susulan setelah long-press jangan membuka chat.
-                  if (longPressFired.current) {
-                    longPressFired.current = false;
-                    return;
-                  }
-                  onOpenChat(s);
-                }}
-                onPointerDown={(e) => onRowPointerDown(e, s)}
-                onPointerMove={onRowPointerMove}
-                onPointerUp={cancelPress}
-                onPointerCancel={cancelPress}
-                onPointerLeave={cancelPress}
+                type="button"
+                className="project-group-head"
+                aria-expanded={open}
+                onClick={() => void toggleProject(project)}
               >
-                <span
-                  className="sess-avatar"
-                  style={{
-                    background: botTint(s.title || "?").bg,
-                    color: botTint(s.title || "?").fg,
-                  }}
-                >
-                  {(s.title || "?").trim().charAt(0)}
-                </span>
-                <div className="rowcard-main">
-                  <div className="rowcard-title">
-                    {s.title || "Untitled"}
-                    {isRelaySession(s) && (
-                      <>
-                        {" "}
-                        <span className="chip" style={RELAY_CHIP_STYLE}>
-                          relay
-                        </span>
-                      </>
-                    )}
-                    {isActive(conn.id, s.id, s.resolved_id) && (
-                      <>
-                        {" "}
-                        <span className="chip chip-amber chip-live">active</span>
-                      </>
-                    )}
-                  </div>
-                  <div className="rowcard-sub">{s.preview || "—"}</div>
-                </div>
-                <div className="rowcard-meta" style={{ textAlign: "right" }}>
-                  {formatSessionTime(s, g.label)}
-                  <br />
-                  {s.message_count} msg
-                </div>
+                {open ? <ChevronDownIcon size={16} /> : <ChevronRightIcon size={16} />}
+                <span className="project-group-name">{project.label}</span>
+                <span className="project-group-count">{project.sessionCount}</span>
               </button>
-            ))}
-          </Fragment>
-        ))}
+              {open && (
+                <div className="project-group-rows">
+                  {loadingProject === project.id && <div className="hint">Loading sessions…</div>}
+                  {loadingProject !== project.id && visibleRows.map(renderSessionRow)}
+                  {loadingProject !== project.id && visibleRows.length === 0 && (
+                    <div className="hint">{filtering ? "No matching sessions" : "No sessions"}</div>
+                  )}
+                </div>
+              )}
+            </section>
+          );
+        })}
+        {fallbackSessions.length > 0 && (
+          <section className="project-group">
+            <button
+              type="button"
+              className="project-group-head"
+              aria-expanded="true"
+              disabled
+            >
+              <ChevronDownIcon size={16} />
+              <span className="project-group-name">Recent</span>
+              <span className="project-group-count">{fallbackSessions.length}</span>
+            </button>
+            <div className="project-group-rows">{fallbackSessions.map(renderSessionRow)}</div>
+          </section>
+        )}
       </div>
       {pendingDelete && (
         <>
