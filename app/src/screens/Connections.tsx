@@ -154,7 +154,7 @@ export default function Connections({ store, onConnect, embedded }: Props) {
 
   const rows = (
     <>
-      <div className="section-label">Tailnet · {connections.length} device</div>
+      <div className="section-label">Tailnet · {connections.length} {connections.length === 1 ? "device" : "devices"}</div>
       {connections.length === 0 && !showForm && (
         <div className="hint">No devices yet — add your first Hermes machine below.</div>
       )}
@@ -190,13 +190,15 @@ export default function Connections({ store, onConnect, embedded }: Props) {
                   busy ? "conn-st-busy" : probe?.online ? "conn-st-on" : "conn-st-off"
                 }`}
               >
-                {busy ? "connecting…" : probe ? (probe.online ? "online" : "offline") : "…"}
+                {busy ? "connecting…" : probe ? (probe.online ? "Reachable" : "Unavailable") : "…"}
               </span>
               <button
                 className="iconbtn"
-                title="Remove"
+                title="Remove device"
+                aria-label={`Remove ${conn.label}`}
                 onClick={(e) => {
                   e.stopPropagation();
+                  if (!window.confirm(`Remove “${conn.label}” from this browser? Remote gateway data will not be deleted.`)) return;
                   store.remove(conn.id);
                   refresh();
                 }}
@@ -219,13 +221,15 @@ export default function Connections({ store, onConnect, embedded }: Props) {
             <div className="card form-stack">
               <input
                 className="field"
-                placeholder="Label (e.g. linc-nuc)"
+                aria-label="Device label"
+                placeholder="Label (e.g. My workstation)"
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
               />
               <input
                 className="field mono"
-                placeholder="https://node.tailnet.ts.net or http://100.x.x.x:9119"
+                aria-label="Gateway URL"
+                placeholder="https://node.tailnet.ts.net"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 autoCapitalize="off"
@@ -234,6 +238,8 @@ export default function Connections({ store, onConnect, embedded }: Props) {
               />
               <input
                 className="field"
+                aria-label="Gateway username"
+                autoComplete="username"
                 placeholder="Username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -242,6 +248,8 @@ export default function Connections({ store, onConnect, embedded }: Props) {
               />
               <input
                 className="field"
+                aria-label="Gateway password"
+                autoComplete="current-password"
                 placeholder="Password"
                 type="password"
                 value={password}
@@ -268,8 +276,7 @@ export default function Connections({ store, onConnect, embedded }: Props) {
               )}
             </div>
             <div className="hint">
-              Credentials are stored in this browser's localStorage (v1 — encrypted secure storage
-              is backlog). Only use this app over your private tailnet.
+              Credentials are stored unencrypted in this browser. Use a trusted, private device and your private tailnet; do not use a shared browser.
             </div>
           </>
         )}
@@ -280,16 +287,12 @@ export default function Connections({ store, onConnect, embedded }: Props) {
     return <>{rows}</>;
   }
 
-  // Standalone pre-connect picker keeps its own appbar.
   return (
     <div className="screen">
-      <div className="appbar">
-        <div>
-          <div className="appbar-title">Connections</div>
-          <div className="appbar-sub">pick a machine on your tailnet</div>
-        </div>
+      <div className="body connections-body">
+        <div className="shell-hero"><div className="eyebrow">Connection registry</div><h2>A place for<br />your work.</h2><p>Choose your Hermes gateway. Your conversations stay on your machine.</p></div>
+        {rows}
       </div>
-      <div className="body">{rows}</div>
     </div>
   );
 }

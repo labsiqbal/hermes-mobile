@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import {
   ConnectionStore,
   HermesConnection,
+  type ConnectionState,
   type SavedConnection,
   type SessionSummary,
 } from "../lib/hermes-client";
 import { MonitorIcon, PlusIcon, ServerIcon } from "../components/icons";
 import { botTint } from "./bots-utils";
+import { connectionLabel } from "../lib/shell-state";
 
 interface Props {
   store: ConnectionStore;
@@ -14,6 +16,7 @@ interface Props {
   conn: SavedConnection;
   /** Live client of the connected device (no reconnect needed for its rows). */
   client: HermesConnection;
+  state: ConnectionState;
   onConnect: (conn: SavedConnection, client: HermesConnection) => void;
   onOpenSession: (conn: SavedConnection, client: HermesConnection, session: SessionSummary) => void;
   onManageDevices: () => void;
@@ -62,7 +65,7 @@ async function fetchRecentSessions(conn: SavedConnection): Promise<SessionSummar
 }
 
 /** Board body — rendered inside the app shell (Header + TabBar come from App). */
-export default function Home({ store, conn, client, onConnect, onOpenSession, onManageDevices }: Props) {
+export default function Home({ store, conn, client, state, onConnect, onOpenSession, onManageDevices }: Props) {
   const [connections] = useState<SavedConnection[]>(() => store.list());
   const [probes, setProbes] = useState<Record<string, Probe>>({});
   const [deviceSessions, setDeviceSessions] = useState<Record<string, DeviceSessions>>({});
@@ -115,7 +118,7 @@ export default function Home({ store, conn, client, onConnect, onOpenSession, on
     return () => {
       cancelled = true;
     };
-  }, [conn.id, client]);
+  }, [conn.id, client, state]);
 
   // Recent sessions of online OTHER devices (background, own short-lived client).
   useEffect(() => {
@@ -135,7 +138,7 @@ export default function Home({ store, conn, client, onConnect, onOpenSession, on
           if (cancelled) return;
           setDeviceSessions((prev) => ({
             ...prev,
-            [other.id]: { sessions: [], loading: false },
+            [other.id]: { sessions: [], loading: false, error: 'Sessions unavailable' },
           }));
         });
     }
@@ -214,7 +217,7 @@ export default function Home({ store, conn, client, onConnect, onOpenSession, on
             className={`st-pill ${
               busyId === target.id
                 ? "st-busy"
-                : active || probes[target.id]?.online
+                : (active ? state === "open" : probes[target.id]?.online)
                   ? "st-on"
                   : probes[target.id]
                     ? "st-off"
@@ -224,11 +227,11 @@ export default function Home({ store, conn, client, onConnect, onOpenSession, on
             {busyId === target.id
               ? "connecting…"
               : active
-                ? "online"
+                ? connectionLabel(state)
                 : probes[target.id]
                   ? probes[target.id].online
-                    ? "online"
-                    : "offline"
+                    ? "Reachable"
+                    : "Unavailable"
                   : "…"}
           </span>
         </div>
@@ -272,6 +275,7 @@ export default function Home({ store, conn, client, onConnect, onOpenSession, on
 
   return (
     <div className="body board">
+      <div className="shell-hero"><div className="eyebrow">Your personal relay</div><h2>Your work,<br />within reach.</h2><p>A quiet window into your devices. Open a conversation to find its workspace tools.</p></div>
       <div className="section-label">
         Devices · {others.length + 1}
       </div>

@@ -208,16 +208,14 @@
   margin-top: 7px;
 }
 
-/* ── room member strip ────────────────────────────────────────────────────
-   The floating shell-header overlays content, so the strip reserves the
-   header's height below the top edge. */
+/* Room members follow the in-flow shared header. */
 .chat-view .memberstrip {
   display: flex;
   align-items: center;
   gap: 6px;
   flex: none;
   height: 40px;
-  margin-top: calc(var(--shell-header-h) + env(safe-area-inset-top));
+  margin-top: 0;
   padding: 0 16px;
   overflow-x: auto;
   border-bottom: 1px solid var(--line-soft);
@@ -350,10 +348,11 @@
 
 /* ── composer: floating pill (multiline, thumb-friendly) ────────────────── */
 .chat-view .composer-wrap {
-  position: sticky;
-  bottom: 0;
-  padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
-  background: linear-gradient(transparent, var(--chrome) 30%);
+  position: relative;
+  flex: none;
+  padding: 6px 14px max(10px, env(safe-area-inset-bottom));
+  background: var(--chrome);
+  border-top: 1px solid var(--line);
 }
 .chat-view .composer-status {
   padding: 0 6px 6px;
@@ -579,7 +578,7 @@
   border: 1px solid var(--line-soft);
   border-radius: 22px;
   padding: 5px 5px 5px 8px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, .3);
+  box-shadow: none;
 }
 
 .chat-view .composer-plus {
@@ -611,8 +610,9 @@
   border: none;
   color: var(--fg);
   font: inherit;
-  font-size: var(--chat-font-size);
-  line-height: 1.35;
+  font-size: 16px;
+  min-height: 44px;
+  line-height: 1.5;
   padding: 8px 0;
   outline: none;
   resize: none;

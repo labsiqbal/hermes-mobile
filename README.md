@@ -2,27 +2,35 @@
 
 A mobile-first PWA client for a self-hosted [Hermes Agent](https://github.com/NousResearch/hermes-agent) backend (`hermes serve`), reached over your Tailscale tailnet or LAN.
 
-Hermes Mobile is a thin screen onto your own machines: every session, tool call, and approval happens on the gateway — the phone is just a window. Chat sessions stream live, tool calls render as first-class cards, and dangerous-command approvals pop up as a bottom sheet you can approve or deny from anywhere on the tailnet.
+Hermes Mobile is a screen onto your own machines. Agent execution lives on the gateway; the browser owns navigation, local connection/group metadata and transient drafts. Chat streams live, tool activity stays compact, and command approvals remain explicit.
 
-> Early v1. Chat, approvals, Bots, Groups, Runs, and the headless relay work. Secure credential storage, push notifications, and voice input remain backlog. See `PRODUCT.md` and `DESIGN.md` for product truth and design system.
+> Shell A migration candidate: **Home / Chats / Bots / Activity / Manage**, with contextual Workspace tools. This is not a claim of complete Desktop parity or production certification. Secure credential storage, native integrations and physical-device signoff remain open. See the [acceptance contract](docs/production/shell-a-spec.md) and [quality gate](docs/production/quality-gate.md).
+
+## Shell A surfaces
+
+- Existing chat/resume, scoped model selection, attachments, approvals, Bot Chats, Groups and tracked Runs remain accessible. Groups live under Chats; Runs under Activity.
+- Manage provides profile/capability inspection, a reviewed profile-description update, bounded memory/schedule/messaging reads and shared Kanban board inspection. [Scope and unsupported operations](docs/production/management-contracts.md) are explicit; this is not a universal configuration editor.
+- Workspace provides bounded read-only Files and Git status/diff tied to a conversation's gateway/profile/cwd. External previews require explicit trust review; terminal execution and in-app annotation remain unavailable. See [Workspace boundaries](docs/production/workspace-contracts.md).
+- Appearance is local to this browser, not an update to the Desktop Accent plugin or profile defaults.
 
 ## Screenshots
 
-The current visual contract lives in [`DESIGN.md`](DESIGN.md). [`design/index.html`](design/index.html) retains the original six-screen review board and may not include later chat controls.
+The current visual contract lives in [`DESIGN.md`](DESIGN.md). The approved [Shell A reference](https://github.com/labsiqbal/hermes-mobile/blob/ux/mobile-parity-review/design/parity-shell/index.html) is an explicitly simulated design artifact, not the application. [`design/index.html`](design/index.html) is historical.
 
 ## Requirements
 
-- A machine running **Hermes ≥ 0.20.x** with `hermes serve` bound to a non-loopback interface (auth gate active — a `dashboard.basic_auth` username/password provider configured).
+- An authenticated Hermes gateway reachable by the same-origin proxy, with a basic username/password provider. Management/Workspace contracts are pinned in their linked documents; an exhaustive compatibility-certified minimum gateway version has not been established. Unsupported routes fail visibly.
 - Reachability from your phone: a **Tailscale tailnet** (recommended) or plain LAN.
-- Node ≥ 20 + npm, for development and building the app.
+- A Node version supported by `app/package.json` and the locked Vite dependencies, plus npm. Use the same Node major as the repository CI for reproducible builds.
 
 ## Architecture
 
 ```
 phone browser ──HTTPS (tailscale serve)──► one origin on the tailnet
                                             ├── /          → static PWA (this repo, app/dist)
-                                            └── /api,/auth → hermes serve (127.0.0.1:9119)
-                                                     └── WS /api/ws?ticket=… (newline-delimited JSON-RPC)
+                                            ├── /api,/auth → configured Hermes gateway
+                                            │                └── WS /api/ws?ticket=… (newline-delimited JSON-RPC)
+                                            └── /v1        → configured tracked-runs service, when available
 ```
 
 - **Auth:** password login (`POST /auth/password-login`, provider `basic`) → session cookie → `POST /api/auth/ws-ticket` for a single-use 30s ticket → `ws://…/api/ws?ticket=…`.
@@ -33,21 +41,26 @@ phone browser ──HTTPS (tailscale serve)──► one origin on the tailnet
 
 ```bash
 cd app
-npm install
+npm ci --include=dev
 # point the dev proxy at your gateway:
-echo 'HERMES_BACKEND=http://100.105.150.35:9119' > .env.local   # edit to your machine
-npm run dev
+HERMES_BACKEND=http://nuc.tailcf7779.ts.net:9119 npm run dev -- --host 127.0.0.1
 ```
 
-Open the printed `localhost` URL (or the LAN URL on your phone). The Vite dev server proxies `/api` + `/auth` (including the WebSocket upgrade) to the backend, so dev is same-origin and no CORS config is needed.
+Open the printed `localhost` URL. This example explicitly binds development to loopback. The Vite dev server proxies `/api` + `/auth` (including the WebSocket upgrade) to the backend, so dev is same-origin. Use the existing Tailnet HTTPS app for phone access; a new LAN listener or proxy route is a separate deployment decision.
 
-To verify the client library end-to-end against a live backend without the UI (auth → WS → `session.list` → `session.create` → `prompt.submit` → streamed turn):
+The optional live smoke test authenticates, creates a real session and sends a real prompt, which may incur provider cost. It reads local gateway credentials and is not part of the offline/CI release gate. Run it only with explicit operator approval:
 
 ```bash
-npm run smoke   # reads dashboard.basic_auth.secret from ~/.hermes/config.yaml, never prints it
+npm run smoke   # explicit operator approval required: reads local auth and sends a real prompt
 ```
 
-## Quickstart — deploy (tailscale serve)
+## Updating an existing deployment
+
+Use the reviewed static publication procedure in [`docs/production/static-publication.md`](docs/production/static-publication.md). Build and test in an isolated output directory; do not run Vite against a currently served `app/dist`, because its cleanup can remove assets still needed by open clients. Commit/push alone does not update an existing Tailscale filesystem mount.
+
+## First-time deployment (operator setup)
+
+The following route/configuration setup is for a new installation, not an existing-site update. Changing gateway configuration, restarting a service or exposing a listener requires the operator’s explicit approval.
 
 **Why same-origin?** `hermes serve` hardcodes CORS to localhost origins (`hermes_cli/web_server.py`, `allow_origin_regex` covers only `localhost`/`127.0.0.1`) and validates the HTTP `Host` header and WebSocket `Origin` header against the bound interface plus the hostnames declared in `dashboard.public_url`. There is **no config knob to allow additional CORS origins**. A PWA served from a different origin cannot even read `GET /api/status` responses, and its WS handshake is rejected (verified by probing: foreign `Origin` → no `Access-Control-Allow-Origin`; foreign `Host` → 400; WS with foreign `Origin` → 403 even with a valid ticket). So the app must be served **same-origin with the API** — one small reverse proxy in front of both.
 
@@ -63,11 +76,12 @@ cd app && npm install && npm run build   # outputs app/dist
 #      public_url: "https://<your-node>.<tailnet>.ts.net:8451"
 
 # 3. one tailnet HTTPS endpoint (see deploy/serve.sh):
-sudo ./deploy/serve.sh dist <tailscale-ip>:9119 8451
+cd ..
+sudo ./deploy/serve.sh "$PWD/app/dist" <your-node>.<tailnet>.ts.net:9119 8451
 # which runs:
 #   tailscale serve --bg --https=8451 --set-path /     dist
-#   tailscale serve --bg --https=8451 --set-path /api  http://<tailscale-ip>:9119/api
-#   tailscale serve --bg --https=8451 --set-path /auth http://<tailscale-ip>:9119/auth
+#   tailscale serve --bg --https=8451 --set-path /api  http://<your-node>.<tailnet>.ts.net:9119/api
+#   tailscale serve --bg --https=8451 --set-path /auth http://<your-node>.<tailnet>.ts.net:9119/auth
 ```
 
 Two gotchas that recipe works around (both verified against a live backend):
@@ -88,8 +102,8 @@ Bot Mode (agent-to-agent delegation across gateways) normally relies on the Herm
 
 ## Security notes (v1)
 
-- Connection credentials are stored in `localStorage` in the browser profile. That is acceptable only because the app is meant to be reached over your private tailnet; encrypted secure storage is backlog (see PRODUCT.md).
-- The app never talks to anything but the gateway URLs you configure.
+- Connection credentials are stored in plaintext `localStorage` in the browser profile. A private tailnet does **not** protect that storage from XSS, browser extensions, or another person using the same browser profile. Use only a trusted private browser/device; secure credential handling remains a production-hardening gap (see PRODUCT.md).
+- Agent/API traffic targets configured gateways. Separately, explicit external-preview actions can open a user-reviewed URL in an isolated tab; normal browser cookie rules still apply.
 
 ## License
 

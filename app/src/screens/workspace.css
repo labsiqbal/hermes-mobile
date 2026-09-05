@@ -1,0 +1,39 @@
+/* Contextual content only: no fixed app header, bottom tabs or shared-theme overrides. */
+.workspace-detail { color: var(--fg); padding: 16px 18px 28px; width: 100%; min-width: 0; max-width: 760px; margin-inline: auto; overflow-wrap: anywhere; }
+.workspace-detail h2 { font-size: 23px; line-height: 1.3; margin: 16px 0; }
+.workspace-detail p { line-height: 1.6; }
+.workspace-context { display: flex; flex-direction: column; gap: 6px; padding: 0 0 20px; border-bottom: 1px solid var(--line); min-width: 0; }
+.workspace-context strong { font-size: 16px; }
+.workspace-context code, .workspace-context > span:not(:first-child) { color: var(--fg-dim); font-size: 13px; }
+.workspace-context code { font-family: var(--font-mono); }
+.workspace-eyebrow { font-size: 12px; color: var(--fg-dim); letter-spacing: .06em; text-transform: uppercase; }
+.workspace-tabs { display: flex; gap: 4px; padding: 12px 0; overflow-x: auto; }
+.workspace-tabs button { flex: 1 0 auto; min-width: 58px; min-height: 44px; padding: 8px; font: inherit; color: var(--fg-dim); border: 1px solid transparent; background: none; border-radius: 10px; }
+.workspace-tabs button[aria-pressed="true"] { color: var(--fg); background: var(--elevated); border-color: var(--line); }
+.workspace-detail button, .workspace-detail a { cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.workspace-detail button:disabled { opacity: .45; cursor: not-allowed; }
+.workspace-detail :is(button, a, input, pre):focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+.workspace-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 12px; color: var(--fg); border: 1px solid var(--line); border-radius: 10px; background: none; text-decoration: none; font: inherit; }
+.workspace-actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 8px 0 12px; }
+.workspace-actions > * { min-width: 0; }
+.workspace-actions > button { flex-shrink: 0; }
+.workspace-detail .workspace-path { font-size: 20px; overflow-wrap: anywhere; }
+.workspace-list { display: flex; flex-direction: column; }
+.workspace-row { flex: none; display: flex; align-items: center; gap: 12px; width: 100%; min-height: 68px; padding: 12px 0; background: transparent; border: 0; border-bottom: 1px solid var(--line); color: var(--fg); font: inherit; text-align: left; }
+.workspace-row > svg { flex: none; color: var(--fg-dim); }
+.workspace-row > span { flex: 1; min-width: 0; }
+.workspace-row strong { display: block; font-size: 15px; font-weight: 500; overflow-wrap: anywhere; }
+.workspace-row small { display: block; margin-top: 3px; color: var(--fg-dim); font-size: 13px; }
+.workspace-notice { padding: 16px; margin: 14px 0; border: 1px solid var(--line); border-radius: 12px; background: var(--card); }
+.workspace-notice p { color: var(--fg-dim); margin: 8px 0; }
+.workspace-error { border-color: var(--red); }
+.workspace-muted { color: var(--fg-dim); font-size: 13px; margin: 16px 0; }
+.workspace-code { background: var(--card); border: 1px solid var(--line); padding: 14px; border-radius: 10px; font: 13px/1.6 var(--font-mono); white-space: pre; overflow: auto; max-height: 65dvh; max-width: 100%; margin: 16px 0; tab-size: 2; }
+.workspace-branch { display: flex; align-items: center; gap: 8px; }
+.workspace-preview label { display: block; margin: 20px 0 8px; font-weight: 500; }
+.workspace-preview input { width: 100%; min-height: 48px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--fg); font: inherit; }
+.workspace-preview > button { margin-top: 14px; }
+.workspace-preview-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+.workspace-preview [role="alertdialog"]:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+.workspace-return { margin-top: 10px; }
+@media (max-width: 350px) { .workspace-detail { padding-inline: 12px; } .workspace-tabs { gap: 0; } .workspace-actions { flex-wrap: wrap; } }

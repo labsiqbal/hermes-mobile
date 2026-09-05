@@ -1,35 +1,24 @@
-import type { ReactNode } from "react";
-import type { ConnectionState } from "../lib/hermes-client";
+import type { ReactNode } from 'react';
+import type { ConnectionState } from '../lib/hermes-client';
+import { ChevronLeft } from 'lucide-react';
+import { connectionLabel } from '../lib/shell-state';
 
 interface Props {
   title: string;
-  /** Mono context line — e.g. `profile · device` of the active connection. */
   subtitle?: string;
-  /** Live socket state, drives the status dot on the right. */
   state: ConnectionState;
-  /** Detail pages (chat) pass a back handler; root tab screens don't. */
   onBack?: () => void;
-  /** Extra actions rendered just left of the status dot. */
   right?: ReactNode;
 }
-
-/** The ONE app header — identical structure on every screen. */
+/** One title row + an explicit, live gateway/profile context row. */
 export default function Header({ title, subtitle, state, onBack, right }: Props) {
-  const dotClass =
-    state === "open" ? "dot-on" : state === "connecting" ? "dot-busy" : "dot-off";
-  return (
-    <header className="shell-header">
-      {onBack && (
-        <button className="iconbtn" onClick={onBack} aria-label="Back" title="Back">
-          ←
-        </button>
-      )}
-      <div className="shell-header-main">
-        <div className="appbar-title">{title}</div>
-        {subtitle && <div className="appbar-sub">{subtitle}</div>}
-      </div>
+  const dotClass = state === 'open' ? 'dot-on' : state === 'connecting' ? 'dot-busy' : 'dot-off';
+  return <header className="shell-header">
+    <div className="shell-title-row">
+      {onBack && <button className="iconbtn" onClick={onBack} aria-label="Back"><ChevronLeft size={22} aria-hidden="true" /></button>}
+      <h1 className="appbar-title">{title}</h1>
       {right}
-      <span className={`dot ${dotClass}`} title={`gateway: ${state}`} />
-    </header>
-  );
+    </div>
+    <div className="shell-context"><span className={`dot ${dotClass}`} aria-hidden="true" /><span className="appbar-sub">{subtitle || 'Gateway'}</span><span className="shell-status" role="status">{connectionLabel(state)}</span></div>
+  </header>;
 }

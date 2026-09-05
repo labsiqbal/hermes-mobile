@@ -1,0 +1,57 @@
+{
+  "evidence": "REAL-CHATVIEW-FICTIONAL-CLIENT-CONTROLLED-RAF",
+  "results": [
+    {
+      "name": "history: full first paint and every subsequent frame, no reveal scheduled",
+      "status": "passed"
+    },
+    {
+      "name": "envelope: full first paint and every subsequent frame, no reveal scheduled",
+      "status": "passed"
+    },
+    {
+      "name": "cached: full first paint and every subsequent frame, no reveal scheduled",
+      "status": "passed"
+    },
+    {
+      "name": "inflight: full first paint and every subsequent frame, no reveal scheduled",
+      "status": "passed"
+    },
+    {
+      "name": "group: full first paint and every subsequent frame, no reveal scheduled",
+      "status": "passed"
+    },
+    {
+      "name": "fresh-only hint yields to verified resume count but not an empty resume or error",
+      "status": "passed"
+    },
+    {
+      "name": "live delta reveals progressively; completion paints authoritative final immediately",
+      "status": "passed"
+    },
+    {
+      "name": "cached/inflight restore reveals only newly arriving live suffix, then settles",
+      "status": "passed"
+    },
+    {
+      "name": "terminal error flushes a partial assistant instead of leaving a live reveal",
+      "status": "passed"
+    },
+    {
+      "name": "completion without preceding delta paints final and remains final",
+      "status": "passed"
+    },
+    {
+      "name": "live reduced-motion preference changes flush and never replay old text",
+      "status": "passed"
+    }
+  ],
+  "diagnostics": [],
+  "cleanup": {
+    "exited": true,
+    "profileRemoved": true,
+    "exitCode": 0,
+    "signal": null,
+    "profile": "/tmp/hm-chat-reveal-3PM9Fw/.chrome-profile-Rqgh6h"
+  }
+}

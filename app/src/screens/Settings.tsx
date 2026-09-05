@@ -1,31 +1,48 @@
-import { useState } from "react";
-import type { ConnectionStore, HermesConnection, SavedConnection } from "../lib/hermes-client";
+import { useEffect, useRef, useState } from "react";
+import { connectionLabel, isAppStorageKey } from "../lib/shell-state";
+import type { ConnectionState, ConnectionStore, HermesConnection, SavedConnection } from "../lib/hermes-client";
 import Connections from "./Connections";
 
 // Keep-in-sync dengan "version" di package.json — dibaca manual karena
 // import package.json butuh resolveJsonModule + env khusus Vite.
 const APP_VERSION = "0.1.0";
 
-// Placeholder — repo belum dipublish; ganti saat URL final ada.
-const REPO_URL = "https://github.com/iqbal/hermes-mobile";
+const REPO_URL = "https://github.com/labsiqbal/hermes-mobile";
 
 export function Settings({
   conn,
+  state,
   store,
   onConnect,
   onDisconnect,
 }: {
   conn: SavedConnection;
+  state: ConnectionState;
   store: ConnectionStore;
   onConnect: (conn: SavedConnection, client: HermesConnection) => void;
   onDisconnect: () => void;
 }) {
   const [confirmWipe, setConfirmWipe] = useState(false);
+  const [wipeError, setWipeError] = useState('');
+  const confirmation = useRef<HTMLDialogElement>(null);
+  const [accent, setAccent] = useState(() => document.documentElement.style.getPropertyValue('--scratch-accent') || '#99baff');
+  const [accentEnabled, setAccentEnabled] = useState(() => Boolean(document.documentElement.style.getPropertyValue('--scratch-accent')));
+  function scratchAccent(color: string, enabled: boolean) {
+    setAccent(color); setAccentEnabled(enabled);
+    if (enabled) document.documentElement.style.setProperty('--scratch-accent', color);
+    else document.documentElement.style.removeProperty('--scratch-accent');
+  }
+  useEffect(() => {
+    if (!confirmWipe) return;
+    const previous = document.activeElement;
+    confirmation.current?.showModal();
+    return () => { if (previous instanceof HTMLElement && previous.isConnected) previous.focus(); };
+  }, [confirmWipe]);
   const [fontSize, setFontSizeState] = useState(() => {
     try {
-      return parseFloat(localStorage.getItem("hermes-mobile.font-size") || "13");
+      return parseFloat(localStorage.getItem("hermes-mobile.font-size") || "15");
     } catch {
-      return 13;
+      return 15;
     }
   });
 
@@ -41,9 +58,16 @@ export function Settings({
   };
 
   const wipeLocalData = () => {
-    localStorage.clear();
-    onDisconnect();
-    location.reload();
+    try {
+      for (const storage of [localStorage, sessionStorage]) {
+        const keys = Array.from({length:storage.length}, (_, i) => storage.key(i));
+        for (const key of keys) if (key && isAppStorageKey(key)) storage.removeItem(key);
+      }
+      onDisconnect();
+      location.reload();
+    } catch {
+      setWipeError('Browser storage could not be fully erased. Check browser permissions and try again.');
+    }
   };
 
   return (
@@ -53,7 +77,7 @@ export function Settings({
         <div className="card">
           <div className="title-row">
             <div className="rowcard-title">{conn.label}</div>
-            <span className="chip chip-green">Connected</span>
+            <span className={`chip ${state === "open" ? "chip-green" : "chip-amber"}`}>{connectionLabel(state)}</span>
           </div>
           <div
             className="mono"
@@ -92,7 +116,7 @@ export function Settings({
             style={{ marginTop: 12 }}
             onClick={() => setConfirmWipe(true)}
           >
-            Erase all local data
+            Erase Hermes Mobile data
           </button>
         </div>
 
@@ -103,6 +127,7 @@ export function Settings({
             <span className="chip">{fontSize}px</span>
           </div>
           <input
+            aria-label="Chat text size"
             type="range"
             min={11}
             max={16}
@@ -115,6 +140,14 @@ export function Settings({
             <span className="hint" style={{ padding: 0 }}>Small</span>
             <span className="hint" style={{ padding: 0 }}>Large</span>
           </div>
+        </div>
+
+        <div className="card scratch-accent">
+          <div className="rowcard-title">Scratch accent</div>
+          <p className="hint">A temporary accent for tab indicators and decorative edges. Text and status colors stay readable. This does not change your gateway or profile; reloading restores the authored defaults.</p>
+          <label className="accent-control"><input type="checkbox" checked={accentEnabled} onChange={event => scratchAccent(accent, event.target.checked)} />Enable scratch accent</label>
+          <label className="accent-control">Accent color<input type="color" aria-label="Scratch accent color" value={accent} onChange={event => scratchAccent(event.target.value, true)} /></label>
+          <button className="btn btn-ghost" onClick={() => scratchAccent('#99baff', false)}>Restore authored defaults</button>
         </div>
 
         <div className="section-label">About</div>
@@ -147,29 +180,26 @@ export function Settings({
       </div>
 
       {confirmWipe && (
-        <>
-          <div className="sheet-dim" onClick={() => setConfirmWipe(false)} />
-          <div className="sheet" role="dialog" aria-modal="true">
+          <dialog ref={confirmation} className="command-palette wipe-dialog" aria-labelledby="wipe-title" onCancel={() => setConfirmWipe(false)}>
             <div className="sheet-grab" />
-            <div className="rowcard-title">Erase all local data?</div>
+            <h2 id="wipe-title">Erase Hermes Mobile data?</h2>
             <div className="hint" style={{ margin: "8px 0 14px" }}>
-              All saved connections and other local data in this browser will
-              be permanently erased, and the app will reload. This can't be
-              undone.
+              Hermes Mobile connections, credentials, rooms, drafts and preferences on this browser will be erased, and the app will reload. Other applications on this origin and all remote gateway data are untouched. This cannot be undone.
             </div>
+            {wipeError && <p role="alert" className="error-line">{wipeError}</p>}
             <div className="sheet-actions">
               <button className="btn btn-destructive" onClick={wipeLocalData}>
                 Erase &amp; reload
               </button>
               <button
+                autoFocus
                 className="btn btn-ghost"
                 onClick={() => setConfirmWipe(false)}
               >
                 Cancel
               </button>
             </div>
-          </div>
-        </>
+          </dialog>
       )}
     </div>
   );

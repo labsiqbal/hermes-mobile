@@ -1,0 +1,100 @@
+name: Production quality gate
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - feat/shell-production
+
+permissions:
+  contents: read
+
+# A newer PR/candidate run may replace stale validation, never an active main run.
+concurrency:
+  group: production-check-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  production:
+    name: React Shell A / fixture gate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: bash
+        working-directory: app
+    env:
+      CI: 'true'
+    steps:
+      - name: Check out source without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Set up supported Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22.23.2'
+          check-latest: false
+
+      - name: Install exactly the lockfile, including build tools
+        run: npm ci --include=dev --ignore-scripts --no-audit --no-fund
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit and transport contracts (fixtures only)
+        run: npm run test:unit
+
+      - name: Static publisher unit contracts (temporary trees, no deployment)
+        working-directory: .
+        run: |
+          test -f deploy/publish-static.py
+          test -f deploy/test_publish_static.py
+          python3 -m unittest discover -s deploy -p 'test_*.py'
+
+      - name: Typecheck and production build
+        run: npm run build
+
+      - name: Require preinstalled Chrome (no browser downloads)
+        run: |
+          if [[ ! -x /usr/bin/google-chrome ]]; then
+            printf '%s\n' '::error::Preinstalled /usr/bin/google-chrome is required; browser validation cannot be skipped.' >&2
+            exit 1
+          fi
+          /usr/bin/google-chrome --version
+
+      - name: Manage component browser contracts (fixtures only)
+        timeout-minutes: 2
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: npm run check:management:browser
+
+      - name: Chat restoration and live reveal (real React, controlled RAF)
+        timeout-minutes: 2
+        run: npm run check:chat-reveal
+
+      - name: New conversation and Manage navigation regression
+        timeout-minutes: 2
+        run: npm run check:shell-navigation -- "$RUNNER_TEMP/production-browser/navigation"
+
+      - name: Browser harness self-test
+        id: browser_self_test
+        timeout-minutes: 2
+        run: npm run check:production-browser:self-test -- --output "$RUNNER_TEMP/production-browser"
+
+      - name: Built React app browser fixtures (no gateway access)
+        id: browser
+        timeout-minutes: 6
+        run: npm run check:production-browser -- --output "$RUNNER_TEMP/production-browser"
+
+      - name: Preserve fixture browser evidence, including failures
+        if: ${{ always() && (steps.browser_self_test.outcome != 'skipped' || steps.browser.outcome != 'skipped') }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: production-browser-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/production-browser
+          if-no-files-found: error
+          include-hidden-files: false
+          retention-days: 7

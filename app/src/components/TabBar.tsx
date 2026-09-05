@@ -5,19 +5,17 @@ import {
   ChatIcon,
   RunsIcon,
   SettingsIcon,
-  UsersIcon,
   type IconProps,
 } from "./icons";
 
-export type NavId = "board" | "chats" | "groups" | "bots" | "runs" | "settings";
+export type NavId = "home" | "chats" | "bots" | "activity" | "manage";
 
 const TABS: { id: NavId; label: string; icon: ComponentType<IconProps> }[] = [
-  { id: "board", label: "Board", icon: BoardIcon },
+  { id: "home", label: "Home", icon: BoardIcon },
   { id: "chats", label: "Chats", icon: ChatIcon },
-  { id: "groups", label: "Groups", icon: UsersIcon },
   { id: "bots", label: "Bots", icon: BotIcon },
-  { id: "runs", label: "Runs", icon: RunsIcon },
-  { id: "settings", label: "Settings", icon: SettingsIcon },
+  { id: "activity", label: "Activity", icon: RunsIcon },
+  { id: "manage", label: "Manage", icon: SettingsIcon },
 ];
 
 /** Standard mobile bottom tab bar — the single navigation surface for root
