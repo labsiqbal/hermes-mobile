@@ -316,9 +316,24 @@ try {
   writeFileSync(join(temp, 'browser.html'), '<!doctype html><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="browser.css"><div id="root"></div><pre id="result"></pre><script src="browser.js"></script>');
   // CDP pipe avoids Chrome's 500px minimum desktop window and opens no debug port.
   for (const width of [360, 390, 430]) {
-    const chrome = spawn(process.env.CHROME_BIN || 'google-chrome', ['--headless', '--no-sandbox', '--disable-gpu', '--disable-background-networking', '--disable-component-update', '--disable-sync', '--disable-extensions', '--no-first-run', '--no-default-browser-check', `--user-data-dir=${join(temp, `chrome-${width}`)}`, '--remote-debugging-pipe', 'about:blank'], { stdio: ['ignore', 'ignore', 'ignore', 'pipe', 'pipe'] });
-    const exited = new Promise(resolve => chrome.once('exit', resolve));
+    const chrome = spawn(process.env.CHROME_BIN || 'google-chrome', ['--headless', '--no-sandbox', '--disable-gpu', '--disable-background-networking', '--disable-component-update', '--disable-sync', '--disable-extensions', '--no-first-run', '--no-default-browser-check', `--user-data-dir=${join(temp, `chrome-${width}`)}`, '--remote-debugging-pipe', 'about:blank'], { stdio: ['ignore', 'ignore', 'pipe', 'pipe', 'pipe'] });
     const pending = new Map(); let nextId = 0; let buffer = '';
+    let stderr = '', failure;
+    const started = Date.now();
+    const diagnostic = message => new Error(`${message}; Chrome pid=${chrome.pid ?? 'not spawned'} elapsed=${Date.now() - started}ms exit=${chrome.exitCode} signal=${chrome.signalCode}\nChrome stderr (last 12000 characters):\n${stderr || '(empty)'}`);
+    const fail = message => {
+      failure = diagnostic(message);
+      for (const waiter of pending.values()) { clearTimeout(waiter.timer); waiter.reject(failure); }
+      pending.clear();
+    };
+    chrome.stderr.on('data', chunk => { stderr = (stderr + chunk).slice(-12000); });
+    chrome.once('spawn', () => console.log(`Workspace Chrome startup: executable=${process.env.CHROME_BIN || 'google-chrome'} pid=${chrome.pid} viewport=${width}`));
+    const exited = new Promise(resolve => {
+      chrome.once('close', (code, signal) => { fail(`Chrome closed (${code ?? signal})`); resolve(); });
+    });
+    chrome.once('error', error => fail(`Chrome spawn failed: ${error.message}`));
+    chrome.stdio[3].on('error', error => fail(`Chrome CDP input: ${error.message}`));
+    chrome.stdio[4].on('error', error => fail(`Chrome CDP output: ${error.message}`));
     const unexpectedRequests = [];
     const fixtureOrigin = 'https://gateway.example:8451';
     chrome.stdio[4].on('data', chunk => {
@@ -344,9 +359,10 @@ try {
       }
     });
     function rpc(method, params = {}, sessionId) {
+      if (failure) return Promise.reject(failure);
       return new Promise((resolve, reject) => {
         const id = ++nextId;
-        const timer = setTimeout(() => { pending.delete(id); reject(new Error(`CDP timeout: ${method}`)); }, 10000);
+        const timer = setTimeout(() => { pending.delete(id); reject(diagnostic(`CDP timeout: ${method}`)); }, 10000);
         pending.set(id, { resolve, reject, timer });
         chrome.stdio[3].write(JSON.stringify({ id, method, params, ...(sessionId ? { sessionId } : {}) }) + '\0');
       });
