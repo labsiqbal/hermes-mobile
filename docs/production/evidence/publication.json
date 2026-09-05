@@ -1,0 +1,14 @@
+{
+  "assets_added": 8,
+  "entry_replaced": true,
+  "error": null,
+  "expected_entry_sha256": "96121582978238d85ec631ab2168db880043b930cd7030d51af51df4923d177b",
+  "manifest_sha256": "d12b1de9b6d96f63d25a92d85a73f994f6fc0152697143eebe0108976fc1f157",
+  "mode": "publish",
+  "new_entry_sha256": "9783bf21c838108f53e837f1dcf307631f7100a09096ccfebe0048ea5b4c9fd0",
+  "planned_additions": 8,
+  "retained_files": 5,
+  "route_sha256": "5759f3513fa7dd18a01d1eefc840816737f9089387fbc30ea06b166c3aa6a1a5",
+  "stage": "complete",
+  "status": "published"
+}

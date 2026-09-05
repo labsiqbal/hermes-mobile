@@ -1,0 +1,13 @@
+{
+  "source_commit": "42293e3a5e52fd367ffa934ab42512513a9d5dbb",
+  "ci_head": "d2d62be4e4f274dd2e47ccb4fb343e98e91da2d4",
+  "ci_url": "https://github.com/labsiqbal/hermes-mobile/actions/runs/33987596468",
+  "conclusion": "success",
+  "changes_after_local_receipt": {
+    "app/scripts/check-workspace.mjs": {
+      "previous": "1600fe18a517f4ce0aa5d4c952a9b9842766486b864f60e50563fc9b50b92ad3",
+      "current": "ca52815aa24ac6376d574aad83d71a826f48d3f094e4b9dbc31a355b263535f2"
+    }
+  },
+  "application_bytes_unchanged": true
+}

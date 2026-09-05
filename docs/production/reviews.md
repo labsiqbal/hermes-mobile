@@ -1,6 +1,6 @@
 # Shell A independent review record
 
-Baseline: `9b25ec831e144ff5182978002d4bbb2ddb6521f1`. Review target is the real React candidate, not the simulated prototype. Source has not yet been published as the production replacement.
+Baseline: `9b25ec831e144ff5182978002d4bbb2ddb6521f1`. Review target is the real React candidate, not the simulated prototype. At this initial review, source had not yet been published as the production replacement. The later verified release is recorded in `release-receipt.md`.
 
 ## Standards
 
