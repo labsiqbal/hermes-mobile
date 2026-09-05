@@ -18,8 +18,7 @@ export const WORKER_ACTIVE_WINDOW_S = 150;
 /** ui_meta key the Desktop Bots pane writes for bot-managed profiles. */
 export const BOTS_META_KEY = "hermes-bots";
 
-/** Bot-managed profiles carry ui_meta['hermes-bots'] (set by the Desktop
- *  Bots pane). Other profiles exist on the gateway but aren't roster bots. */
+/** Profil bot terkelola membawa metadata yang ditulis panel Bots Desktop. */
 export function isBotManaged(profile: ProfileSummary): boolean {
   const meta = profile.ui_meta;
   return Boolean(meta && typeof meta === "object" && meta[BOTS_META_KEY]);
@@ -35,15 +34,33 @@ export function botHandle(profile: ProfileSummary): string {
   return name.trim().toLowerCase() === "default" ? "hermes" : name;
 }
 
-/** Bot Mode title (server-synced via ui_meta) falling back to the core
- *  profile display_name. Empty string when neither exists. */
+/** Judul Bot Mode mengikuti urutan fallback label milik Desktop. */
 export function botTitle(profile: ProfileSummary): string {
   const meta = profile.ui_meta?.[BOTS_META_KEY];
   const title =
     meta && typeof meta === "object"
-      ? String((meta as Record<string, unknown>).title ?? "")
+      ? String((meta as Record<string, unknown>).title ?? "").trim()
       : "";
-  return title || String(profile.display_name ?? "");
+  if (title) return title;
+  if (profile.display_name?.trim()) return profile.display_name.trim();
+  if (profile.name.trim().toLowerCase() === "default") return "Hermes";
+  return profile.name
+    .replace(/[-_]+/g, " ")
+    .replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
+/** Preview Desktop memakai Bot Chat kanonis bila ada, lalu sesi biasa terbaru.
+ * Hilangkan tanda Markdown dari baris tunggal. */
+export function botPreview(profile: ProfileSummary): string {
+  const text = profile.canonical_session?.preview || profile.last_session?.preview || profile.description || "";
+  return String(text)
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/`([^`\n]*)`/g, "$1")
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/(\*\*|__)(.*?)\1/g, "$2")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 /** Freshest activity timestamp (unix seconds) across the sessions that

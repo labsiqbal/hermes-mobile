@@ -1,9 +1,8 @@
 /**
  * Bots.tsx — Bot Mode roster screen (design/index.html layar 04).
  *
- * Reads the gateway's profile roster via `profiles.list` (the same RPC the
- * relay daemon uses), filters to bot-managed profiles (ui_meta['hermes-bots']),
- * and paints one row per bot: @handle, description, online/busy/offline dot.
+ * Membaca seluruh roster profil melalui `profiles.list`, sama seperti Desktop,
+ * lalu merender nama, @handle, preview terbaru, dan status tiap bot.
  * Tapping a bot opens its canonical "Bot Chat" — the existing registry row
  * when one exists (fail-closed lookup), otherwise a freshly created one.
  */
@@ -18,15 +17,16 @@ import {
 import {
   botHandle,
   botInitials,
+  botPreview,
   botStatus,
   botTint,
-  isBotManaged,
+  botTitle,
   sortRoster,
   type BotStatus,
 } from "./bots-utils";
 import { ChevronRightIcon } from "../components/icons";
 
-const ROSTER_POLL_MS = 20_000;
+const ROSTER_POLL_MS = 5_000;
 
 const DOT_CLASS: Record<BotStatus, string> = {
   online: "dot-on",
@@ -107,7 +107,9 @@ export function BotsScreen({
     }
   }
 
-  const bots = sortRoster((profiles ?? []).filter(isBotManaged), now);
+  // Desktop menganggap setiap profil sebagai agent roster; metadata bot hanya
+  // mengubah identitas/tampilan, bukan menentukan keanggotaan.
+  const bots = sortRoster(profiles ?? [], now);
 
   if (!client) {
     return (
@@ -164,7 +166,7 @@ export function BotsScreen({
               Bot Mode
             </div>
             <div className="hint" style={{ textAlign: "center", maxWidth: 260 }}>
-              No bots yet — add a bot-managed profile on Desktop.
+              No profiles found on this gateway.
             </div>
           </div>
         )}
@@ -189,6 +191,8 @@ function BotRow({
   onOpen: () => void;
 }) {
   const handle = botHandle(bot);
+  const title = botTitle(bot);
+  const preview = botPreview(bot);
   const status = botStatus(bot, now);
   const offline = status === "offline";
   const tint = botTint(handle);
@@ -211,13 +215,9 @@ function BotRow({
         <span className={`dot ${DOT_CLASS[status]}`} />
       </span>
       <div className="rowcard-main">
-        <div className="rowcard-title mono" style={{ color: "var(--cyan)", fontSize: 12 }}>
-          @{handle}
-        </div>
+        <div className="rowcard-title">{title}</div>
         <div className="rowcard-sub">
-          {opening
-            ? "membuka Bot Chat…"
-            : bot.description || bot.display_name || "—"}
+          {opening ? "Opening Bot Chat…" : `@${handle}${preview ? ` · ${preview}` : ""}`}
         </div>
       </div>
       <span className="chevron">

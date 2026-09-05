@@ -121,7 +121,17 @@ try {
   process.exit(1);
 }
 
-// 3b. projects.tree + project drill-in (same grouping RPC as Desktop)
+// 3b. profiles.list roster (same source as Desktop Bot Mode)
+try {
+  const profiles = await client.profilesList({ includeSessions: true });
+  if (!Array.isArray(profiles) || profiles.length === 0) throw new Error("empty profile roster");
+  if (!profiles.some((profile) => profile.name === "default")) throw new Error("default profile missing");
+  ok(`profiles.list → ${profiles.length} profile(s), rich sessions OK`);
+} catch (err) {
+  fail(`profiles.list: ${err.message}`);
+}
+
+// 3c. projects.tree + project drill-in (same grouping RPC as Desktop)
 try {
   const tree = await client.projectTree();
   if (!Array.isArray(tree.projects)) throw new Error("projects is not an array");

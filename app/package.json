@@ -9,6 +9,7 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "check:chat-resume": "node scripts/check-chat-resume.mjs",
+    "check:bots": "node scripts/check-bots-utils.mjs",
     "smoke": "node scripts/smoke.mjs"
   },
   "dependencies": {
