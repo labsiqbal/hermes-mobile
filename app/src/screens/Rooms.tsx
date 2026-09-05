@@ -19,6 +19,7 @@ import {
 import { RoomStore, type Room } from "../lib/rooms-store";
 import { botHandle, botTint, isBotManaged } from "./bots-utils";
 import type { ProfileSummary } from "../lib/hermes-client";
+import { GroupIcon } from "../components/icons";
 
 const LONG_PRESS_MS = 500;
 /** Gerakan pointer di atas ini (px) membatalkan long-press (user scroll). */
@@ -37,27 +38,7 @@ function formatRoomTime(ms: number): string {
   }
 }
 
-/** Icon grup sederhana (tiga orang), stroke mengikuti currentColor. */
-function GroupIcon({ size = 18 }: { size?: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <circle cx="9" cy="8" r="3" />
-      <path d="M3.5 19c.6-3 2.8-4.5 5.5-4.5s4.9 1.5 5.5 4.5" />
-      <circle cx="17" cy="9" r="2.4" />
-      <path d="M16 14.6c2.4.2 4 1.6 4.5 4" />
-    </svg>
-  );
-}
+/** Icon grup (tiga orang) kini dari Lucide lewat komponen icons. */
 
 type SheetState = { room: Room; mode: "menu" | "rename" | "confirm-delete" };
 
