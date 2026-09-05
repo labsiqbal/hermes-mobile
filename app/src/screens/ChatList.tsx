@@ -11,7 +11,7 @@ import {
 } from "./chat-list-utils";
 import { botTint } from "./bots-utils";
 import { isActive } from "../lib/active-sessions";
-import { ChevronDownIcon, ChevronRightIcon, SearchIcon } from "../components/icons";
+import { ChevronDownIcon, ChevronRightIcon } from "../components/icons";
 
 interface Props {
   conn: SavedConnection;
@@ -45,7 +45,7 @@ export default function ChatList({ conn, client, onOpenChat }: Props) {
   });
   const [loadingProject, setLoadingProject] = useState<string | null>(null);
   const [error, setError] = useState("");
-  const [query, setQuery] = useState("");
+  const [recentExpanded, setRecentExpanded] = useState(true);
   const [pendingDelete, setPendingDelete] = useState<SessionSummary | null>(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -171,44 +171,17 @@ export default function ChatList({ conn, client, onOpenChat }: Props) {
     }
   }, [client, conn.id, expanded, hydrated]);
 
-  // Search must cover every session, not only the three-row project previews.
-  useEffect(() => {
-    if (!query.trim() || projects.length === 0) return;
-    const missing = projects.filter((project) => project.sessionCount > 0 && !hydrated[project.id]);
-    if (missing.length === 0) return;
-    let cancelled = false;
-    void Promise.all(missing.map((project) => client.projectSessions(project.id)))
-      .then((rows) => {
-        if (cancelled) return;
-        setHydrated((previous) => {
-          const next = { ...previous };
-          rows.forEach((project) => { if (project) next[project.id] = project; });
-          return next;
-        });
-      })
-      .catch((err) => { if (!cancelled) setError(err instanceof Error ? err.message : String(err)); });
-    return () => { cancelled = true; };
-  }, [client, hydrated, projects, query]);
-
-  const q = query.trim().toLowerCase();
-  const filtering = q.length > 0;
   const projectRows = useMemo(() => projects
-    // Chats lists conversations, not Desktop's empty project registry entries.
-    .filter((project) => project.sessionCount > 0)
-    .map((project) => ({
-      project,
-      sessions: projectSessions(project).filter((session) =>
-        !q || `${session.title} ${session.preview}`.toLowerCase().includes(q),
-      ),
-    }))
-    .filter(({ sessions: rows }) => !filtering || rows.length > 0),
-  [filtering, projectSessions, projects, q]);
+    // Daftar chat hanya menampilkan proyek nyata yang berisi percakapan.
+    .filter((project) => !project.isNoProject && project.sessionCount > 0)
+    .map((project) => ({ project, sessions: projectSessions(project) })),
+  [projectSessions, projects]);
   const fallbackSessions = projects.length === 0
-    ? sessions.filter((session) => !q || `${session.title} ${session.preview}`.toLowerCase().includes(q))
+    ? sessions
     : sessions.filter((session) => {
-        // projects.tree can scope either lineage root or continuation tip.
+        // projects.tree dapat memakai root lineage atau continuation tip sebagai scope.
         const grouped = scopedIds.has(session.id) || Boolean(session.resolved_id && scopedIds.has(session.resolved_id));
-        return !grouped && (!q || `${session.title} ${session.preview}`.toLowerCase().includes(q));
+        return !grouped;
       });
 
   function renderSessionRow(session: SessionSummary) {
@@ -260,27 +233,12 @@ export default function ChatList({ conn, client, onOpenChat }: Props) {
   return (
     <div className="screen">
       <div className="body chatlist">
-        <div className="search-wrap">
-          <span className="search-icon">
-            <SearchIcon size={15} />
-          </span>
-          <input
-            className="field"
-            type="search"
-            placeholder="Search sessions…"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-        </div>
         {error && <div className="error-line">{error}</div>}
         {sessions.length === 0 && !error && (
           <div className="hint">No sessions on this machine yet. Start one with the + button above.</div>
         )}
-        {sessions.length > 0 && projectRows.length === 0 && fallbackSessions.length === 0 && filtering && (
-          <div className="hint">No sessions match “{query.trim()}”.</div>
-        )}
         {projectRows.map(({ project, sessions: rows }) => {
-          const open = filtering || expanded.has(project.id);
+          const open = expanded.has(project.id);
           const visibleRows = hydrated[project.id] ? rows : rows.slice(0, 3);
           return (
             <section key={project.id} className="project-group">
@@ -299,7 +257,7 @@ export default function ChatList({ conn, client, onOpenChat }: Props) {
                   {loadingProject === project.id && <div className="hint">Loading sessions…</div>}
                   {loadingProject !== project.id && visibleRows.map(renderSessionRow)}
                   {loadingProject !== project.id && visibleRows.length === 0 && (
-                    <div className="hint">{filtering ? "No matching sessions" : "No sessions"}</div>
+                    <div className="hint">No sessions</div>
                   )}
                 </div>
               )}
@@ -311,14 +269,16 @@ export default function ChatList({ conn, client, onOpenChat }: Props) {
             <button
               type="button"
               className="project-group-head"
-              aria-expanded="true"
-              disabled
+              aria-expanded={recentExpanded}
+              onClick={() => setRecentExpanded((open) => !open)}
             >
-              <ChevronDownIcon size={16} />
+              {recentExpanded ? <ChevronDownIcon size={16} /> : <ChevronRightIcon size={16} />}
               <span className="project-group-name">Recent</span>
               <span className="project-group-count">{fallbackSessions.length}</span>
             </button>
-            <div className="project-group-rows">{fallbackSessions.map(renderSessionRow)}</div>
+            {recentExpanded && (
+              <div className="project-group-rows">{fallbackSessions.map(renderSessionRow)}</div>
+            )}
           </section>
         )}
       </div>

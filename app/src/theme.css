@@ -671,12 +671,9 @@ body {
 
 .project-group-count {
   min-width: 24px;
-  padding: 2px 7px;
-  border-radius: 999px;
-  background: var(--bg-soft);
   color: var(--fg-dim);
   font: 600 10px/1.5 var(--font-mono);
-  text-align: center;
+  text-align: right;
 }
 
 .project-group-rows {
@@ -765,9 +762,9 @@ body {
 /* ── Chat list: flat rows with hairline dividers (mockup v2) ───────────── */
 
 .chatlist {
-  padding-left: 0;
-  padding-right: 0;
-  gap: 0;
+  padding-left: 16px;
+  padding-right: 16px;
+  gap: 2px;
 }
 
 .chatlist .rowcard {
@@ -796,27 +793,6 @@ body {
 .chatlist > .error-line {
   padding-left: 16px;
   padding-right: 16px;
-}
-
-/* search field with a leading icon */
-.search-wrap {
-  position: relative;
-  padding: 10px 16px 8px;
-}
-
-.search-wrap .field {
-  padding-left: 38px;
-}
-
-.search-icon {
-  position: absolute;
-  left: 29px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--fg-faint);
-  display: grid;
-  place-items: center;
-  pointer-events: none;
 }
 
 /* ── Board (Home): device card + recent sessions — mockup v2 ───────────── */
