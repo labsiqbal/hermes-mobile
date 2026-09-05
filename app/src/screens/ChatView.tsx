@@ -1,8 +1,8 @@
-import { memo, useCallback, useEffect, useRef, useState, type ChangeEvent, type ReactNode, type SyntheticEvent } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type ReactNode, type SyntheticEvent } from "react";
 import "./chat-view.css";
 import Header from "../components/Header";
 import { MessageContent } from "../components/MessageContent";
-import { ArrowUpIcon, ChevronDownIcon, FileIcon, ImageIcon, PlusIcon, StopIcon, XIcon } from "../components/icons";
+import { ArrowUpIcon, ChevronDownIcon, FileIcon, ImageIcon, PlusIcon, SearchIcon, StopIcon, XIcon } from "../components/icons";
 import {
   clearSessionEvents,
   getSessionEvents,
@@ -384,6 +384,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   const [catalogBusy, setCatalogBusy] = useState(false);
   const [modelBusy, setModelBusy] = useState(false);
   const [modelError, setModelError] = useState("");
+  const [modelQuery, setModelQuery] = useState("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -872,8 +873,27 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
 
   // ── model picker (desktop parity: RPC model.options + config.set) ────────
 
+  /** Models shown per provider: search hits everything; the unfiltered sheet
+   *  stays short (top N per provider) so a 542-model catalog doesn't scroll
+   *  for minutes. */
+  const MODEL_LIST_LIMIT = 6;
+
+  const modelRows = useMemo(() => {
+    const q = modelQuery.trim().toLowerCase();
+    return (catalog?.providers ?? [])
+      .map((provider) => {
+        const models = provider.models ?? [];
+        const shown = q
+          ? models.filter((m) => m.toLowerCase().includes(q))
+          : models.slice(0, MODEL_LIST_LIMIT);
+        return { provider, models: shown, hidden: models.length - shown.length };
+      })
+      .filter((row) => row.models.length > 0 || (q && row.hidden === 0));
+  }, [catalog, modelQuery]);
+
   async function openModelSheet() {
     setModelSheetOpen(true);
+    setModelQuery("");
     setModelError("");
     if (catalog) return; // one fetch per chat
     setCatalogBusy(true);
@@ -1259,19 +1279,6 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
         {attachError && (
           <div className="error-line" style={{ marginBottom: 6 }}>{attachError}</div>
         )}
-        {!isGroup && liveSid && (
-          <div className="model-row">
-            <button type="button" className="model-pill" onClick={() => void openModelSheet()}>
-              <span className="model-pill-name">
-                {(info?.model || catalog?.model || "model").split("/").pop()}
-                {info?.reasoning_effort && info.reasoning_effort !== "none"
-                  ? ` · ${info.reasoning_effort.slice(0, 1).toUpperCase()}${info.reasoning_effort.slice(1, 3)}`
-                  : ""}
-              </span>
-              <ChevronDownIcon size={13} />
-            </button>
-          </div>
-        )}
         {attachments && attachments.length > 0 && (
           <div className="attach-chips">
             {attachments.map((item) => (
@@ -1378,6 +1385,19 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
             </button>
           )}
         </div>
+        {!isGroup && liveSid && (
+          <div className="model-row model-row-below">
+            <button type="button" className="model-pill" onClick={() => void openModelSheet()}>
+              <span className="model-pill-name">
+                {(info?.model || catalog?.model || "model").split("/").pop()}
+                {info?.reasoning_effort && info.reasoning_effort !== "none"
+                  ? ` · ${info.reasoning_effort.slice(0, 1).toUpperCase()}${info.reasoning_effort.slice(1, 3)}`
+                  : ""}
+              </span>
+              <ChevronDownIcon size={13} />
+            </button>
+          </div>
+        )}
         <input
           ref={imageInputRef}
           type="file"
@@ -1411,10 +1431,22 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
             {catalogBusy && <div className="hint">Loading models…</div>}
             {!catalogBusy && catalog && (
               <div className="model-sheet-body">
-                {(catalog.providers ?? []).map((provider) => (
+                <div className="search-wrap model-sheet-search">
+                  <span className="search-icon">
+                    <SearchIcon size={15} />
+                  </span>
+                  <input
+                    className="field"
+                    type="search"
+                    placeholder="Search models…"
+                    value={modelQuery}
+                    onChange={(e) => setModelQuery(e.target.value)}
+                  />
+                </div>
+                {modelRows.map(({ provider, models, hidden }) => (
                   <div key={provider.slug}>
                     <div className="section-label">{provider.name}</div>
-                    {(provider.models ?? []).map((model) => {
+                    {models.map((model) => {
                       const current =
                         (info?.model ?? catalog.model ?? "") === model &&
                         (info?.provider ?? catalog.provider ?? "") === provider.slug;
@@ -1431,8 +1463,18 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
                         </button>
                       );
                     })}
+                    {hidden > 0 && !modelQuery.trim() && (
+                      <div className="hint" style={{ padding: "4px 10px" }}>
+                        +{hidden} more — search to find them
+                      </div>
+                    )}
                   </div>
                 ))}
+                {modelRows.length === 0 && (
+                  <div className="hint" style={{ textAlign: "center" }}>
+                    No models match “{modelQuery.trim()}”.
+                  </div>
+                )}
                 <div className="section-label">Reasoning</div>
                 <div className="reasoning-row">
                   {["none", "minimal", "low", "medium", "high", "max"].map((effort) => (

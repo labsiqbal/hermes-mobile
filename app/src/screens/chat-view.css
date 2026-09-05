@@ -404,10 +404,14 @@
   opacity: 0.5;
 }
 
-/* model picker pill (desktop composer parity) */
+/* model picker pill (desktop composer parity, below the input pill) */
 .chat-view .model-row {
   display: flex;
   padding: 0 6px 8px;
+}
+
+.chat-view .model-row-below {
+  padding: 8px 6px 0;
 }
 
 .chat-view .model-pill {
@@ -443,6 +447,18 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   margin-top: 6px;
+}
+
+.chat-view .model-sheet-search {
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  padding-bottom: 8px;
+  z-index: 1;
+}
+
+.chat-view .model-sheet-search .field {
+  font-size: 14px;
 }
 
 .chat-view .model-row-btn {
@@ -486,12 +502,15 @@
 
 .chat-view .reasoning-row {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
   gap: 6px;
   padding: 4px 0 6px;
+  overscroll-behavior-x: contain;
 }
 
 .chat-view .reasoning-chip {
+  flex: none;
   padding: 7px 12px;
   border-radius: 999px;
   border: 1px solid var(--line-soft);
