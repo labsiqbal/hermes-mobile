@@ -44,7 +44,7 @@ export function BotsScreen({
    *  connection (hermes-client.getActiveConnection). */
   client?: HermesConnection;
   conn?: SavedConnection;
-  onOpenChat: (sessionId: string) => void;
+  onOpenChat: (sessionId: string, profile: string, unpersisted?: boolean) => void;
 }) {
   const client = clientProp ?? getActiveConnection();
   const [profiles, setProfiles] = useState<ProfileSummary[] | null>(null);
@@ -91,15 +91,17 @@ export function BotsScreen({
       // transient blip can never mint a duplicate forever-chat.
       let sessionId =
         profile.canonical_session?.resolved_id || profile.canonical_session?.id || "";
+      let unpersisted = false;
       if (!sessionId) {
         const existing = await client.sessionFindBotChat(profile.name);
         sessionId = existing?.resolved_id || existing?.id || "";
       }
       if (!sessionId) {
         const created = await client.sessionCreateBotChat(profile.name);
-        sessionId = created.session_id;
+        sessionId = created.stored_session_id || created.session_key || created.session_id;
+        unpersisted = true;
       }
-      onOpenChat(sessionId);
+      onOpenChat(sessionId, profile.name, unpersisted);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -125,7 +127,7 @@ export function BotsScreen({
 
   return (
     <div className="screen">
-      <div className="body">
+      <div className="body flat-list">
         {error && <div className="error-line">{error}</div>}
 
         {profiles !== null && bots.length > 0 && (

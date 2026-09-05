@@ -200,7 +200,7 @@ export function Rooms({
 
   return (
     <div className="screen">
-      <div className="body">
+      <div className="body rooms-list">
         <button
           className="btn btn-primary"
           onClick={() => {

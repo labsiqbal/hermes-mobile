@@ -22,6 +22,19 @@
   gap: 14px;
   padding-bottom: 8px;
 }
+.chat-view .body.transcript-hidden { visibility: hidden; }
+.chat-view .load-earlier {
+  align-self: center;
+  flex: none;
+  min-height: 36px;
+  padding: 7px 13px;
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--fg-dim);
+  font: 600 12px var(--font-mono);
+}
+.chat-view .load-earlier:disabled { opacity: .55; }
 
 /* Short threads sit at the bottom (WhatsApp/Telegram pattern) instead of
    hanging under the header. auto margin collapses to 0 once the thread is
@@ -341,6 +354,11 @@
   bottom: 0;
   padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
   background: linear-gradient(transparent, var(--chrome) 30%);
+}
+.chat-view .composer-status {
+  padding: 0 6px 6px;
+  color: var(--fg-dim);
+  font: 500 11px var(--font-mono);
 }
 
 /* staged-attachment chips above the pill */

@@ -7,7 +7,7 @@ import { BotIcon } from "./icons";
 import type { HermesConnection, SavedConnection } from "../lib/hermes-client";
 
 export interface BotsScreenProps {
-  onOpenChat: (sessionId: string) => void;
+  onOpenChat: (sessionId: string, profile: string, unpersisted?: boolean) => void;
   client?: HermesConnection;
   conn?: SavedConnection;
 }

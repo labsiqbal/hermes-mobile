@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ChangeEvent, type ReactNode, type SyntheticEvent } from "react";
 import "./chat-view.css";
-import { liveTurnEvents } from "./chat-resume-utils";
+import { acceptLiveEvent, allowSmoothAutoScroll, freshHistoryMessages, historyMessageKey, preservedScrollTop, resumeCatchupEvents, shouldFetchSessionHistory } from "./chat-resume-utils";
 import Header from "../components/Header";
 import { MessageContent } from "../components/MessageContent";
 import { ArrowUpIcon, ChevronDownIcon, FileIcon, ImageIcon, PlusIcon, SearchIcon, StopIcon, XIcon } from "../components/icons";
@@ -165,7 +165,8 @@ function eventText(payload: unknown): string {
  * callers must skip the message instead of rendering an empty bubble.
  */
 function historyText(m: Record<string, unknown>): string {
-  const raw = m.text ?? m.content ?? m.parts;
+  if (m.display_kind === "hidden") return "";
+  const raw = m.display_content ?? m.text ?? m.content ?? m.parts;
   if (typeof raw === "string") return raw;
   if (Array.isArray(raw)) {
     return raw
@@ -366,9 +367,13 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   const [items, setItems] = useState<TimelineItem[]>([]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
-  // Resumed history stays hidden until cached live events have been folded in;
-  // user sees one latest-state paint instead of a replay.
+  // History resume disembunyikan sampai cache live terlipat dan snap awal selesai.
   const [initializing, setInitializing] = useState(Boolean(session));
+  const [transcriptReady, setTranscriptReady] = useState(!session);
+  const [hasOlder, setHasOlder] = useState(false);
+  const [loadingOlder, setLoadingOlder] = useState(false);
+  const [composerStatus, setComposerStatus] = useState("");
+  const [runActionBusy, setRunActionBusy] = useState(false);
   // true between prompt submit / message.start and the first message.delta —
   // drives the iMessage-style typing indicator bubble.
   const [awaiting, setAwaiting] = useState(false);
@@ -399,10 +404,19 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   const handledEventsRef = useRef(new WeakSet<GatewayEvent>());
   const resumeReplayRef = useRef<GatewayEvent[]>([]);
   const resumeHasInflightRef = useRef(false);
+  const resumeRunningRef = useRef(false);
+  const resumeCatchupRef = useRef(Boolean(session));
+  const storedSidRef = useRef("");
+  const loadedMessageCountRef = useRef(0);
+  const loadedMessageKeysRef = useRef(new Set<string>());
+  const profileRef = useRef("");
   const bodyRef = useRef<HTMLDivElement>(null);
+  const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prependAnchorRef = useRef<{ height: number; top: number } | null>(null);
   // Existing sessions paint once at their latest point. No smooth trip through
   // old history; only events arriving after open get live animation.
   const initialSnapPendingRef = useRef(Boolean(session));
+  const bottomPinUntilRef = useRef(0);
   // Sticky-scroll: only follow the stream while the user sits near the bottom.
   const stickRef = useRef(true);
   const lastCountRef = useRef(0);
@@ -495,13 +509,41 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   }, [client, mentionEnabled, isGroup]);
 
   // ── open (create or resume) the session ─────────────────────────────────
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (isGroup) return; // group mode is driven by GroupDriver, no session
     let cancelled = false;
+    if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
+    settleTimerRef.current = null;
+    bottomPinUntilRef.current = 0;
+    resumeCatchupRef.current = true;
+    resumeRunningRef.current = false;
+    resumeReplayRef.current = [];
+    resumeHasInflightRef.current = false;
+    handledEventsRef.current = new WeakSet<GatewayEvent>();
+    initialSnapPendingRef.current = Boolean(session);
+    sidRef.current = "";
+    storedSidRef.current = "";
+    loadedMessageCountRef.current = 0;
+    loadedMessageKeysRef.current = new Set<string>();
+    profileRef.current = "";
+    setLiveSid("");
+    setItems([]);
+    setStreaming(false);
+    setAwaiting(false);
+    setApproval(null);
+    setFatal("");
+    setInitializing(Boolean(session));
+    setTranscriptReady(!session);
+    setHasOlder(false);
+    setLoadingOlder(false);
+    setComposerStatus("");
     (async () => {
       try {
-        let opened = session
-          ? await client.resumeSession(session.resolved_id || session.id)
+        const opened = session
+          ? await client.resumeSession(session.resolved_id || session.id, {
+              omitMessages: true,
+              profile: session.profile,
+            })
           : await client.createSession({});
         if (cancelled) return;
         const cached = getSessionEvents(
@@ -509,16 +551,26 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
           opened.session_id,
           client.replayGeneration,
         ) as GatewayEvent[];
-        const hasSettledTurn = cached.some(
-          (event) => event.type === "message.complete" || event.type === "error",
-        );
-        if (hasSettledTurn && session) {
-          // Refresh persisted history once, then retain only a newer in-flight
-          // suffix (events after latest complete/error) as current live state.
-          opened = await client.resumeSession(session.resolved_id || session.id);
+        const storedSid = opened.session_key || opened.stored_session_id || session?.resolved_id || session?.id || "";
+        const profile = opened.info?.profile_name || session?.profile || "";
+        let rawMessages = opened.messages ?? [];
+        if (shouldFetchSessionHistory(Boolean(session), storedSid, session?.unpersisted)) {
+          const page = await client.sessionMessages(storedSid, { profile });
           if (cancelled) return;
+          rawMessages = page.messages;
+          loadedMessageCountRef.current = page.pagination.returned;
+          loadedMessageKeysRef.current = new Set(
+            page.messages
+              .map((message) => historyMessageKey(message as Record<string, unknown>))
+              .filter((key): key is string => key !== null),
+          );
+          setHasOlder(page.pagination.returned === page.pagination.limit);
+        } else {
+          loadedMessageCountRef.current = rawMessages.length;
+          setHasOlder(false);
         }
-        resumeReplayRef.current = liveTurnEvents(cached);
+        storedSidRef.current = storedSid;
+        profileRef.current = profile;
         linkSessionAliases(
           conn.id,
           session?.id,
@@ -529,23 +581,19 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
         sidRef.current = opened.session_id;
         if (session) {
           initialSnapPendingRef.current = true;
+          setTranscriptReady(false);
           setInitializing(true);
         }
         setLiveSid(opened.session_id);
         setInfo(opened.info);
-        const seeded: TimelineItem[] = (opened.messages ?? []).flatMap((m) =>
+        const seeded: TimelineItem[] = rawMessages.flatMap((m) =>
           historyItems(m as Record<string, unknown>),
         );
         const running = opened.running === true || opened.status === "streaming";
+        resumeRunningRef.current = running;
+        resumeReplayRef.current = cached;
         const inflightText = opened.inflight?.assistant?.trim() ?? "";
         resumeHasInflightRef.current = Boolean(inflightText);
-        if (inflightText) {
-          // Resume envelope carries the full accumulated response. Keep replay
-          // only for activity events, otherwise cached deltas duplicate it.
-          resumeReplayRef.current = resumeReplayRef.current.filter(
-            (event) => event.type !== "message.start" && event.type !== "message.delta",
-          );
-        }
         setItems(
           running && inflightText
             ? [
@@ -566,7 +614,12 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
         const pending = await client.pendingApprovals(opened.session_id);
         if (!cancelled && pending.length > 0) setApproval(pending[0]);
       } catch (err) {
-        if (!cancelled) setFatal(err instanceof Error ? err.message : String(err));
+        if (!cancelled) {
+          setFatal(err instanceof Error ? err.message : String(err));
+          setInitializing(false);
+          initialSnapPendingRef.current = false;
+          setTranscriptReady(true);
+        }
       }
     })();
     return () => {
@@ -580,14 +633,23 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
     if (isGroup || !liveSid) return;
     // Re-read after liveSid lands to close the capture→subscribe race. Same
     // event objects dedupe through handledEventsRef.
-    const fresh = liveTurnEvents(
-      getSessionEvents(client, liveSid, client.replayGeneration) as GatewayEvent[],
+    const latest = getSessionEvents(
+      client,
+      liveSid,
+      client.replayGeneration,
+    ) as GatewayEvent[];
+    const baseline = resumeReplayRef.current;
+    const baselineSet = new Set(baseline);
+    const events = resumeCatchupEvents(
+      baseline,
+      latest,
+      resumeRunningRef.current,
     ).filter(
       (event) =>
         !resumeHasInflightRef.current ||
+        !baselineSet.has(event) ||
         (event.type !== "message.start" && event.type !== "message.delta"),
     );
-    const events = [...resumeReplayRef.current, ...fresh];
     resumeReplayRef.current = [];
     for (const event of events) {
       if (handledEventsRef.current.has(event)) continue;
@@ -595,6 +657,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
       handledEventsRef.current.add(event);
     }
     clearSessionEvents(client, liveSid, client.replayGeneration);
+    resumeCatchupRef.current = false;
     setInitializing(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [liveSid, isGroup]);
@@ -771,7 +834,12 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
     if (isGroup) return;
     return client.addEventHandler((event) => {
       const sid = sidRef.current;
-      if (!sid || event.session_id !== sid || handledEventsRef.current.has(event)) return;
+      if (
+        !sid ||
+        event.session_id !== sid ||
+        handledEventsRef.current.has(event) ||
+        !acceptLiveEvent(resumeCatchupRef.current)
+      ) return;
       handleGatewayEvent(event);
       handledEventsRef.current.add(event);
     });
@@ -788,7 +856,25 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
     lastCountRef.current = items.length;
     setStuck(false);
     initialSnapPendingRef.current = false;
+    bottomPinUntilRef.current = performance.now() + 350;
+    setTranscriptReady(true);
+    const pin = () => {
+      const body = bodyRef.current;
+      if (!body || performance.now() >= bottomPinUntilRef.current) return;
+      body.scrollTop = body.scrollHeight;
+      settleTimerRef.current = setTimeout(pin, 50);
+    };
+    settleTimerRef.current = setTimeout(pin, 50);
   }, [initializing, items.length]);
+
+  // Pulihkan viewport tepat setelah baris lama ditambahkan di atas.
+  useLayoutEffect(() => {
+    const anchor = prependAnchorRef.current;
+    const el = bodyRef.current;
+    if (!anchor || !el) return;
+    el.scrollTop = preservedScrollTop(anchor.height, anchor.top, el.scrollHeight);
+    prependAnchorRef.current = null;
+  }, [items]);
 
   // autoscroll — sticky: follow LIVE updates only while the user is near the
   // bottom (±80px). Initial resume is handled synchronously above.
@@ -797,10 +883,17 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
     if (!el) return;
     const grew = items.length !== lastCountRef.current;
     lastCountRef.current = items.length;
-    if (!stickRef.current) return;
-    const smooth = grew && !reduceMotionRef.current;
+    if (!stickRef.current || initializing || initialSnapPendingRef.current) return;
+    const smooth =
+      performance.now() >= bottomPinUntilRef.current &&
+      allowSmoothAutoScroll(
+        initializing,
+        initialSnapPendingRef.current,
+        grew,
+        reduceMotionRef.current,
+      );
     el.scrollTo({ top: el.scrollHeight, behavior: smooth ? "smooth" : "auto" });
-  }, [items, approval]);
+  }, [items, approval, initializing]);
 
   function handleBodyScroll() {
     const el = bodyRef.current;
@@ -821,6 +914,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   useEffect(() => {
     return () => {
       if (sheetTimerRef.current) clearTimeout(sheetTimerRef.current);
+      if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
     };
   }, []);
 
@@ -1017,9 +1111,75 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
     }
   }
 
+  async function loadEarlier() {
+    const el = bodyRef.current;
+    const storedSid = storedSidRef.current;
+    const offset = loadedMessageCountRef.current;
+    if (!el || !storedSid || loadingOlder || !hasOlder) return;
+    if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
+    settleTimerRef.current = null;
+    bottomPinUntilRef.current = 0;
+    setLoadingOlder(true);
+    try {
+      const page = await client.sessionMessages(storedSid, {
+        offset,
+        profile: profileRef.current,
+      });
+      if (storedSidRef.current !== storedSid || loadedMessageCountRef.current !== offset) return;
+      const fresh = freshHistoryMessages(
+        page.messages as Record<string, unknown>[],
+        loadedMessageKeysRef.current,
+      );
+      const older = fresh.flatMap((message) => historyItems(message));
+      loadedMessageCountRef.current += page.pagination.returned;
+      setHasOlder(page.pagination.returned === page.pagination.limit);
+      if (older.length === 0) return;
+      prependAnchorRef.current = { height: el.scrollHeight, top: el.scrollTop };
+      stickRef.current = false;
+      setItems((prev) => [...older, ...prev]);
+    } catch (err) {
+      setComposerStatus(err instanceof Error ? err.message : String(err));
+    } finally {
+      if (storedSidRef.current === storedSid) setLoadingOlder(false);
+    }
+  }
+
+  async function steer() {
+    const text = input.trim();
+    const sid = sidRef.current;
+    if (!text || !sid || runActionBusy) return;
+    setRunActionBusy(true);
+    setComposerStatus("");
+    setInput("");
+    try {
+      const result = await client.steerSession(sid, text);
+      if (result.status === "rejected") throw new Error("Steer was rejected by the agent.");
+      setComposerStatus("Steer queued.");
+    } catch (err) {
+      setInput((current) => (current ? `${text}\n${current}` : text));
+      setComposerStatus(err instanceof Error ? err.message : String(err));
+    } finally {
+      setRunActionBusy(false);
+    }
+  }
+
+  async function stop() {
+    if (!sidRef.current) return;
+    setComposerStatus("");
+    try {
+      await client.interruptSession(sidRef.current);
+    } catch (err) {
+      setComposerStatus(err instanceof Error ? err.message : String(err));
+    }
+  }
+
   async function send() {
     const text = input.trim();
     if (!text) return;
+    if (streaming && !isGroup) {
+      await steer();
+      return;
+    }
     // Group mode: the driver appends the user entry (new thread) and every
     // member reply lands through its onEntry callback.
     if (isGroup) {
@@ -1276,7 +1436,16 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
         </div>
       )}
 
-      <div className="body" ref={bodyRef} onScroll={handleBodyScroll}>
+      <div
+        className={`body${transcriptReady ? "" : " transcript-hidden"}`}
+        ref={bodyRef}
+        onScroll={handleBodyScroll}
+      >
+        {hasOlder && (
+          <button type="button" className="load-earlier" disabled={loadingOlder} onClick={() => void loadEarlier()}>
+            {loadingOlder ? "Loading…" : "Load earlier"}
+          </button>
+        )}
         {fatal && <div className="error-line">{fatal}</div>}
         {timeline}
         {awaiting && (
@@ -1351,6 +1520,9 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
       )}
 
       <div className="composer-wrap">
+        {composerStatus && (
+          <div className="composer-status" role="status">{composerStatus}</div>
+        )}
         {attachError && (
           <div className="error-line" style={{ marginBottom: 6 }}>{attachError}</div>
         )}
@@ -1420,11 +1592,13 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
                 ? groupRoom
                   ? "Message the group…"
                   : "Loading room…"
-                : liveSid
-                  ? room
-                    ? "Message the room…"
-                    : "Message…"
-                  : "Opening session…"
+                : streaming
+                  ? "Steer this run…"
+                  : liveSid
+                    ? room
+                      ? "Message the room…"
+                      : "Message…"
+                    : "Opening session…"
             }
             value={input}
             disabled={isGroup ? !groupRoom : !liveSid}
@@ -1440,11 +1614,24 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
             }}
             onFocus={() => setAttachMenuOpen(false)}
           />
+          {streaming && !isGroup && input.trim() && (
+            <button
+              className="composer-action composer-send"
+              disabled={runActionBusy}
+              title="Steer"
+              aria-label="Steer active run"
+              onClick={() => void steer()}
+            >
+              <ArrowUpIcon size={18} />
+            </button>
+          )}
           {streaming && !isGroup ? (
             <button
               className="composer-action composer-stop"
+              disabled={runActionBusy}
               title="Stop"
-              onClick={() => void client.interruptSession(sidRef.current).catch(() => undefined)}
+              aria-label="Stop active run"
+              onClick={() => void stop()}
             >
               <StopIcon size={16} />
             </button>

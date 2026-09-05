@@ -160,10 +160,11 @@ export function recordSessionEvent(
   const previousText = eventText(previous?.payload);
   const nextText = eventText(event.payload);
   if (previous?.type === "message.delta" && event.type === "message.delta" && nextText) {
-    active.events[active.events.length - 1] = {
-      ...event,
+    // Pertahankan identity object agar snapshot catch-up dan cache terbaru tetap
+    // dapat dideduplikasi sambil payload akumulatif bergerak maju.
+    Object.assign(previous, event, {
       payload: { ...eventObject(event.payload), text: previousText + nextText },
-    };
+    });
   } else {
     active.events.push(event);
   }

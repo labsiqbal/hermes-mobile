@@ -47,6 +47,10 @@ export interface SessionSummary {
   started_at: number;
   message_count: number;
   source: string;
+  /** Profile-owned state.db scope; required for cross-profile Bot Chat resume. */
+  profile?: string;
+  /** Fresh gateway draft has no state.db row until its first prompt persists it. */
+  unpersisted?: boolean;
   cwd?: string | null;
   git_repo_root?: string | null;
   git_branch?: string | null;
@@ -119,10 +123,23 @@ export interface ConfigSetResult {
   warning?: string;
 }
 
+export interface SessionMessagesPage {
+  session_id: string;
+  messages: ChatMessage[];
+  pagination: {
+    limit: number;
+    offset: number;
+    order: "latest" | "oldest";
+    returned: number;
+  };
+}
+
 export interface ResumeResult {
   /** Live runtime session id — events for this chat carry THIS sid. */
   session_id: string;
   stored_session_id?: string;
+  session_key?: string;
+  message_count?: number;
   messages: ChatMessage[];
   info?: SessionInfo;
   /** Current runtime state when reopening an existing session. */
@@ -1006,8 +1023,43 @@ export class HermesConnection {
     return await this.rpc<CreateResult>("session.create", { ...options });
   }
 
-  async resumeSession(sessionId: string): Promise<ResumeResult> {
-    return await this.rpc<ResumeResult>("session.resume", { session_id: sessionId });
+  async resumeSession(
+    sessionId: string,
+    options: { omitMessages?: boolean; profile?: string } = {},
+  ): Promise<ResumeResult> {
+    return await this.rpc<ResumeResult>("session.resume", {
+      session_id: sessionId,
+      ...(options.omitMessages ? { omit_messages: true } : {}),
+      ...(options.profile ? { profile: options.profile } : {}),
+    });
+  }
+
+  /** Halaman transcript REST resmi; `latest` tetap mengembalikan urutan kronologis. */
+  async sessionMessages(
+    sessionId: string,
+    options: {
+      limit?: number;
+      offset?: number;
+      order?: "latest" | "oldest";
+      includeCompacted?: boolean;
+      profile?: string;
+    } = {},
+  ): Promise<SessionMessagesPage> {
+    const query = new URLSearchParams({
+      limit: String(options.limit ?? 120),
+      offset: String(options.offset ?? 0),
+      order: options.order ?? "latest",
+      include_compacted: String(options.includeCompacted ?? true),
+    });
+    if (options.profile && options.profile !== "default") query.set("profile", options.profile);
+    const path = `/api/sessions/${encodeURIComponent(sessionId)}/messages?${query}`;
+    const resp = await fetch(`${this.url}${path}`, {
+      method: "GET",
+      headers: this.authHeaders(),
+      credentials: "include",
+    });
+    if (!resp.ok) throw new AuthError(resp.status, `GET ${path} → HTTP ${resp.status}`);
+    return (await resp.json()) as SessionMessagesPage;
   }
 
   /**
@@ -1070,6 +1122,11 @@ export class HermesConnection {
 
   async interruptSession(sessionId: string): Promise<unknown> {
     return await this.rpc("session.interrupt", { session_id: sessionId });
+  }
+
+  /** Sisipkan arahan ke turn aktif tanpa membuat user message baru. */
+  async steerSession(sessionId: string, text: string): Promise<{ status?: string; text?: string }> {
+    return await this.rpc("session.steer", { session_id: sessionId, text });
   }
 
   /**

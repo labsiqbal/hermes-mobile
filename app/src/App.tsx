@@ -135,7 +135,7 @@ export default function App() {
 
   // Integration contract for BotsScreen: it only knows a session id, so wrap
   // it in a minimal summary — ChatView resumes the full session by id.
-  function openChatById(sessionId: string) {
+  function openChatById(sessionId: string, profile: string, unpersisted = false) {
     openChat({
       id: sessionId,
       title: "",
@@ -143,6 +143,8 @@ export default function App() {
       started_at: 0,
       message_count: 0,
       source: "bots",
+      profile,
+      unpersisted,
     });
   }
 
