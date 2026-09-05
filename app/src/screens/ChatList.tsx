@@ -43,7 +43,8 @@ export default function ChatList({ conn, client, onOpenChat }: Props) {
       return new Set();
     }
   });
-  const [loadingProject, setLoadingProject] = useState<string | null>(null);
+  const [loadingProjects, setLoadingProjects] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [recentExpanded, setRecentExpanded] = useState(true);
   const [pendingDelete, setPendingDelete] = useState<SessionSummary | null>(null);
@@ -55,6 +56,7 @@ export default function ChatList({ conn, client, onOpenChat }: Props) {
   const longPressFired = useRef(false);
 
   const load = useCallback(async () => {
+    setLoading(true);
     try {
       const [nextSessions, tree] = await Promise.all([
         client.listSessions(),
@@ -63,9 +65,12 @@ export default function ChatList({ conn, client, onOpenChat }: Props) {
       setSessions(nextSessions);
       setProjects(tree.projects);
       setScopedIds(new Set(tree.scoped_session_ids ?? []));
+      setHydrated({});
       setError("");
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setLoading(false);
     }
   }, [client]);
 
@@ -150,7 +155,24 @@ export default function ChatList({ conn, client, onOpenChat }: Props) {
     return [...new Map(rows.map((session) => [session.id, session])).values()];
   }, [hydrated]);
 
-  const toggleProject = useCallback(async (project: ProjectTreeItem) => {
+  const hydrateProject = useCallback(async (project: ProjectTreeItem) => {
+    if (hydrated[project.id] || loadingProjects.has(project.id) || project.sessionCount === 0) return;
+    setLoadingProjects((previous) => new Set(previous).add(project.id));
+    try {
+      const full = await client.projectSessions(project.id);
+      if (full) setHydrated((previous) => ({ ...previous, [project.id]: full }));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setLoadingProjects((previous) => {
+        const next = new Set(previous);
+        next.delete(project.id);
+        return next;
+      });
+    }
+  }, [client, hydrated, loadingProjects]);
+
+  const toggleProject = useCallback((project: ProjectTreeItem) => {
     const opening = !expanded.has(project.id);
     setExpanded((previous) => {
       const next = new Set(previous);
@@ -159,17 +181,16 @@ export default function ChatList({ conn, client, onOpenChat }: Props) {
       localStorage.setItem(`hermes-projects-expanded:${conn.id}`, JSON.stringify([...next]));
       return next;
     });
-    if (!opening || hydrated[project.id] || project.sessionCount === 0) return;
-    setLoadingProject(project.id);
-    try {
-      const full = await client.projectSessions(project.id);
-      if (full) setHydrated((previous) => ({ ...previous, [project.id]: full }));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setLoadingProject(null);
+    if (opening) void hydrateProject(project);
+  }, [conn.id, expanded, hydrateProject]);
+
+  // Persisted-open groups must hydrate on mount/refresh; previewSessions only
+  // carries the first three rows.
+  useEffect(() => {
+    for (const project of projects) {
+      if (expanded.has(project.id)) void hydrateProject(project);
     }
-  }, [client, conn.id, expanded, hydrated]);
+  }, [expanded, hydrateProject, projects]);
 
   const projectRows = useMemo(() => projects
     // Daftar chat hanya menampilkan proyek nyata yang berisi percakapan.
@@ -234,29 +255,32 @@ export default function ChatList({ conn, client, onOpenChat }: Props) {
     <div className="screen">
       <div className="body chatlist">
         {error && <div className="error-line">{error}</div>}
-        {sessions.length === 0 && !error && (
+        {!loading && sessions.length === 0 && !error && (
           <div className="hint">No sessions on this machine yet. Start one with the + button above.</div>
         )}
         {projectRows.map(({ project, sessions: rows }) => {
           const open = expanded.has(project.id);
+          const loadingProject = loadingProjects.has(project.id);
           const visibleRows = hydrated[project.id] ? rows : rows.slice(0, 3);
+          const panelId = `project-sessions-${project.id.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
           return (
             <section key={project.id} className="project-group">
               <button
                 type="button"
                 className="project-group-head"
                 aria-expanded={open}
-                onClick={() => void toggleProject(project)}
+                aria-controls={panelId}
+                onClick={() => toggleProject(project)}
               >
                 {open ? <ChevronDownIcon size={16} /> : <ChevronRightIcon size={16} />}
                 <span className="project-group-name">{project.label}</span>
                 <span className="project-group-count">{project.sessionCount}</span>
               </button>
               {open && (
-                <div className="project-group-rows">
-                  {loadingProject === project.id && <div className="hint">Loading sessions…</div>}
-                  {loadingProject !== project.id && visibleRows.map(renderSessionRow)}
-                  {loadingProject !== project.id && visibleRows.length === 0 && (
+                <div id={panelId} className="project-group-rows">
+                  {loadingProject && <div className="hint" role="status">Loading sessions…</div>}
+                  {!loadingProject && visibleRows.map(renderSessionRow)}
+                  {!loadingProject && visibleRows.length === 0 && (
                     <div className="hint">No sessions</div>
                   )}
                 </div>
@@ -270,6 +294,7 @@ export default function ChatList({ conn, client, onOpenChat }: Props) {
               type="button"
               className="project-group-head"
               aria-expanded={recentExpanded}
+              aria-controls="recent-sessions"
               onClick={() => setRecentExpanded((open) => !open)}
             >
               {recentExpanded ? <ChevronDownIcon size={16} /> : <ChevronRightIcon size={16} />}
@@ -277,7 +302,9 @@ export default function ChatList({ conn, client, onOpenChat }: Props) {
               <span className="project-group-count">{fallbackSessions.length}</span>
             </button>
             {recentExpanded && (
-              <div className="project-group-rows">{fallbackSessions.map(renderSessionRow)}</div>
+              <div id="recent-sessions" className="project-group-rows">
+                {fallbackSessions.map(renderSessionRow)}
+              </div>
             )}
           </section>
         )}
