@@ -1,0 +1,262 @@
+{
+  "type": "pinned-source-presence-check-not-runtime-proof",
+  "checked_at": "2026-09-05T16:17:10.873568+00:00",
+  "inventory_sha256": "4a53ca0ab548c24cd44f2f4a1d7bb28d2bbd5ffa3d9d373849f641f414f22b25",
+  "rows_checked": 229,
+  "source_files_checked": 49,
+  "missing_symbols": [],
+  "limitations": [
+    "Symbol substring presence verifies provenance only, not semantic completeness, endpoint authorization, stable-release availability or mobile implementation."
+  ],
+  "sources": [
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/electron/preload.ts",
+      "sha256": "1c92561be2cc979296e2404a9e8111933bc7eab8281ea557e69044769a472071"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/electron/terminal-ipc.ts",
+      "sha256": "36b823bb025e0c47f6a510edd9c50fd12734b20a2e25fdc95bb8bf7ed8cdbe31"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/api/config.ts",
+      "sha256": "1170420affa0001902b8a7b335cde86aef2d92fd9706cffc25e0ec1b9b14bb41"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/api/cron.ts",
+      "sha256": "297e737e14911c1455e4b710e8e419bcd0f606b55bc06572f2bf8d7a522ad343"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/api/local-models.ts",
+      "sha256": "ec38de5d231db23c71080fb801fdadae9fcc120e3ec78bb8f8ba18899f836097"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/api/mcp.ts",
+      "sha256": "6d354480ecec07c74d9e442dd0a4cb84d931880f69f6b2b262f3a954f8beae46"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/api/messaging.ts",
+      "sha256": "e4fcc6ecf96b24fad749e6fc6dc5a035738804d80db5cc073059a18b9ca1b9e7"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/api/models.ts",
+      "sha256": "5b8f18c76f624f8b5b982309db83d001e70e7401ab8c145973e09fda22d8e479"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/api/profiles.ts",
+      "sha256": "0a8524e5b239730aab6db1545a8cdb1b664fd63a1272f3703388b865243e6978"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/api/sessions.ts",
+      "sha256": "8dc7097f56540892d508ecdb1e1b48350c0ae01e53d5af345f7ac1cfedeef122"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/api/skills.ts",
+      "sha256": "2ba717c9a0bf642aa62005b6212663763e09b3bd9fd38f1883a01f4bb571be49"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/api/system.ts",
+      "sha256": "2b1ce9825d1285aae65ef199dc172b13b0b2d93005321c9781cf50e12c2acdb8"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/api/toolsets.ts",
+      "sha256": "525098e7115aacdcea1a8b837b940df82a22b5121b9b4125eefd641e300b6828"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/app/artifacts/index.tsx",
+      "sha256": "db609b3eaea90a516837bf145388a3d0355de95822998d20252edf6a82edd065"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/app/chat/composer/hooks/use-voice-recorder.ts",
+      "sha256": "dc7b23dfb77d4e1767b2ca8420d7f4022f75010f40496b6ea55426ad78137666"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/app/chat/right-rail/preview-annotate-host.ts",
+      "sha256": "3a110f3b275a0551b061a787633db6606ab318fdfe28047cb8b64f96eed173e2"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/app/chat/right-rail/preview-browser-bar.tsx",
+      "sha256": "42432a9b4363754b421e33005c2ecec5ae49f761414abec7c9d7e0f643a5919b"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/app/routes.ts",
+      "sha256": "c8904f989e3040e198d6eac5182286f283cf8bf71e7fcb907df7686c7c3077af"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/app/session/hooks/use-message-stream/gateway-event/input-requests.ts",
+      "sha256": "2293d0dfc726873d5954dbe0ae6c2e502393e960cceeb8f96ba03d95bfbfdf69"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/app/session/hooks/use-prompt-actions/index.ts",
+      "sha256": "cbf6eb2ec0e20a6dabe7176362b17b11aa9919cba15e3745711923939ce6bfb0"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/app/session/hooks/use-prompt-actions/rewind.ts",
+      "sha256": "3240ec25a88a52dde7fe107858c66d605f7bc9e53491108c70d801f0aac38558"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/app/session/hooks/use-prompt-actions/slash.ts",
+      "sha256": "ce1a8fb64ea648fc8219da2acd7d3aec043d4b8e1f673f91fcb8176291d6c166"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/app/session/hooks/use-prompt-actions/submit.ts",
+      "sha256": "8bf663522b1df6eb1b24b88f2daa6189dac333450af541defffc1a31f346c6cc"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/app/session/hooks/use-session-actions/index.ts",
+      "sha256": "2f2b78f969de04c70c6c4a8be849b1462038b452d4f40eb7e93e2cbbe3950ec8"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/app/settings/appearance-settings.tsx",
+      "sha256": "1c649060a56ce6330f8ecc98a7cb78324272bd384978c7e40e5778bcb63abf29"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/app/settings/constants.ts",
+      "sha256": "ce3881256a9e23f81f9065c8c777bb0db82290374d8e5c7829c89f11eed09256"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/app/settings/index.tsx",
+      "sha256": "495b38e5a56261f1d59de48a80fa161ee870bc13e653f1511ae23da48d277c59"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/app/starmap/share-controls.tsx",
+      "sha256": "545d9d466948cb1674106ded6bef91fdaeaf162d78ba984248ba90ab2c356cc5"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/components/assistant-ui/clarify-tool.tsx",
+      "sha256": "e5e6f1ed25feb5efb4589e1b0d7b4b839218cb4ce0545af751c65b14d724e16a"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/components/assistant-ui/tool/approval.tsx",
+      "sha256": "6a6f175d8cd8f76967c586fac28d04506e6b896df125063c8cb72181fc3aed40"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/contrib/plugins.ts",
+      "sha256": "c9f4077a318002ad832d3ef855d2bdec59938092d8aa3d49ce6ba900d96e7628"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/lib/desktop-fs.ts",
+      "sha256": "7e2be68c26e5f7ecaebb4bf9510c7547d65899eaf763e44dac08045ac87e9b3e"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/lib/desktop-git.ts",
+      "sha256": "5aa54145dd5029d68efaf341410227cbb577861e8ccdedc678bd0f204659404f"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/lib/desktop-slash-commands.ts",
+      "sha256": "8ee65a652178b7facdf5039c340cd286130baffcabf8d0d09cddadd58ef2fe2b"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/lib/keybinds/actions.ts",
+      "sha256": "ea361858c8a54dca8db7a83bf9aec1f85b71478d591b4ae34723067148b45378"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/lib/preview-annotate/pack.ts",
+      "sha256": "8a324be23d0cf14ef53cbd79e00d7036885427bf7828e14a58bc9cbd9bc1da50"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/plugins/accent/plugin.tsx",
+      "sha256": "e562b8d46dbed917d4b75ef96190a5db7ab2d6e7dea8355910900ee6ea929ca9"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/plugins/hermes-bots/canonical-chat.ts",
+      "sha256": "589957e5fb635cbd405f210dc8f07f4697e1450f023c564f66c02317bc171140"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/plugins/hermes-bots/cron.tsx",
+      "sha256": "5a2711f22ea16f6fbf7e1cdf1f67ae58bb42e599b64941b9897b15b7291edcc6"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/plugins/hermes-bots/edit-profile-dialog.tsx",
+      "sha256": "3b0ee267ed337106c8ce620149821794e0bf5626cfd1595ae2f0e98dafabf00a"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/plugins/hermes-bots/group-chat.ts",
+      "sha256": "6a592118ea6601f1be331b8b0ab51154b95873cb0e5f07f403b366a6289d54bc"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/plugins/hermes-bots/plugin.tsx",
+      "sha256": "f34e5b6ab286f3e5aa2ab05ab9d8885e0f70f360983c16e0195e46dfd53a2602"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/plugins/kanban/api.ts",
+      "sha256": "e96fcbc5e0373ebab0836d0d7c66afff13a745f62251d68b7fdd82650bd6398e"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/store/artifacts.ts",
+      "sha256": "79ad97746c48f0a405ac597226efbb69b58aff6495ea49ee27f8f3fd2baf2399"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/store/composer-queue.ts",
+      "sha256": "dcc296a60d3ab750272b4e5cfb553a00aad3063dd74d73219931e3885bc2c6d8"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/app/command-palette/index.tsx",
+      "sha256": "205868fc2abbb3e48eb1daa83324ae0c61c37d9eb0603d7de52245d7667edb62"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/plugins/kanban/plugin.tsx",
+      "sha256": "cb0299c0bb16cd23ccd04c08c4a609b78a66acc2c869d35f65e15434ea800f6c"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "hermes_cli/web_routers/files.py",
+      "sha256": "727c8a05cb3c4491f47f9a21537a523064b823f4094c64bd68996117917e533c"
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "hermes_cli/web_routers/git.py",
+      "sha256": "e7f34b921def5d20739aeb5eea56eacd7d5c434c5639342e322a9def5c32a16f"
+    }
+  ],
+  "source_lock_hash_errors": [],
+  "audited_symbol_line_errors": [],
+  "line_links_checked": 229,
+  "line_link_mismatches": []
+}

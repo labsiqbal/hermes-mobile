@@ -1,0 +1,20 @@
+> hermes-mobile-app@0.1.0 check:chat-resume
+> node scripts/check-chat-resume.mjs
+
+chat resume check: PASS
+
+> hermes-mobile-app@0.1.0 check:bots
+> node scripts/check-bots-utils.mjs
+
+bots utils check: PASS
+
+> hermes-mobile-app@0.1.0 lint
+> oxlint
+
+scripts/smoke.mjs:22:10: warning eslint(no-unused-vars): Identifier 'createRequire' is imported but never used. help: Consider removing this import.
+src/components/icons.tsx:38:19: warning react(only-export-components): Fast refresh only works when a file only exports components. Move your component(s) to a separate file.
+src/screens/Bots.tsx:68:10: warning react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+src/screens/Rooms.tsx:91:10: warning react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+src/screens/Runs.tsx:163:10: warning react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+src/screens/ChatList.tsx:191:42: warning react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+src/screens/Groups.tsx:135:10: warning react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.

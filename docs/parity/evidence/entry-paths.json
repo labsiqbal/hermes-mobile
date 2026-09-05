@@ -1,0 +1,43 @@
+{
+  "status": "passed",
+  "type": "offline-hub-entry-path-regression",
+  "cases": 6,
+  "results": [
+    {
+      "base": "file:///offline/design/parity-compare/index.html",
+      "shell": "file:///offline/design/parity-shell/index.html",
+      "workspace": "file:///offline/design/parity-workspace/index.html",
+      "status": "passed"
+    },
+    {
+      "base": "file:///offline/design/parity-compare/index.html?src=https://untrusted.invalid/#both",
+      "shell": "file:///offline/design/parity-shell/index.html",
+      "workspace": "file:///offline/design/parity-workspace/index.html",
+      "status": "passed"
+    },
+    {
+      "base": "http://preview.invalid/reviews/desktop-parity/parity-compare/",
+      "shell": "http://preview.invalid/reviews/desktop-parity/parity-shell/",
+      "workspace": "http://preview.invalid/reviews/desktop-parity/parity-workspace/",
+      "status": "passed"
+    },
+    {
+      "base": "https://preview.invalid/reviews/desktop-parity/parity-compare/",
+      "shell": "https://preview.invalid/reviews/desktop-parity/parity-shell/",
+      "workspace": "https://preview.invalid/reviews/desktop-parity/parity-workspace/",
+      "status": "passed"
+    },
+    {
+      "base": "https://preview.invalid/reviews/desktop-parity/parity-compare/index.html",
+      "shell": "https://preview.invalid/reviews/desktop-parity/parity-shell/",
+      "workspace": "https://preview.invalid/reviews/desktop-parity/parity-workspace/",
+      "status": "passed"
+    },
+    {
+      "base": "https://preview.invalid/reviews/desktop-parity/parity-compare/?src=https://untrusted.invalid/#https://untrusted.invalid/",
+      "shell": "https://preview.invalid/reviews/desktop-parity/parity-shell/",
+      "workspace": "https://preview.invalid/reviews/desktop-parity/parity-workspace/",
+      "status": "passed"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+{
+  "status": "failed",
+  "fatal": "AssertionError [ERR_ASSERTION]: four absent flows and immediate approval per variant must fail\n\n8 !== 10\n\n    at selfTest (file:///home/iqbal/workspace/.worktrees/hermes-mobile/parity-review/app/scripts/check-prototype.mjs:697:12)\n    at async main (file:///home/iqbal/workspace/.worktrees/hermes-mobile/parity-review/app/scripts/check-prototype.mjs:738:33)"
+}

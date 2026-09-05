@@ -1,0 +1,35 @@
+{
+  "preview": [
+    {
+      "url": "https://nuc.tailcf7779.ts.net:8450/reviews/desktop-parity/parity-shell/",
+      "status": 200,
+      "sha256": "09b46d3fcd15b570e2e4167590797e10b74ebc3ec327e840f1d6ea19763d1390"
+    },
+    {
+      "url": "https://nuc.tailcf7779.ts.net:8450/reviews/desktop-parity/parity-workspace/",
+      "status": 200,
+      "sha256": "c9878cf581571dc209025a22051911ca9edb219e3d33c2420b33cd0a417fe683"
+    },
+    {
+      "url": "https://nuc.tailcf7779.ts.net:8450/reviews/desktop-parity/parity-compare/",
+      "status": 200,
+      "sha256": "57e5484258ab59abf175e7de6fadfa5217a80fab7e871009640744221e47c252"
+    },
+    {
+      "url": "https://nuc.tailcf7779.ts.net:8450/reviews/desktop-parity/parity-routes.json",
+      "status": 200,
+      "sha256": "374f13b8eceb948d2f0089c583e2fb3ec0bbf777c64d4639d41ccdad6c603e74"
+    },
+    {
+      "url": "https://nuc.tailcf7779.ts.net:8450/reviews/desktop-parity/parity-README.md",
+      "status": 200,
+      "sha256": "2e8aff32198997016fd21e38f235f1aa2105a06648c0e3c5982cd48926abe9ff"
+    }
+  ],
+  "live_app": {
+    "url": "https://nuc.tailcf7779.ts.net:8451/",
+    "status": 200,
+    "sha256": "96121582978238d85ec631ab2168db880043b930cd7030d51af51df4923d177b",
+    "unchanged": true
+  }
+}

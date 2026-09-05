@@ -1,0 +1,162 @@
+{
+  "schema_version": 1,
+  "routes": [
+    {
+      "id": "home",
+      "title": "Home",
+      "kind": "root"
+    },
+    {
+      "id": "chats",
+      "title": "Conversations",
+      "kind": "collection"
+    },
+    {
+      "id": "chat",
+      "title": "Field notes \u00b7 chat",
+      "kind": "detail"
+    },
+    {
+      "id": "bots",
+      "title": "Bots",
+      "kind": "collection"
+    },
+    {
+      "id": "bot",
+      "title": "Mira \u00b7 bot",
+      "kind": "detail"
+    },
+    {
+      "id": "groups",
+      "title": "Groups",
+      "kind": "collection"
+    },
+    {
+      "id": "group",
+      "title": "Launch room",
+      "kind": "detail"
+    },
+    {
+      "id": "activity",
+      "title": "Activity",
+      "kind": "collection"
+    },
+    {
+      "id": "approval",
+      "title": "Review approval",
+      "kind": "detail"
+    },
+    {
+      "id": "schedules",
+      "title": "Schedules",
+      "kind": "collection"
+    },
+    {
+      "id": "schedule",
+      "title": "Morning brief",
+      "kind": "detail"
+    },
+    {
+      "id": "manage",
+      "title": "Manage",
+      "kind": "root"
+    },
+    {
+      "id": "gateways",
+      "title": "Devices & gateways",
+      "kind": "collection"
+    },
+    {
+      "id": "profiles",
+      "title": "Profiles",
+      "kind": "collection"
+    },
+    {
+      "id": "capabilities",
+      "title": "Capabilities",
+      "kind": "collection"
+    },
+    {
+      "id": "memory",
+      "title": "Memory",
+      "kind": "detail"
+    },
+    {
+      "id": "messaging",
+      "title": "Messaging",
+      "kind": "detail"
+    },
+    {
+      "id": "webhooks",
+      "title": "Webhooks",
+      "kind": "detail"
+    },
+    {
+      "id": "kanban",
+      "title": "Kanban",
+      "kind": "detail"
+    },
+    {
+      "id": "command-center",
+      "title": "Command Center",
+      "kind": "detail"
+    },
+    {
+      "id": "files",
+      "title": "Workspace files",
+      "kind": "collection"
+    },
+    {
+      "id": "preview",
+      "title": "Preview",
+      "kind": "detail"
+    },
+    {
+      "id": "artifacts",
+      "title": "Artifacts",
+      "kind": "collection"
+    },
+    {
+      "id": "git",
+      "title": "Git review",
+      "kind": "detail"
+    },
+    {
+      "id": "terminal",
+      "title": "Terminal",
+      "kind": "blocked"
+    },
+    {
+      "id": "browser",
+      "title": "Browser & annotation",
+      "kind": "blocked"
+    },
+    {
+      "id": "settings",
+      "title": "Settings",
+      "kind": "detail"
+    },
+    {
+      "id": "voice",
+      "title": "Voice",
+      "kind": "blocked"
+    },
+    {
+      "id": "native",
+      "title": "Native capabilities",
+      "kind": "blocked"
+    }
+  ],
+  "variants": [
+    {
+      "id": "shell",
+      "entry": "design/parity-shell/index.html",
+      "root": "home"
+    },
+    {
+      "id": "workspace",
+      "entry": "design/parity-workspace/index.html",
+      "root": "home"
+    }
+  ]
+}

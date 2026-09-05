@@ -1,0 +1,1333 @@
+{
+  "schema_version": 1,
+  "type": "offline-prototype-extended-ui-checks",
+  "root": "/home/iqbal/workspace/.worktrees/hermes-mobile/parity-review",
+  "checks": [
+    {
+      "scope": "shell/route/home/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/chats/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/chat/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/bots/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/bot/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/groups/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/group/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/activity/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/approval/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/schedules/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/schedule/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/manage/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/gateways/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/profiles/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/capabilities/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/memory/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/messaging/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/webhooks/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/kanban/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/command-center/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/files/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/preview/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/artifacts/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/git/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/terminal/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/browser/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/settings/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/voice/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/native/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/home/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/chats/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/chat/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/bots/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/bot/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/groups/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/group/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/activity/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/approval/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/schedules/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/schedule/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/manage/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/gateways/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/profiles/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/capabilities/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/memory/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/messaging/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/webhooks/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/kanban/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/command-center/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/files/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/preview/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/artifacts/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/git/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/terminal/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/browser/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/settings/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/voice/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/native/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/home/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/chats/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/chat/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/bots/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/bot/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/groups/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/group/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/activity/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/approval/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/schedules/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/schedule/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/manage/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/gateways/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/profiles/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/capabilities/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/memory/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/messaging/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/webhooks/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/kanban/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/command-center/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/files/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/preview/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/artifacts/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/git/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/terminal/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/browser/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/settings/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/voice/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/native/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/home/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/chats/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/chat/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/bots/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/bot/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/groups/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/group/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/activity/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/approval/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/schedules/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/schedule/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/manage/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/gateways/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/profiles/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/capabilities/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/memory/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/messaging/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/webhooks/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/kanban/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/command-center/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/files/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/preview/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/artifacts/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/git/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/terminal/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/browser/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/settings/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/voice/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/route/native/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/resume",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/multiline-draft-files-preview-git-and-scroll",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/history-restores-conversation-draft-scroll",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/direct-preview-back-climbs-parents",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/session-model-isolated-by-gateway-profile-and-chat",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/bot-fixture-ownership-matches-canonical-chat",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/bots-chat-back",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/context-failure-focus-return-and-draft-isolation",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/two-step-approve",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/two-step-deny",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/offline-blocks-send-and-approval",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/sheet-focus-trap-and-escape",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/palette-pointer/home/360",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/palette-pointer/chats/360",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/palette-pointer/chat/360",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/palette-pointer/bots/360",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/palette-pointer/bot/360",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/palette-pointer/groups/360",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/palette-pointer/group/360",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/palette-pointer/activity/360",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/palette-pointer/approval/360",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/palette-pointer/schedules/360",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/palette-pointer/schedule/360",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/palette-pointer/manage/360",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/palette-pointer/gateways/360",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/palette-pointer/profiles/360",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/palette-pointer/capabilities/360",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/palette-pointer/memory/360",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/palette-pointer/messaging/360",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/palette-pointer/webhooks/360",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/palette-pointer/kanban/360",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/palette-pointer/command-center/360",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/palette-pointer/files/360",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/palette-pointer/preview/360",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/palette-pointer/artifacts/360",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/palette-pointer/git/360",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/palette-pointer/terminal/360",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/palette-pointer/browser/360",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/palette-pointer/settings/360",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/palette-pointer/voice/360",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/palette-pointer/native/360",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/local-management-controls",
+      "status": "passed"
+    },
+    {
+      "scope": "shell/four-preview-states",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/home/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/chats/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/chat/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/bots/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/bot/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/groups/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/group/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/activity/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/approval/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/schedules/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/schedule/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/manage/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/gateways/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/profiles/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/capabilities/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/memory/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/messaging/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/webhooks/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/kanban/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/command-center/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/files/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/preview/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/artifacts/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/git/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/terminal/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/browser/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/settings/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/voice/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/native/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/home/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/chats/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/chat/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/bots/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/bot/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/groups/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/group/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/activity/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/approval/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/schedules/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/schedule/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/manage/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/gateways/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/profiles/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/capabilities/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/memory/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/messaging/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/webhooks/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/kanban/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/command-center/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/files/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/preview/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/artifacts/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/git/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/terminal/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/browser/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/settings/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/voice/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/native/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/home/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/chats/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/chat/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/bots/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/bot/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/groups/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/group/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/activity/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/approval/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/schedules/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/schedule/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/manage/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/gateways/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/profiles/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/capabilities/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/memory/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/messaging/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/webhooks/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/kanban/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/command-center/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/files/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/preview/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/artifacts/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/git/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/terminal/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/browser/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/settings/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/voice/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/native/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/home/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/chats/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/chat/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/bots/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/bot/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/groups/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/group/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/activity/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/approval/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/schedules/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/schedule/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/manage/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/gateways/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/profiles/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/capabilities/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/memory/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/messaging/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/webhooks/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/kanban/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/command-center/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/files/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/preview/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/artifacts/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/git/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/terminal/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/browser/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/settings/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/voice/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/route/native/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/resume",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/multiline-draft-files-preview-git-and-scroll",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/history-restores-conversation-draft-scroll",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/direct-preview-back-climbs-parents",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/session-model-isolated-by-gateway-profile-and-chat",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/bot-fixture-ownership-matches-canonical-chat",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/bots-chat-back",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/context-failure-focus-return-and-draft-isolation",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/two-step-approve",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/two-step-deny",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/offline-blocks-send-and-approval",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/sheet-focus-trap-and-escape",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/palette-pointer/home/360",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/palette-pointer/chats/360",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/palette-pointer/chat/360",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/palette-pointer/bots/360",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/palette-pointer/bot/360",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/palette-pointer/groups/360",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/palette-pointer/group/360",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/palette-pointer/activity/360",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/palette-pointer/approval/360",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/palette-pointer/schedules/360",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/palette-pointer/schedule/360",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/palette-pointer/manage/360",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/palette-pointer/gateways/360",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/palette-pointer/profiles/360",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/palette-pointer/capabilities/360",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/palette-pointer/memory/360",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/palette-pointer/messaging/360",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/palette-pointer/webhooks/360",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/palette-pointer/kanban/360",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/palette-pointer/command-center/360",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/palette-pointer/files/360",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/palette-pointer/preview/360",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/palette-pointer/artifacts/360",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/palette-pointer/git/360",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/palette-pointer/terminal/360",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/palette-pointer/browser/360",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/palette-pointer/settings/360",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/palette-pointer/voice/360",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/palette-pointer/native/360",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/local-management-controls",
+      "status": "passed"
+    },
+    {
+      "scope": "workspace/four-preview-states",
+      "status": "passed"
+    },
+    {
+      "scope": "compare/switches/320x844",
+      "status": "passed"
+    },
+    {
+      "scope": "compare/switches/390x844",
+      "status": "passed"
+    },
+    {
+      "scope": "compare/switches/430x844",
+      "status": "passed"
+    },
+    {
+      "scope": "compare/switches/844x390",
+      "status": "passed"
+    },
+    {
+      "scope": "compare/switches/1440x1000",
+      "status": "passed"
+    },
+    {
+      "scope": "no-browser-errors-or-outbound-attempts",
+      "status": "passed"
+    }
+  ],
+  "routeCases": 232,
+  "palettePointerRoutes": 58,
+  "limitations": [
+    "Headless Chrome UI fixtures only, not live gateway or runtime parity.",
+    "Pointer events are dispatched through Chrome; native selects use public change events.",
+    "No real phone keyboard, assistive technology, background execution or contrast certification.",
+    "Network diagnostics cover the attached page, not an OS-level egress sandbox."
+  ],
+  "browser": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/152.0.7977.64",
+    "revision": "@506c834ecceaa943c5f41e6cfe7f68acb5c45346",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36",
+    "jsVersion": "15.2.124.18"
+  },
+  "diagnostics": [],
+  "cleanup": {
+    "exited": true,
+    "profileRemoved": true,
+    "exitCode": 0,
+    "signal": null,
+    "profile": "/home/iqbal/workspace/.worktrees/hermes-mobile/parity-review/docs/parity/evidence/browser/.chrome-profile-LMnGXu"
+  },
+  "summary": {
+    "checks": 324,
+    "failed": 0,
+    "routeCases": 232,
+    "palettePointerRoutes": 58
+  },
+  "status": "passed"
+}

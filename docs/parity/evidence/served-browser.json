@@ -1,0 +1,28 @@
+{
+  "status": "passed",
+  "url": "https://nuc.tailcf7779.ts.net:8450/reviews/desktop-parity/parity-compare/",
+  "browser": "fresh-profile headless Chrome on actual HTTPS preview",
+  "resolved_entries": [
+    {
+      "tag": "a",
+      "entry": "shell",
+      "url": "../parity-shell/"
+    },
+    {
+      "tag": "a",
+      "entry": "workspace",
+      "url": "../parity-workspace/"
+    },
+    {
+      "tag": "iframe",
+      "entry": "shell",
+      "url": "../parity-shell/"
+    },
+    {
+      "tag": "iframe",
+      "entry": "workspace",
+      "url": "../parity-workspace/"
+    }
+  ],
+  "screenshot": "browser/served-compare-390x844.png"
+}

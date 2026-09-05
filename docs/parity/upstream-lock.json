@@ -1,0 +1,1813 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/NousResearch/hermes-agent",
+  "main": {
+    "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+    "source_url": "https://github.com/NousResearch/hermes-agent/tree/9dd6634c5635321cf38840cc30e9b51226689128",
+    "commit_time": "2026-09-05T15:37:14Z"
+  },
+  "stable": {
+    "tag": "v2026.8.31",
+    "sha": "29112bef099274229cadff79cdff7bf7b99c4b77",
+    "source_url": "https://github.com/NousResearch/hermes-agent/tree/29112bef099274229cadff79cdff7bf7b99c4b77",
+    "release_url": "https://github.com/NousResearch/hermes-agent/releases/tag/v2026.8.31"
+  },
+  "release_comparison": {
+    "status": "unverified",
+    "minimum_backend_version": null
+  },
+  "scope": {
+    "included": "Official pinned Desktop core and shipped bundled Bot Mode, Kanban, Accent, including default-off features.",
+    "excluded": [
+      {
+        "id": "custom-runtime-plugins",
+        "reason": "Owner explicitly excluded third-party/local runtime plugins; bundled delivery is not excluded.",
+        "source": {
+          "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+          "path": "apps/desktop/src/contrib/plugins.ts",
+          "symbol": "watchRuntimePlugins",
+          "url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/contrib/plugins.ts#L18"
+        }
+      }
+    ]
+  },
+  "source_audit": {
+    "method": "Public read-only GitHub recursive tree plus pinned raw sources; literal symbol locations checked against fetched UTF-8 text. No local Hermes configuration or runtime accessed.",
+    "tree_truncated": false,
+    "entrypoints": [
+      {
+        "id": "core-routes",
+        "source": {
+          "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+          "path": "apps/desktop/src/app/routes.ts",
+          "symbol": "APP_ROUTES",
+          "url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/app/routes.ts#L59"
+        },
+        "enumerated_entries": [
+          "new",
+          "settings",
+          "command-center",
+          "skills",
+          "messaging",
+          "webhooks",
+          "artifacts",
+          "cron",
+          "profiles",
+          "agents",
+          "starmap"
+        ],
+        "enumeration_closed": true,
+        "remaining": []
+      },
+      {
+        "id": "bundled-discovery",
+        "source": {
+          "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+          "path": "apps/desktop/src/contrib/plugins.ts",
+          "symbol": "discoverBundledPlugins",
+          "url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/contrib/plugins.ts#L28"
+        },
+        "enumerated_entries": [
+          "apps/desktop/src/plugins/accent/plugin.tsx",
+          "apps/desktop/src/plugins/hermes-bots/plugin.tsx",
+          "apps/desktop/src/plugins/kanban/plugin.tsx"
+        ],
+        "enumeration_closed": true,
+        "remaining": []
+      },
+      {
+        "id": "settings-sections",
+        "source": {
+          "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+          "path": "apps/desktop/src/app/settings/constants.ts",
+          "symbol": "SECTIONS",
+          "url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/app/settings/constants.ts#L631"
+        },
+        "enumerated_entries": [
+          "model",
+          "chat",
+          "appearance",
+          "workspace",
+          "safety",
+          "browser",
+          "memory",
+          "voice",
+          "advanced"
+        ],
+        "enumeration_closed": true,
+        "remaining": []
+      },
+      {
+        "id": "settings-navigation",
+        "source": {
+          "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+          "path": "apps/desktop/src/app/settings/index.tsx",
+          "symbol": "SettingsView",
+          "url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/app/settings/index.tsx#L56"
+        },
+        "enumerated_entries": [
+          "about",
+          "billing",
+          "gateway",
+          "keybinds",
+          "keys",
+          "kview:settings",
+          "kview:tools",
+          "notifications",
+          "plugins",
+          "providers",
+          "pview:accounts",
+          "pview:custom-endpoints",
+          "pview:keys",
+          "pview:local",
+          "sessions"
+        ],
+        "enumeration_closed": false,
+        "remaining": [
+          "Dynamic config section expansion and all child controls need action-by-action mapping."
+        ]
+      },
+      {
+        "id": "keybind-actions",
+        "source": {
+          "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+          "path": "apps/desktop/src/lib/keybinds/actions.ts",
+          "symbol": "KEYBIND_ACTIONS",
+          "url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/lib/keybinds/actions.ts#L55"
+        },
+        "enumerated_entries": [
+          "composer.focus",
+          "composer.modelPicker",
+          "composer.voice",
+          "profile.default",
+          "profile.next",
+          "profile.prev",
+          "profile.toggleAll",
+          "profile.create",
+          "session.new",
+          "session.newTab",
+          "session.newWindow",
+          "session.next",
+          "session.prev",
+          "session.focusSearch",
+          "session.togglePin",
+          "session.archive",
+          "workspace.newWorktree",
+          "workspace.openFolder",
+          "nav.commandPalette",
+          "nav.commandCenter",
+          "nav.settings",
+          "nav.profiles",
+          "nav.skills",
+          "nav.messaging",
+          "nav.artifacts",
+          "nav.cron",
+          "nav.agents",
+          "view.toggleSidebar",
+          "view.toggleRightSidebar",
+          "view.toggleStatusbar",
+          "view.toggleTabStrip",
+          "view.toggleReview",
+          "view.showFiles",
+          "view.showBrowser",
+          "view.toggleHud",
+          "view.showTerminal",
+          "view.newTerminal",
+          "view.nextTerminal",
+          "view.prevTerminal",
+          "view.closeTerminal",
+          "view.flipPanes",
+          "view.closeTab",
+          "view.reopenTab",
+          "view.findInPage",
+          "view.findNext",
+          "view.findPrevious",
+          "appearance.toggleMode",
+          "keybinds.openPanel"
+        ],
+        "enumeration_closed": false,
+        "remaining": [
+          "Literal IDs captured; generated profile/session slots, readonly bindings and all handlers need reconciliation."
+        ]
+      },
+      {
+        "id": "command-palette",
+        "source": {
+          "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+          "path": "apps/desktop/src/app/command-palette/index.tsx",
+          "symbol": "CommandPalette",
+          "url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/app/command-palette/index.tsx#L68"
+        },
+        "enumerated_entries": [
+          "appearance-generate-pet",
+          "appearance-mode",
+          "appearance-pets",
+          "appearance-theme",
+          "cap-mcp",
+          "cap-skills",
+          "cap-toolsets",
+          "cc-open-browser",
+          "cc-reload-window",
+          "cc-restart-gateway",
+          "cc-sessions",
+          "cc-system",
+          "cc-update-hermes",
+          "cc-usage",
+          "nav-agents",
+          "nav-artifacts",
+          "nav-cron",
+          "nav-messaging",
+          "nav-new",
+          "nav-new-window",
+          "nav-profiles",
+          "nav-settings",
+          "nav-skills",
+          "nav-starmap",
+          "project-open-folder",
+          "theme-install"
+        ],
+        "enumeration_closed": false,
+        "remaining": [
+          "Static literal ids inspected; generated settings, theme, pet, profile/session and contributed entries not exhaustively expanded."
+        ]
+      },
+      {
+        "id": "desktop-slash",
+        "source": {
+          "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+          "path": "apps/desktop/src/lib/desktop-slash-commands.ts",
+          "symbol": "DESKTOP_COMMAND_SPECS",
+          "url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/lib/desktop-slash-commands.ts#L174"
+        },
+        "enumerated_entries": [
+          "/new",
+          "/stop",
+          "/branch",
+          "/yolo",
+          "/wake",
+          "/handoff",
+          "/profile",
+          "/skin",
+          "/title",
+          "/help",
+          "/browser",
+          "/journey",
+          "/model",
+          "/resume",
+          "/compress",
+          "/btw",
+          "/pet",
+          "/hatch",
+          "/save",
+          "/status"
+        ],
+        "enumeration_closed": false,
+        "remaining": [
+          "Runtime commands catalog and remaining Desktop action handlers not exhaustively mapped; no-surface terminal commands are not silently counted as Desktop actions."
+        ]
+      },
+      {
+        "id": "bundled-hermes-bots",
+        "source": {
+          "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+          "path": "apps/desktop/src/plugins/hermes-bots/plugin.tsx",
+          "symbol": "register",
+          "url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/plugins/hermes-bots/plugin.tsx#L97"
+        },
+        "enumerated_entries": [
+          "chat-empty",
+          "mention-completions",
+          "mention-middleware",
+          "new-agent",
+          "pane",
+          "routines"
+        ],
+        "enumeration_closed": false,
+        "remaining": [
+          "Registration ids captured; child components/actions and lifecycle variants require complete enumeration."
+        ]
+      },
+      {
+        "id": "bundled-kanban",
+        "source": {
+          "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+          "path": "apps/desktop/src/plugins/kanban/plugin.tsx",
+          "symbol": "register",
+          "url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/plugins/kanban/plugin.tsx#L9"
+        },
+        "enumerated_entries": [
+          "count",
+          "kanban",
+          "kanban.newTask",
+          "kanban.open",
+          "nav",
+          "new-task",
+          "open",
+          "page"
+        ],
+        "enumeration_closed": false,
+        "remaining": [
+          "Registration ids captured; child components/actions and lifecycle variants require complete enumeration."
+        ]
+      },
+      {
+        "id": "bundled-accent",
+        "source": {
+          "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+          "path": "apps/desktop/src/plugins/accent/plugin.tsx",
+          "symbol": "register",
+          "url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/plugins/accent/plugin.tsx#L11"
+        },
+        "enumerated_entries": [
+          "accent",
+          "accent.copy",
+          "accent.reset",
+          "copy",
+          "picker",
+          "reset"
+        ],
+        "enumeration_closed": false,
+        "remaining": [
+          "Registration ids captured; child components/actions and lifecycle variants require complete enumeration."
+        ]
+      }
+    ],
+    "open_enumeration": [
+      {
+        "id": "child-actions",
+        "detail": "Reconcile every child control/context-menu/action of the pinned routes; current rows are a broad reviewable subset, not exhaustive.",
+        "entrypoints": [
+          "core-routes",
+          "settings-navigation",
+          "command-palette",
+          "keybind-actions",
+          "desktop-slash"
+        ]
+      },
+      {
+        "id": "settings-fields",
+        "detail": "Expand every SECTIONS key and custom settings panel (browser, notification, billing, pets, theme marketplace, shortcut editing, providers and lifecycle); selected settings actions only are mapped.",
+        "entrypoints": [
+          "settings-sections",
+          "settings-navigation"
+        ]
+      },
+      {
+        "id": "bundled-children",
+        "detail": "Close Bot Mode bot creation/sections/pins/hide, group create/edit/member/stop/resume/hold/delegation lifecycle; Kanban task detail/attachment/events and each status transition; Accent picker subcontrols.",
+        "entrypoints": [
+          "bundled-hermes-bots",
+          "bundled-kanban",
+          "bundled-accent"
+        ]
+      },
+      {
+        "id": "workspace-children",
+        "detail": "Close project discovery/worktree hide, per-session effort/fast/context metrics, queue dispatch, artifact download/provenance, browser pin editing/redaction, terminal scrollback/selection, and window/pane actions.",
+        "entrypoints": [
+          "core-routes",
+          "command-palette",
+          "keybind-actions"
+        ]
+      },
+      {
+        "id": "transport-contracts",
+        "detail": "Trace REST/RPC payloads to handlers beyond targeted Git/files. Prove explicit connection/profile scope, browser auth, unsupported versions, errors, mutation readback and background ownership.",
+        "entrypoints": [
+          "core-routes",
+          "bundled-hermes-bots",
+          "bundled-kanban"
+        ]
+      },
+      {
+        "id": "release-diff",
+        "detail": "Diff stable tag against pinned main at action and backend contract level. All row release_status values remain unverified; minimum backend version is unknown.",
+        "entrypoints": []
+      },
+      {
+        "id": "mobile-proof",
+        "detail": "Compare every existing mobile callsite and execute planned behavior tests. No feature marked implemented/verified from this inventory work.",
+        "entrypoints": []
+      },
+      {
+        "id": "owner-boundaries",
+        "detail": "Owner must decide native-only exclusions or accepted equivalents. Blocked rows remain in inventoried denominator; no full parity claim.",
+        "entrypoints": []
+      }
+    ]
+  },
+  "sources": [
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/electron/preload.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/electron/preload.ts",
+      "content_sha256": "1c92561be2cc979296e2404a9e8111933bc7eab8281ea557e69044769a472071",
+      "symbols": [
+        {
+          "name": "hermes:bootstrap:repair",
+          "line": 487
+        },
+        {
+          "name": "hermes:cloud:discover",
+          "line": 222
+        },
+        {
+          "name": "hermes:connections:remove",
+          "line": 192
+        },
+        {
+          "name": "hermes:connections:save",
+          "line": 191
+        },
+        {
+          "name": "hermes:connections:set-launch-mode",
+          "line": 194
+        },
+        {
+          "name": "hermes:connections:set-primary",
+          "line": 193
+        },
+        {
+          "name": "hermes:connections:test",
+          "line": 196
+        },
+        {
+          "name": "hermes:hud:open",
+          "line": 96
+        },
+        {
+          "name": "hermes:keep-awake",
+          "line": 276
+        },
+        {
+          "name": "hermes:notify",
+          "line": 231
+        },
+        {
+          "name": "hermes:pet-overlay:open",
+          "line": 59
+        },
+        {
+          "name": "hermes:quick-entry:settings:set",
+          "line": 150
+        },
+        {
+          "name": "hermes:secret-storage:set",
+          "line": 187
+        },
+        {
+          "name": "hermes:ssh-config:resolve",
+          "line": 212
+        },
+        {
+          "name": "hermes:uninstall:run",
+          "line": 500
+        },
+        {
+          "name": "hermes:updates:apply",
+          "line": 504
+        },
+        {
+          "name": "hermes:window:openInstance",
+          "line": 37
+        },
+        {
+          "name": "hermes:window:readBelow",
+          "line": 233
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/electron/terminal-ipc.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/electron/terminal-ipc.ts",
+      "content_sha256": "36b823bb025e0c47f6a510edd9c50fd12734b20a2e25fdc95bb8bf7ed8cdbe31",
+      "symbols": [
+        {
+          "name": "hermes:terminal:attach",
+          "line": 346
+        },
+        {
+          "name": "hermes:terminal:dispose",
+          "line": 394
+        },
+        {
+          "name": "hermes:terminal:resize",
+          "line": 370
+        },
+        {
+          "name": "hermes:terminal:start",
+          "line": 287
+        },
+        {
+          "name": "hermes:terminal:write",
+          "line": 358
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/api/config.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/api/config.ts",
+      "content_sha256": "1170420affa0001902b8a7b335cde86aef2d92fd9706cffc25e0ec1b9b14bb41",
+      "symbols": [
+        {
+          "name": "deleteCustomEndpoint",
+          "line": 193
+        },
+        {
+          "name": "deleteEnvVar",
+          "line": 130
+        },
+        {
+          "name": "disconnectOAuthProvider",
+          "line": 208
+        },
+        {
+          "name": "getLogs",
+          "line": 26
+        },
+        {
+          "name": "getStatus",
+          "line": 19
+        },
+        {
+          "name": "revealEnvVar",
+          "line": 139
+        },
+        {
+          "name": "saveCustomEndpoint",
+          "line": 168
+        },
+        {
+          "name": "saveHermesConfigRecord",
+          "line": 105
+        },
+        {
+          "name": "setEnvVar",
+          "line": 121
+        },
+        {
+          "name": "startOAuthLogin",
+          "line": 216
+        },
+        {
+          "name": "validateProviderCredential",
+          "line": 148
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/api/cron.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/api/cron.ts",
+      "content_sha256": "297e737e14911c1455e4b710e8e419bcd0f606b55bc06572f2bf8d7a522ad343",
+      "symbols": [
+        {
+          "name": "createCronJob",
+          "line": 65
+        },
+        {
+          "name": "deleteCronJob",
+          "line": 113
+        },
+        {
+          "name": "getAutomationBlueprints",
+          "line": 123
+        },
+        {
+          "name": "getCronDeliveryTargets",
+          "line": 55
+        },
+        {
+          "name": "getCronJob",
+          "line": 23
+        },
+        {
+          "name": "getCronJobRuns",
+          "line": 42
+        },
+        {
+          "name": "getCronJobs",
+          "line": 23
+        },
+        {
+          "name": "instantiateAutomationBlueprint",
+          "line": 125
+        },
+        {
+          "name": "pauseCronJob",
+          "line": 85
+        },
+        {
+          "name": "resumeCronJob",
+          "line": 94
+        },
+        {
+          "name": "triggerCronJob",
+          "line": 103
+        },
+        {
+          "name": "updateCronJob",
+          "line": 75
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/api/local-models.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/api/local-models.ts",
+      "content_sha256": "ec38de5d231db23c71080fb801fdadae9fcc120e3ec78bb8f8ba18899f836097",
+      "symbols": [
+        {
+          "name": "activateLocalModel",
+          "line": 87
+        },
+        {
+          "name": "deleteLocalModel",
+          "line": 65
+        },
+        {
+          "name": "downloadLocalModel",
+          "line": 56
+        },
+        {
+          "name": "ejectLocalModel",
+          "line": 96
+        },
+        {
+          "name": "getLocalModelsStatus",
+          "line": 8
+        },
+        {
+          "name": "installLocalRuntime",
+          "line": 29
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/api/mcp.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/api/mcp.ts",
+      "content_sha256": "6d354480ecec07c74d9e442dd0a4cb84d931880f69f6b2b262f3a954f8beae46",
+      "symbols": [
+        {
+          "name": "addMcpServer",
+          "line": 93
+        },
+        {
+          "name": "authMcpServer",
+          "line": 52
+        },
+        {
+          "name": "getMcpCatalog",
+          "line": 128
+        },
+        {
+          "name": "installMcpCatalogEntry",
+          "line": 135
+        },
+        {
+          "name": "listMcpServers",
+          "line": 84
+        },
+        {
+          "name": "removeMcpServer",
+          "line": 111
+        },
+        {
+          "name": "saveMcpServers",
+          "line": 39
+        },
+        {
+          "name": "setMcpServerEnabled",
+          "line": 119
+        },
+        {
+          "name": "testMcpServer",
+          "line": 27
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/api/messaging.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/api/messaging.ts",
+      "content_sha256": "e4fcc6ecf96b24fad749e6fc6dc5a035738804d80db5cc073059a18b9ca1b9e7",
+      "symbols": [
+        {
+          "name": "createWebhook",
+          "line": 104
+        },
+        {
+          "name": "deleteWebhook",
+          "line": 113
+        },
+        {
+          "name": "enableWebhooks",
+          "line": 96
+        },
+        {
+          "name": "getMessagingPlatforms",
+          "line": 15
+        },
+        {
+          "name": "getWebhooks",
+          "line": 89
+        },
+        {
+          "name": "setWebhookEnabled",
+          "line": 121
+        },
+        {
+          "name": "testMessagingPlatform",
+          "line": 35
+        },
+        {
+          "name": "updateMessagingPlatform",
+          "line": 22
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/api/models.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/api/models.ts",
+      "content_sha256": "5b8f18c76f624f8b5b982309db83d001e70e7401ab8c145973e09fda22d8e479",
+      "symbols": [
+        {
+          "name": "getUsageAnalytics",
+          "line": 21
+        },
+        {
+          "name": "saveMoaModels",
+          "line": 107
+        },
+        {
+          "name": "setGlobalModel",
+          "line": 77
+        },
+        {
+          "name": "setModelAssignment",
+          "line": 119
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/api/profiles.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/api/profiles.ts",
+      "content_sha256": "0a8524e5b239730aab6db1545a8cdb1b664fd63a1272f3703388b865243e6978",
+      "symbols": [
+        {
+          "name": "createProfile",
+          "line": 18
+        },
+        {
+          "name": "deleteProfile",
+          "line": 48
+        },
+        {
+          "name": "exportProfileArchive",
+          "line": 92
+        },
+        {
+          "name": "getProfileSoul",
+          "line": 67
+        },
+        {
+          "name": "getProfiles",
+          "line": 11
+        },
+        {
+          "name": "importProfileArchive",
+          "line": 107
+        },
+        {
+          "name": "renameProfile",
+          "line": 35
+        },
+        {
+          "name": "updateProfileSoul",
+          "line": 74
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/api/sessions.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/api/sessions.ts",
+      "content_sha256": "8dc7097f56540892d508ecdb1e1b48350c0ae01e53d5af345f7ac1cfedeef122",
+      "symbols": [
+        {
+          "name": "deleteSession",
+          "line": 566
+        },
+        {
+          "name": "listAllProfileSessions",
+          "line": 109
+        },
+        {
+          "name": "listSessions",
+          "line": 75
+        },
+        {
+          "name": "renameSession",
+          "line": 326
+        },
+        {
+          "name": "searchSessions",
+          "line": 373
+        },
+        {
+          "name": "setSessionArchived",
+          "line": 325
+        },
+        {
+          "name": "setSessionPinnedRemote",
+          "line": 344
+        },
+        {
+          "name": "setSessionUnreadRemote",
+          "line": 360
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/api/skills.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/api/skills.ts",
+      "content_sha256": "2ba717c9a0bf642aa62005b6212663763e09b3bd9fd38f1883a01f4bb571be49",
+      "symbols": [
+        {
+          "name": "deleteLearningNode",
+          "line": 69
+        },
+        {
+          "name": "editLearningNode",
+          "line": 78
+        },
+        {
+          "name": "getLearningNode",
+          "line": 62
+        },
+        {
+          "name": "getOfficialSkills",
+          "line": 102
+        },
+        {
+          "name": "getSkillContent",
+          "line": 23
+        },
+        {
+          "name": "getSkills",
+          "line": 14
+        },
+        {
+          "name": "getStarmapGraph",
+          "line": 46
+        },
+        {
+          "name": "installSkillFromHub",
+          "line": 148
+        },
+        {
+          "name": "previewSkillHub",
+          "line": 132
+        },
+        {
+          "name": "scanSkillHub",
+          "line": 140
+        },
+        {
+          "name": "setSkillEnabled",
+          "line": 33
+        },
+        {
+          "name": "uninstallSkillFromHub",
+          "line": 157
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/api/system.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/api/system.ts",
+      "content_sha256": "2b1ce9825d1285aae65ef199dc172b13b0b2d93005321c9781cf50e12c2acdb8",
+      "symbols": [
+        {
+          "name": "getActionStatus",
+          "line": 164
+        },
+        {
+          "name": "resetMemory",
+          "line": 104
+        },
+        {
+          "name": "restartGateway",
+          "line": 138
+        },
+        {
+          "name": "runBackup",
+          "line": 252
+        },
+        {
+          "name": "runDebugShare",
+          "line": 260
+        },
+        {
+          "name": "runDoctor",
+          "line": 244
+        },
+        {
+          "name": "runSecurityAudit",
+          "line": 248
+        },
+        {
+          "name": "saveMemoryProviderConfig",
+          "line": 57
+        },
+        {
+          "name": "speakText",
+          "line": 187
+        },
+        {
+          "name": "transcribeAudio",
+          "line": 171
+        },
+        {
+          "name": "updateHermes",
+          "line": 146
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/api/toolsets.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/api/toolsets.ts",
+      "content_sha256": "525098e7115aacdcea1a8b837b940df82a22b5121b9b4125eefd641e300b6828",
+      "symbols": [
+        {
+          "name": "getToolsets",
+          "line": 17
+        },
+        {
+          "name": "runToolsetPostSetup",
+          "line": 99
+        },
+        {
+          "name": "selectTerminalBackend",
+          "line": 119
+        },
+        {
+          "name": "selectToolsetModel",
+          "line": 57
+        },
+        {
+          "name": "selectToolsetProvider",
+          "line": 85
+        },
+        {
+          "name": "setToolsetEnabled",
+          "line": 24
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/app/artifacts/index.tsx",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/app/artifacts/index.tsx",
+      "content_sha256": "db609b3eaea90a516837bf145388a3d0355de95822998d20252edf6a82edd065",
+      "symbols": [
+        {
+          "name": "ArtifactsView",
+          "line": 110
+        },
+        {
+          "name": "id: 'session'",
+          "line": 672
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/app/chat/composer/hooks/use-voice-recorder.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/app/chat/composer/hooks/use-voice-recorder.ts",
+      "content_sha256": "dc7b23dfb77d4e1767b2ca8420d7f4022f75010f40496b6ea55426ad78137666",
+      "symbols": [
+        {
+          "name": "useVoiceRecorder",
+          "line": 17
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/app/chat/right-rail/preview-annotate-host.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/app/chat/right-rail/preview-annotate-host.ts",
+      "content_sha256": "3a110f3b275a0551b061a787633db6606ab318fdfe28047cb8b64f96eed173e2",
+      "symbols": [
+        {
+          "name": "captureAnnotateCrop",
+          "line": 107
+        },
+        {
+          "name": "installAnnotateOverlay",
+          "line": 53
+        },
+        {
+          "name": "teardownAnnotateOverlay",
+          "line": 57
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/app/chat/right-rail/preview-browser-bar.tsx",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/app/chat/right-rail/preview-browser-bar.tsx",
+      "content_sha256": "42432a9b4363754b421e33005c2ecec5ae49f761414abec7c9d7e0f643a5919b",
+      "symbols": [
+        {
+          "name": "PreviewBrowserBar",
+          "line": 27
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/app/command-palette/index.tsx",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/app/command-palette/index.tsx",
+      "content_sha256": "205868fc2abbb3e48eb1daa83324ae0c61c37d9eb0603d7de52245d7667edb62",
+      "symbols": [
+        {
+          "name": "CommandPalette",
+          "line": 68
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/app/routes.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/app/routes.ts",
+      "content_sha256": "c8904f989e3040e198d6eac5182286f283cf8bf71e7fcb907df7686c7c3077af",
+      "symbols": [
+        {
+          "name": "AGENTS_ROUTE",
+          "line": 19
+        },
+        {
+          "name": "APP_ROUTES",
+          "line": 59
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/app/session/hooks/use-message-stream/gateway-event/input-requests.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/app/session/hooks/use-message-stream/gateway-event/input-requests.ts",
+      "content_sha256": "2293d0dfc726873d5954dbe0ae6c2e502393e960cceeb8f96ba03d95bfbfdf69",
+      "symbols": [
+        {
+          "name": "secret.request",
+          "line": 293
+        },
+        {
+          "name": "sudo.request",
+          "line": 270
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/app/session/hooks/use-prompt-actions/index.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/app/session/hooks/use-prompt-actions/index.ts",
+      "content_sha256": "cbf6eb2ec0e20a6dabe7176362b17b11aa9919cba15e3745711923939ce6bfb0",
+      "symbols": [
+        {
+          "name": "session.interrupt",
+          "line": 659
+        },
+        {
+          "name": "session.redirect",
+          "line": 777
+        },
+        {
+          "name": "uploadComposerAttachment",
+          "line": 120
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/app/session/hooks/use-prompt-actions/rewind.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/app/session/hooks/use-prompt-actions/rewind.ts",
+      "content_sha256": "3240ec25a88a52dde7fe107858c66d605f7bc9e53491108c70d801f0aac38558",
+      "symbols": [
+        {
+          "name": "runRewindSubmit",
+          "line": 266
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/app/session/hooks/use-prompt-actions/slash.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/app/session/hooks/use-prompt-actions/slash.ts",
+      "content_sha256": "ce1a8fb64ea648fc8219da2acd7d3aec043d4b8e1f673f91fcb8176291d6c166",
+      "symbols": [
+        {
+          "name": "prompt.btw",
+          "line": 551
+        },
+        {
+          "name": "session.compress",
+          "line": 598
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/app/session/hooks/use-prompt-actions/submit.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/app/session/hooks/use-prompt-actions/submit.ts",
+      "content_sha256": "8bf663522b1df6eb1b24b88f2daa6189dac333450af541defffc1a31f346c6cc",
+      "symbols": [
+        {
+          "name": "useSubmitPrompt",
+          "line": 102
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/app/session/hooks/use-session-actions/index.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/app/session/hooks/use-session-actions/index.ts",
+      "content_sha256": "2f2b78f969de04c70c6c4a8be849b1462038b452d4f40eb7e93e2cbbe3950ec8",
+      "symbols": [
+        {
+          "name": "session.branch",
+          "line": 2101
+        },
+        {
+          "name": "session.resume",
+          "line": 1549
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/app/settings/appearance-settings.tsx",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/app/settings/appearance-settings.tsx",
+      "content_sha256": "1c649060a56ce6330f8ecc98a7cb78324272bd384978c7e40e5778bcb63abf29",
+      "symbols": [
+        {
+          "name": "AppearanceSettings",
+          "line": 393
+        },
+        {
+          "name": "LanguageSwitcher",
+          "line": 6
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/app/settings/constants.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/app/settings/constants.ts",
+      "content_sha256": "ce3881256a9e23f81f9065c8c777bb0db82290374d8e5c7829c89f11eed09256",
+      "symbols": [
+        {
+          "name": "SECTIONS",
+          "line": 631
+        },
+        {
+          "name": "approvals.mode",
+          "line": 235
+        },
+        {
+          "name": "browser.use_real_profile",
+          "line": 683
+        },
+        {
+          "name": "compression.threshold",
+          "line": 697
+        },
+        {
+          "name": "delegation.max_concurrent_children",
+          "line": 774
+        },
+        {
+          "name": "desktop.repo_scan_enabled",
+          "line": 656
+        },
+        {
+          "name": "display.personality",
+          "line": 642
+        },
+        {
+          "name": "memory.provider",
+          "line": 240
+        },
+        {
+          "name": "stt.provider",
+          "line": 253
+        },
+        {
+          "name": "timezone",
+          "line": 381
+        },
+        {
+          "name": "tts.provider",
+          "line": 330
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/app/settings/index.tsx",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/app/settings/index.tsx",
+      "content_sha256": "495b38e5a56261f1d59de48a80fa161ee870bc13e653f1511ae23da48d277c59",
+      "symbols": [
+        {
+          "name": "SettingsView",
+          "line": 56
+        },
+        {
+          "name": "id: 'billing'",
+          "line": 195
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/app/starmap/share-controls.tsx",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/app/starmap/share-controls.tsx",
+      "content_sha256": "545d9d466948cb1674106ded6bef91fdaeaf162d78ba984248ba90ab2c356cc5",
+      "symbols": [
+        {
+          "name": "ShareControls",
+          "line": 17
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/components/assistant-ui/clarify-tool.tsx",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/components/assistant-ui/clarify-tool.tsx",
+      "content_sha256": "e5e6f1ed25feb5efb4589e1b0d7b4b839218cb4ce0545af751c65b14d724e16a",
+      "symbols": [
+        {
+          "name": "clarify.respond",
+          "line": 487
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/components/assistant-ui/tool/approval.tsx",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/components/assistant-ui/tool/approval.tsx",
+      "content_sha256": "6a6f175d8cd8f76967c586fac28d04506e6b896df125063c8cb72181fc3aed40",
+      "symbols": [
+        {
+          "name": "respond('deny')",
+          "line": 188
+        },
+        {
+          "name": "respond('once')",
+          "line": 185
+        },
+        {
+          "name": "setConfirmAlways",
+          "line": 114
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/contrib/plugins.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/contrib/plugins.ts",
+      "content_sha256": "c9f4077a318002ad832d3ef855d2bdec59938092d8aa3d49ce6ba900d96e7628",
+      "symbols": [
+        {
+          "name": "discoverBundledPlugins",
+          "line": 28
+        },
+        {
+          "name": "pluginActive",
+          "line": 17
+        },
+        {
+          "name": "watchRuntimePlugins",
+          "line": 18
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/lib/desktop-fs.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/lib/desktop-fs.ts",
+      "content_sha256": "7e2be68c26e5f7ecaebb4bf9510c7547d65899eaf763e44dac08045ac87e9b3e",
+      "symbols": [
+        {
+          "name": "readDesktopDir",
+          "line": 74
+        },
+        {
+          "name": "readDesktopFileDataUrl",
+          "line": 110
+        },
+        {
+          "name": "readDesktopFileText",
+          "line": 82
+        },
+        {
+          "name": "renameDesktopPath",
+          "line": 167
+        },
+        {
+          "name": "revealDesktopPath",
+          "line": 162
+        },
+        {
+          "name": "trashDesktopPath",
+          "line": 180
+        },
+        {
+          "name": "writeDesktopFileText",
+          "line": 94
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/lib/desktop-git.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/lib/desktop-git.ts",
+      "content_sha256": "5aa54145dd5029d68efaf341410227cbb577861e8ccdedc678bd0f204659404f",
+      "symbols": [
+        {
+          "name": "branchList",
+          "line": 61
+        },
+        {
+          "name": "branchSwitch",
+          "line": 59
+        },
+        {
+          "name": "commit:",
+          "line": 89
+        },
+        {
+          "name": "createPr:",
+          "line": 104
+        },
+        {
+          "name": "diff:",
+          "line": 70
+        },
+        {
+          "name": "list:",
+          "line": 73
+        },
+        {
+          "name": "push:",
+          "line": 93
+        },
+        {
+          "name": "repoStatus",
+          "line": 67
+        },
+        {
+          "name": "revert:",
+          "line": 84
+        },
+        {
+          "name": "stage:",
+          "line": 80
+        },
+        {
+          "name": "unstage:",
+          "line": 82
+        },
+        {
+          "name": "worktreeAdd",
+          "line": 54
+        },
+        {
+          "name": "worktreeList",
+          "line": 51
+        },
+        {
+          "name": "worktreeRemove",
+          "line": 56
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/lib/desktop-slash-commands.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/lib/desktop-slash-commands.ts",
+      "content_sha256": "8ee65a652178b7facdf5039c340cd286130baffcabf8d0d09cddadd58ef2fe2b",
+      "symbols": [
+        {
+          "name": "DESKTOP_COMMAND_SPECS",
+          "line": 174
+        },
+        {
+          "name": "session.save",
+          "line": 90
+        },
+        {
+          "name": "session.status",
+          "line": 279
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/lib/keybinds/actions.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/lib/keybinds/actions.ts",
+      "content_sha256": "ea361858c8a54dca8db7a83bf9aec1f85b71478d591b4ae34723067148b45378",
+      "symbols": [
+        {
+          "name": "KEYBIND_ACTIONS",
+          "line": 55
+        },
+        {
+          "name": "composer.history",
+          "line": 257
+        },
+        {
+          "name": "composer.modelPicker",
+          "line": 62
+        },
+        {
+          "name": "nav.commandPalette",
+          "line": 107
+        },
+        {
+          "name": "session.new",
+          "line": 83
+        },
+        {
+          "name": "session.newTab",
+          "line": 84
+        },
+        {
+          "name": "view.findInPage",
+          "line": 164
+        },
+        {
+          "name": "view.reopenTab",
+          "line": 160
+        },
+        {
+          "name": "view.selectionToComposer",
+          "line": 270
+        },
+        {
+          "name": "workspace.openFolder",
+          "line": 104
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/lib/preview-annotate/pack.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/lib/preview-annotate/pack.ts",
+      "content_sha256": "8a324be23d0cf14ef53cbd79e00d7036885427bf7828e14a58bc9cbd9bc1da50",
+      "symbols": [
+        {
+          "name": "packageAnnotateStack",
+          "line": 66
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/plugins/accent/plugin.tsx",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/plugins/accent/plugin.tsx",
+      "content_sha256": "e562b8d46dbed917d4b75ef96190a5db7ab2d6e7dea8355910900ee6ea929ca9",
+      "symbols": [
+        {
+          "name": "AccentPickerTrigger",
+          "line": 19
+        },
+        {
+          "name": "accent.copy",
+          "line": 54
+        },
+        {
+          "name": "accent.reset",
+          "line": 44
+        },
+        {
+          "name": "register",
+          "line": 11
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/plugins/hermes-bots/canonical-chat.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/plugins/hermes-bots/canonical-chat.ts",
+      "content_sha256": "589957e5fb635cbd405f210dc8f07f4697e1450f023c564f66c02317bc171140",
+      "symbols": [
+        {
+          "name": "openBotCanonicalChat",
+          "line": 485
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/plugins/hermes-bots/cron.tsx",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/plugins/hermes-bots/cron.tsx",
+      "content_sha256": "5a2711f22ea16f6fbf7e1cdf1f67ae58bb42e599b64941b9897b15b7291edcc6",
+      "symbols": [
+        {
+          "name": "CreateRoutineDialog",
+          "line": 931
+        },
+        {
+          "name": "RoutineDetailDialog",
+          "line": 409
+        },
+        {
+          "name": "loadRoutines",
+          "line": 103
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/plugins/hermes-bots/edit-profile-dialog.tsx",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/plugins/hermes-bots/edit-profile-dialog.tsx",
+      "content_sha256": "3b0ee267ed337106c8ce620149821794e0bf5626cfd1595ae2f0e98dafabf00a",
+      "symbols": [
+        {
+          "name": "EditProfileDialog",
+          "line": 37
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/plugins/hermes-bots/group-chat.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/plugins/hermes-bots/group-chat.ts",
+      "content_sha256": "6a592118ea6601f1be331b8b0ab51154b95873cb0e5f07f403b366a6289d54bc",
+      "symbols": [
+        {
+          "name": "appendGroupChatEntry",
+          "line": 1419
+        },
+        {
+          "name": "pullGroupChatServerState",
+          "line": 855
+        },
+        {
+          "name": "setGroupChatImage",
+          "line": 1388
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/plugins/hermes-bots/plugin.tsx",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/plugins/hermes-bots/plugin.tsx",
+      "content_sha256": "f34e5b6ab286f3e5aa2ab05ab9d8885e0f70f360983c16e0195e46dfd53a2602",
+      "symbols": [
+        {
+          "name": "BotsPane",
+          "line": 65
+        },
+        {
+          "name": "register",
+          "line": 97
+        },
+        {
+          "name": "resolveRosterMentions",
+          "line": 43
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/plugins/kanban/api.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/plugins/kanban/api.ts",
+      "content_sha256": "e96fcbc5e0373ebab0836d0d7c66afff13a745f62251d68b7fdd82650bd6398e",
+      "symbols": [
+        {
+          "name": "addComment",
+          "line": 238
+        },
+        {
+          "name": "bulkTasks",
+          "line": 230
+        },
+        {
+          "name": "createBoard",
+          "line": 249
+        },
+        {
+          "name": "createTask",
+          "line": 221
+        },
+        {
+          "name": "deleteBoard",
+          "line": 271
+        },
+        {
+          "name": "deleteTask",
+          "line": 226
+        },
+        {
+          "name": "estimateTask",
+          "line": 257
+        },
+        {
+          "name": "exportBoard",
+          "line": 279
+        },
+        {
+          "name": "fetchBoard",
+          "line": 172
+        },
+        {
+          "name": "fetchBoards",
+          "line": 180
+        },
+        {
+          "name": "fetchLog",
+          "line": 178
+        },
+        {
+          "name": "importBoard",
+          "line": 282
+        },
+        {
+          "name": "patchTask",
+          "line": 218
+        },
+        {
+          "name": "reassignTask",
+          "line": 241
+        },
+        {
+          "name": "reclaimTask",
+          "line": 244
+        },
+        {
+          "name": "saveOrchestration",
+          "line": 287
+        },
+        {
+          "name": "updateBoard",
+          "line": 266
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/plugins/kanban/plugin.tsx",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/plugins/kanban/plugin.tsx",
+      "content_sha256": "cb0299c0bb16cd23ccd04c08c4a609b78a66acc2c869d35f65e15434ea800f6c",
+      "symbols": [
+        {
+          "name": "register",
+          "line": 9
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/store/artifacts.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/store/artifacts.ts",
+      "content_sha256": "79ad97746c48f0a405ac597226efbb69b58aff6495ea49ee27f8f3fd2baf2399",
+      "symbols": [
+        {
+          "name": "selectArtifactVersion",
+          "line": 197
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "apps/desktop/src/store/composer-queue.ts",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/apps/desktop/src/store/composer-queue.ts",
+      "content_sha256": "dcc296a60d3ab750272b4e5cfb553a00aad3063dd74d73219931e3885bc2c6d8",
+      "symbols": [
+        {
+          "name": "enqueueQueuedPrompt",
+          "line": 126
+        },
+        {
+          "name": "parkQueuedPrompts",
+          "line": 312
+        },
+        {
+          "name": "promoteQueuedPrompt",
+          "line": 190
+        },
+        {
+          "name": "removeQueuedPrompt",
+          "line": 171
+        },
+        {
+          "name": "unparkQueuedPrompts",
+          "line": 325
+        },
+        {
+          "name": "updateQueuedPrompt",
+          "line": 210
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "hermes_cli/web_routers/files.py",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/hermes_cli/web_routers/files.py",
+      "content_sha256": "727c8a05cb3c4491f47f9a21537a523064b823f4094c64bd68996117917e533c",
+      "symbols": [
+        {
+          "name": "/api/fs/list",
+          "line": 607
+        },
+        {
+          "name": "/api/fs/read-data-url",
+          "line": 691
+        },
+        {
+          "name": "/api/fs/read-text",
+          "line": 630
+        },
+        {
+          "name": "/api/fs/write-text",
+          "line": 647
+        }
+      ]
+    },
+    {
+      "sha": "9dd6634c5635321cf38840cc30e9b51226689128",
+      "path": "hermes_cli/web_routers/git.py",
+      "source_url": "https://github.com/NousResearch/hermes-agent/blob/9dd6634c5635321cf38840cc30e9b51226689128/hermes_cli/web_routers/git.py",
+      "content_sha256": "e7f34b921def5d20739aeb5eea56eacd7d5c434c5639342e322a9def5c32a16f",
+      "symbols": [
+        {
+          "name": "/api/git/branch/switch",
+          "line": 189
+        },
+        {
+          "name": "/api/git/branches",
+          "line": 95
+        },
+        {
+          "name": "/api/git/review/commit",
+          "line": 122
+        },
+        {
+          "name": "/api/git/review/create-pr",
+          "line": 167
+        },
+        {
+          "name": "/api/git/review/diff",
+          "line": 110
+        },
+        {
+          "name": "/api/git/review/list",
+          "line": 105
+        },
+        {
+          "name": "/api/git/review/push",
+          "line": 162
+        },
+        {
+          "name": "/api/git/review/revert",
+          "line": 152
+        },
+        {
+          "name": "/api/git/review/stage",
+          "line": 142
+        },
+        {
+          "name": "/api/git/review/unstage",
+          "line": 147
+        },
+        {
+          "name": "/api/git/status",
+          "line": 48
+        },
+        {
+          "name": "/api/git/worktree/add",
+          "line": 172
+        },
+        {
+          "name": "/api/git/worktree/remove",
+          "line": 182
+        },
+        {
+          "name": "/api/git/worktrees",
+          "line": 90
+        }
+      ]
+    }
+  ]
+}

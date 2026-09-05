@@ -1,0 +1,16 @@
+{
+  "purpose": "Final source hashes; baseline and URL adapter passed; extended fixture isolation correction rerun by parent with stable inputs; not runtime feature proof",
+  "sha256": {
+    "design/parity-shell/index.html": "09b46d3fcd15b570e2e4167590797e10b74ebc3ec327e840f1d6ea19763d1390",
+    "design/parity-workspace/index.html": "c9878cf581571dc209025a22051911ca9edb219e3d33c2420b33cd0a417fe683",
+    "design/parity-compare/index.html": "57e5484258ab59abf175e7de6fadfa5217a80fab7e871009640744221e47c252",
+    "design/parity-routes.json": "374f13b8eceb948d2f0089c583e2fb3ec0bbf777c64d4639d41ccdad6c603e74",
+    "app/scripts/check-prototype.mjs": "6e710e4a710c6b344a950a985a4eb93994876e7e45d765b7334e90ec82733603",
+    "app/scripts/check-prototype-extended.mjs": "87ecbbdb7186e55fc2a3ff6702969c23c6f88976e962db32bf3752a91778f77d",
+    "app/scripts/check-parity.mjs": "96dddc9372faab93458db7a20ae1e6defeece256152c66392c36c02196a87434",
+    "app/scripts/parity-negative-fixtures.mjs": "144f35bce24e3a5e451adb096ff6d3aed85143ccdd44f2fb88ad1ef8f4f8afd5",
+    "docs/parity/features.json": "4a53ca0ab548c24cd44f2f4a1d7bb28d2bbd5ffa3d9d373849f641f414f22b25",
+    "docs/parity/upstream-lock.json": "c8296ace96de07112d354b227e4ffe30bf17a1c1c1260278c41eea2ede360ed9",
+    "app/scripts/check-prototype-entry-paths.mjs": "dd076d7b0503a3a4e222634cc69e8e5d0a87c49d093dbb24236557f0a1b30cd9"
+  }
+}
