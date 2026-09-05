@@ -23,6 +23,13 @@
   padding-bottom: 8px;
 }
 
+/* Short threads sit at the bottom (WhatsApp/Telegram pattern) instead of
+   hanging under the header. auto margin collapses to 0 once the thread is
+   taller than the viewport, so long chats scroll normally. */
+.chat-view .body > :first-child {
+  margin-top: auto;
+}
+
 /* message entrance: gentle pop anchored to the sender's side */
 @keyframes cv-pop-in {
   from { opacity: 0; transform: translateY(6px) scale(0.98); }
