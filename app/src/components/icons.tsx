@@ -149,3 +149,20 @@ export function ClockIcon(props: IconProps) {
     </Svg>
   );
 }
+
+/* Composer actions (filled circle buttons): send = up arrow, stop = solid square. */
+export function ArrowUpIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M12 19V5M5 12l7-7 7 7" />
+    </Svg>
+  );
+}
+
+export function StopIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="6.5" y="6.5" width="11" height="11" rx="2.5" fill="currentColor" stroke="none" />
+    </Svg>
+  );
+}

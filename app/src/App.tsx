@@ -46,6 +46,7 @@ const TITLES: Record<NavId, string> = {
 
 export default function App() {
   const store = useMemo(() => new ConnectionStore(), []);
+  // Entry point = Home board (devices + recent sessions); tap a session to chat.
   const [screen, setScreen] = useState<Screen>("home");
   const [activeConn, setActiveConn] = useState<SavedConnection | null>(null);
   const [client, setClient] = useState<HermesConnection | null>(null);
@@ -82,7 +83,8 @@ export default function App() {
     setActiveConn(conn);
     setClient(connected);
     setConnState(connected.connectionState);
-    setScreen("chats");
+    // Land on the Home board, not the list: sessions are picked from the board.
+    setScreen("home");
   }
 
   function handleDisconnect() {

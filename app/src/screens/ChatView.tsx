@@ -2,7 +2,7 @@ import { memo, useCallback, useEffect, useRef, useState, type ChangeEvent, type 
 import "./chat-view.css";
 import Header from "../components/Header";
 import { MessageContent } from "../components/MessageContent";
-import { PlusIcon } from "../components/icons";
+import { ArrowUpIcon, PlusIcon, StopIcon } from "../components/icons";
 import {
   clearSessionEvents,
   getSessionEvents,
@@ -369,7 +369,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   // `mention` is the active token ending at the composer caret.
   const [botRoster, setBotRoster] = useState<ProfileSummary[] | null>(null);
   const [mention, setMention] = useState<MentionToken | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const sidRef = useRef("");
   const handledEventsRef = useRef(new WeakSet<GatewayEvent>());
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -729,16 +729,24 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
     };
   }, []);
 
-  function trackMention(el: HTMLInputElement) {
+  function trackMention(el: HTMLTextAreaElement) {
     setMention(mentionEnabled ? mentionTokenAt(el.value, el.selectionStart ?? el.value.length) : null);
   }
 
-  function handleComposerChange(e: ChangeEvent<HTMLInputElement>) {
+  // Auto-grow: textarea follows content up to 5 lines, then scrolls internally.
+  useEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 132)}px`;
+  }, [input]);
+
+  function handleComposerChange(e: ChangeEvent<HTMLTextAreaElement>) {
     setInput(e.target.value);
     trackMention(e.target);
   }
 
-  function handleComposerSelect(e: SyntheticEvent<HTMLInputElement>) {
+  function handleComposerSelect(e: SyntheticEvent<HTMLTextAreaElement>) {
     trackMention(e.currentTarget);
   }
 
@@ -1091,9 +1099,10 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
 
       <div className="composer-wrap">
         <div className="composer-pill">
-          <input
+          <textarea
             ref={inputRef}
             className="composer-input"
+            rows={1}
             placeholder={
               isGroup
                 ? groupRoom
@@ -1111,7 +1120,11 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
             onSelect={handleComposerSelect}
             onBlur={() => setMention(null)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") void send();
+              // Enter sends, Shift+Enter inserts a newline.
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                void send();
+              }
             }}
           />
           {streaming && !isGroup ? (
@@ -1120,7 +1133,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
               title="Stop"
               onClick={() => void client.interruptSession(sidRef.current).catch(() => undefined)}
             >
-              ■
+              <StopIcon size={16} />
             </button>
           ) : (
             <button
@@ -1130,7 +1143,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
               }
               onClick={() => void send()}
             >
-              ↑
+              <ArrowUpIcon size={18} />
             </button>
           )}
         </div>
