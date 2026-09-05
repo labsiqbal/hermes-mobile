@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hermes Mobile — Bandingkan UI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#000;--fg:#f2f2f3;--card:#161619;--line:rgba(255,255,255,.09)}
+html,body{height:100%;background:var(--bg)}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;
+  color:var(--fg);display:flex;flex-direction:column;overflow:hidden;
+}
+.top{
+  flex:none;display:flex;align-items:center;gap:10px;
+  padding:calc(8px + env(safe-area-inset-top)) 12px 8px;
+}
+.seg{display:flex;flex:1;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:3px}
+.seg button{
+  flex:1;padding:8px 0;border:none;background:none;color:#a3a3aa;
+  font:inherit;font-size:13px;font-weight:700;border-radius:9px;cursor:pointer;
+  transition:background .15s,color .15s;
+}
+.seg button.on{background:#0053fd;color:#fff}
+.open{
+  flex:none;font-size:12px;font-weight:600;color:#4f8cff;text-decoration:none;
+  padding:8px 10px;white-space:nowrap;
+}
+.frame{flex:1;width:100%;border:none;background:#000}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="seg">
+    <button data-v="v2" class="on">V2 Agent</button>
+    <button data-v="v3">V3 iOS</button>
+    <button data-v="v4">V4 Paper</button>
+  </div>
+  <a class="open" id="openlink" href="../v2/" target="_blank">Buka ↗</a>
+</div>
+<iframe class="frame" id="frame" src="../v2/" title="UI preview"></iframe>
+<script>
+const frame=document.getElementById("frame");
+const link=document.getElementById("openlink");
+document.querySelectorAll(".seg button").forEach(b=>{
+  b.addEventListener("click",()=>{
+    document.querySelectorAll(".seg button").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on");
+    const v=b.dataset.v;
+    frame.src=`../${v}/`;
+    link.href=`../${v}/`;
+  });
+});
+</script>
+</body>
+</html>

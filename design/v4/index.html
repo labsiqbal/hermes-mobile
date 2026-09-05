@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hermes Mobile — UI v4 Preview</title>
+<style>
+/* ═══════════════ v4 · LIGHT PAPER EDITORIAL ═══════════════ */
+:root{
+  --bg:#f6f4ef;
+  --chrome:rgba(246,244,239,.92);
+  --card:#ffffff;
+  --card-2:#f0ede5;
+  --line:#e2ded2;
+  --line-soft:#ebe8df;
+  --fg:#17171a;
+  --fg-2:#6c6b64;
+  --fg-3:#a09e94;
+  --blue:#0b7a5a;
+  --blue-deep:#0b6b50;
+  --green:#15895a;
+  --amber:#a87704;
+  --red:#cf4436;
+  --radius:16px;
+  --header-h:58px;
+  --tabbar-h:60px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:#e9e6de}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Inter,sans-serif;
+  color:var(--fg);font-size:15px;line-height:1.5;
+  max-width:430px;margin:0 auto;height:100dvh;overflow:hidden;
+  background:var(--bg);position:relative;
+}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+
+.screen{position:absolute;inset:0;bottom:auto;height:calc(100% - var(--tabbar-h) - env(safe-area-inset-bottom));
+  display:flex;flex-direction:column;background:var(--bg);
+  opacity:0;pointer-events:none;transition:opacity .2s ease}
+.screen.on{opacity:1;pointer-events:auto}
+.screen.full{height:100%}
+
+/* header */
+.hdr{
+  flex:none;height:calc(var(--header-h) + env(safe-area-inset-top));
+  padding-top:env(safe-area-inset-top);
+  display:flex;align-items:center;gap:10px;
+  padding-left:18px;padding-right:18px;
+  background:var(--chrome);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line);position:relative;z-index:10;
+}
+.hdr-back{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:var(--card);border:1px solid var(--line);font-size:17px;flex:none;
+  box-shadow:0 1px 2px rgba(23,23,26,.06)}
+.hdr-main{flex:1;min-width:0}
+.hdr-title{font-size:18px;font-weight:800;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr-sub{font-size:11px;color:var(--fg-3);font-family:ui-monospace,Menlo,monospace;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.iconbtn{width:36px;height:36px;border-radius:50%;background:var(--card);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;flex:none;font-size:17px;color:var(--fg-2);
+  box-shadow:0 1px 2px rgba(23,23,26,.06)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex:none;margin-left:2px}
+
+.body{flex:1;overflow-y:auto;overscroll-behavior:contain}
+.pad{padding:14px 18px}
+
+.lbl{font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--fg-3);
+  padding:20px 20px 8px}
+
+/* tab bar */
+.tabbar{
+  flex:none;height:calc(var(--tabbar-h) + env(safe-area-inset-bottom));
+  padding-bottom:env(safe-area-inset-bottom);
+  display:flex;background:var(--chrome);backdrop-filter:blur(14px);
+  border-top:1px solid var(--line);position:absolute;left:0;right:0;bottom:0;z-index:10;
+}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  color:var(--fg-3);font-size:10px;font-weight:700;position:relative;transition:color .15s}
+.tab svg{width:23px;height:23px;stroke-width:1.8}
+.tab.on{color:var(--blue)}
+.tab.on::before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:20px;height:3px;border-radius:2px;background:var(--blue)}
+
+/* home board */
+.device-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  margin:0 16px 14px;overflow:hidden;box-shadow:0 1px 2px rgba(23,23,26,.04),0 10px 28px rgba(23,23,26,.05)}
+.device-row{display:flex;align-items:center;gap:12px;padding:15px 16px}
+.dev-ico{width:42px;height:42px;border-radius:12px;flex:none;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#0e8a66,#0b6b50)}
+.dev-ico svg{width:20px;height:20px;color:#fff}
+.dev-name{font-weight:800;font-size:15.5px;letter-spacing:-.01em}
+.dev-url{font-size:11px;color:var(--fg-3);font-family:ui-monospace,Menlo,monospace}
+.st{margin-left:auto;font-size:11px;font-weight:800;padding:5px 10px;border-radius:20px;flex:none;
+  letter-spacing:.02em}
+.st-on{color:var(--green);background:rgba(21,137,90,.1)}
+.st-busy{color:var(--amber);background:rgba(168,119,4,.12)}
+.sess-mini{display:flex;align-items:center;gap:11px;padding:12px 16px;border-top:1px solid var(--line-soft);cursor:pointer}
+.sess-mini:active{background:var(--card-2)}
+.sess-mini .ava{width:30px;height:30px;border-radius:10px;flex:none;display:flex;align-items:center;justify-content:center;
+  font-size:12.5px;font-weight:800}
+.sess-mini .t{flex:1;min-width:0;font-size:14px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sess-mini .p{font-size:12.5px;color:var(--fg-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sess-mini .when{font-size:11px;color:var(--fg-3);flex:none;font-weight:600}
+.newchip{margin:2px 16px 12px;border:1.5px dashed rgba(23,23,26,.2);border-radius:var(--radius);
+  padding:16px;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--fg-2);font-size:14px;font-weight:700}
+
+/* chat list */
+.search{margin:14px 16px 4px;background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:11px 14px;color:var(--fg-3);font-size:14px;display:flex;align-items:center;gap:8px;
+  box-shadow:0 1px 2px rgba(23,23,26,.04)}
+.chat-row{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer}
+.chat-row:active{background:rgba(23,23,26,.03)}
+.ava{width:44px;height:44px;border-radius:14px;flex:none;display:flex;align-items:center;justify-content:center;
+  font-size:17px;font-weight:800}
+.a1{background:rgba(11,122,90,.1);color:#0b7a5a}
+.a2{background:rgba(21,137,90,.12);color:#15895a}
+.a3{background:rgba(168,119,4,.12);color:#a87704}
+.a4{background:rgba(207,68,54,.1);color:#cf4436}
+.a5{background:rgba(107,74,189,.12);color:#6b4abd}
+.chat-main{flex:1;min-width:0}
+.chat-t{font-weight:700;font-size:15px;letter-spacing:-.01em;display:flex;align-items:center;gap:7px}
+.chat-p{font-size:13px;color:var(--fg-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.chat-side{flex:none;text-align:right;font-size:11px;color:var(--fg-3);display:flex;flex-direction:column;gap:5px;align-items:flex-end;font-weight:600}
+.live{font-size:9.5px;font-weight:800;letter-spacing:.05em;color:var(--amber);background:rgba(168,119,4,.13);
+  padding:2.5px 7px;border-radius:6px}
+
+/* chat detail */
+#chat{background:var(--bg)}
+.timeline{flex:1;overflow-y:auto;padding:16px 18px 10px;display:flex;flex-direction:column;gap:14px}
+.msg-user{align-self:flex-end;max-width:82%;background:var(--fg);color:#fff;
+  padding:10px 14px;border-radius:18px 18px 5px 18px;font-size:15px;white-space:pre-wrap;
+  box-shadow:0 2px 8px rgba(23,23,26,.12)}
+.msg-bot{font-size:15px;line-height:1.6;color:var(--fg)}
+.msg-bot p{margin:0 0 8px}
+.msg-bot p:last-child{margin:0}
+.msg-bot code{background:var(--card-2);padding:1.5px 6px;border-radius:6px;
+  font-family:ui-monospace,Menlo,monospace;font-size:13px}
+.msg-bot pre{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:13px;overflow-x:auto;margin:8px 0;box-shadow:0 1px 2px rgba(23,23,26,.04)}
+.msg-bot pre code{background:none;padding:0;font-size:12.5px;line-height:1.55}
+.toolstack{display:flex;flex-direction:column;gap:3px;margin-top:3px}
+.toolrow{display:flex;align-items:center;gap:7px;font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--fg-3)}
+.tdot{width:5px;height:5px;border-radius:50%;flex:none}
+.tdot-ok{background:var(--green)}
+.tdot-run{background:var(--amber);animation:pulse 1.2s ease infinite}
+@keyframes pulse{50%{opacity:.3}}
+.tname{color:var(--fg-2)}
+.working{display:flex;align-items:center;gap:8px;font-family:ui-monospace,Menlo,monospace;
+  font-size:11.5px;color:var(--fg-3)}
+.spin{width:13px;height:13px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--blue);
+  animation:rot .8s linear infinite;flex:none}
+@keyframes rot{to{transform:rotate(360deg)}}
+/* composer */
+.composer{flex:none;padding:8px 14px calc(8px + env(safe-area-inset-bottom))}
+.c-pill{display:flex;align-items:flex-end;gap:6px;background:var(--card);
+  border:1px solid var(--line);border-radius:22px;padding:5px 5px 5px 14px;
+  box-shadow:0 2px 10px rgba(23,23,26,.08)}
+.c-input{flex:1;min-width:0;background:none;border:none;outline:none;color:var(--fg);
+  font:inherit;font-size:15px;line-height:1.35;padding:8px 0;resize:none;max-height:120px}
+.c-input::placeholder{color:var(--fg-3)}
+.c-btn{width:40px;height:40px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center}
+.c-send{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(11,122,90,.3)}
+.c-send svg{width:19px;height:19px}
+.c-stop{background:rgba(207,68,54,.1);color:var(--red);border:1px solid rgba(207,68,54,.3)}
+.c-stop svg{width:15px;height:15px}
+
+/* stubs */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:13px 14px;margin:0 16px 10px;display:flex;align-items:center;gap:11px;
+  box-shadow:0 1px 2px rgba(23,23,26,.04)}
+.card .t{font-weight:700;font-size:14.5px}
+.card .s{font-size:12px;color:var(--fg-3)}
+.badge{margin-left:auto;font-size:10.5px;font-weight:800;padding:3px 8px;border-radius:6px;flex:none}
+.b-ok{color:var(--green);background:rgba(21,137,90,.1)}
+.b-run{color:var(--amber);background:rgba(168,119,4,.12)}
+.b-off{color:var(--fg-3);background:rgba(23,23,26,.05)}
+.toggle{margin-left:auto;width:42px;height:25px;border-radius:14px;background:rgba(23,23,26,.12);position:relative;flex:none}
+.toggle.on{background:var(--green)}
+.toggle::after{content:"";position:absolute;top:2.5px;left:2.5px;width:20px;height:20px;border-radius:50%;
+  background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .15s}
+.toggle.on::after{transform:translateX(17px)}
+
+.banner{position:fixed;bottom:calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 8px);left:12px;right:12px;z-index:50;
+  background:#17171a;border-radius:12px;padding:9px 13px;
+  font-size:12px;color:#a5a49e;display:flex;align-items:center;gap:8px;box-shadow:0 8px 30px rgba(23,23,26,.3)}
+.banner b{color:#fff}
+.banner .x{margin-left:auto;color:#6c6b64;font-size:16px;padding:2px 6px}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ SCREEN: HOME BOARD ══════════════ -->
+<div class="screen on" id="scr-home">
+  <div class="hdr">
+    <div class="hdr-main">
+      <div class="hdr-title">Hermes</div>
+      <div class="hdr-sub">nuc.tailcf7779.ts.net:8451</div>
+    </div>
+    <button class="iconbtn">＋</button>
+    <span class="dot"></span>
+  </div>
+  <div class="body">
+    <div class="lbl">Devices · 1 online</div>
+
+    <div class="device-card">
+      <div class="device-row">
+        <div class="dev-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="8" rx="2"/><rect x="3" y="13" width="18" height="8" rx="2"/><path d="M7 7h.01M7 17h.01"/></svg></div>
+        <div>
+          <div class="dev-name">NUC</div>
+          <div class="dev-url">nuc.tailcf7779.ts.net:8451 · hermes 1.x</div>
+        </div>
+        <span class="st st-on">online</span>
+      </div>
+      <div class="sess-mini" onclick="go('chat')">
+        <div class="ava a2">L</div>
+        <div style="flex:1;min-width:0">
+          <div class="t">Lanjutin project</div>
+          <div class="p">bro gw mau lanjutin project ini</div>
+        </div>
+        <span class="when">22:33</span>
+      </div>
+      <div class="sess-mini" onclick="go('chat')">
+        <div class="ava a1">S</div>
+        <div style="flex:1;min-width:0">
+          <div class="t">Setup Paperclip orchestration</div>
+          <div class="p">Bro kalau misalkan setup paperclip…</div>
+        </div>
+        <span class="when">00:15</span>
+      </div>
+      <div class="sess-mini">
+        <div class="ava a3">T</div>
+        <div style="flex:1;min-width:0">
+          <div class="t">Test chat</div>
+          <div class="p">test</div>
+        </div>
+        <span class="when">Kem</span>
+      </div>
+    </div>
+
+    <div class="newchip">＋ &nbsp;Tambah device</div>
+  </div>
+</div>
+
+<!-- ══════════════ SCREEN: CHAT LIST ══════════════ -->
+<div class="screen" id="scr-chats">
+  <div class="hdr">
+    <div class="hdr-main">
+      <div class="hdr-title">Chats</div>
+      <div class="hdr-sub">NUC · nuc.tailcf7779.ts.net:8451</div>
+    </div>
+    <button class="iconbtn">＋</button>
+    <span class="dot"></span>
+  </div>
+  <div class="body">
+    <div class="search">🔍 <span>Cari sesi…</span></div>
+    <div class="lbl">Hari ini</div>
+    <div class="chat-row" onclick="go('chat')">
+      <div class="ava a2">L</div>
+      <div class="chat-main">
+        <div class="chat-t">Lanjutin project <span class="live">proses</span></div>
+        <div class="chat-p">bro gw mau lanjutin project ini</div>
+      </div>
+      <div class="chat-side"><span>22:33</span><span>349 msg</span></div>
+    </div>
+    <div class="chat-row" onclick="go('chat')">
+      <div class="ava a1">S</div>
+      <div class="chat-main">
+        <div class="chat-t">Setup Paperclip orchestration</div>
+        <div class="chat-p">Bro kalau misalkan setup paperclip untuk mengerj…</div>
+      </div>
+      <div class="chat-side"><span>00:15</span><span>54 msg</span></div>
+    </div>
+    <div class="lbl">Kemarin</div>
+    <div class="chat-row">
+      <div class="ava a3">T</div>
+      <div class="chat-main">
+        <div class="chat-t">Test chat</div>
+        <div class="chat-p">test</div>
+      </div>
+      <div class="chat-side"><span>23:45</span><span>6 msg</span></div>
+    </div>
+    <div class="chat-row">
+      <div class="ava a4">D</div>
+      <div class="chat-main">
+        <div class="chat-t">dream-cycle-mini</div>
+        <div class="chat-p">[IMPORTANT: You are running as a scheduled cr…</div>
+      </div>
+      <div class="chat-side"><span>23:00</span><span>1 msg</span></div>
+    </div>
+    <div class="chat-row">
+      <div class="ava a5">A</div>
+      <div class="chat-main">
+        <div class="chat-t">agent-workflow-intel-site</div>
+        <div class="chat-p">/research</div>
+      </div>
+      <div class="chat-side"><span>18:00</span><span>1 msg</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ SCREEN: CHAT DETAIL ══════════════ -->
+<div class="screen full" id="scr-chat">
+  <div class="hdr">
+    <button class="hdr-back" onclick="go('home')">←</button>
+    <div class="hdr-main">
+      <div class="hdr-title">Lanjutin project</div>
+      <div class="hdr-sub">LB_Max · default · NUC</div>
+    </div>
+    <span class="dot"></span>
+  </div>
+  <div class="timeline">
+    <div class="msg-user">bro gw mau rebuild dari awal semuanya bisa ga? UI nya</div>
+    <div class="msg-bot">
+      <p>Bisa. Rebuild visual layer — logic gateway yang udah verified tetap dipake. Ini contoh tampilan baru: prose assistant tanpa bubble, tool activity ringkas di bawah reply.</p>
+      <p>Contoh kode tetap rapi:</p>
+      <pre><code>const ticket = await this.mintWsTicket();
+const url = this.wsUrl(ticket);</code></pre>
+      <div class="toolstack">
+        <div class="toolrow"><span class="tdot tdot-ok"></span><span class="tname">terminal</span> · git push · 1.2s</div>
+        <div class="toolrow"><span class="tdot tdot-ok"></span><span class="tname">read_file</span> · hermes-client.ts · 0.3s</div>
+        <div class="toolrow"><span class="tdot tdot-ok"></span><span class="tname">patch</span> · App.tsx · 0.1s</div>
+      </div>
+    </div>
+    <div class="msg-user">login failed: HTTP 429</div>
+    <div class="msg-bot">
+      <p>Rate limit auth gateway. Fix udah shipped: reconnect nggak login ulang, ticket mint dulu, login cuma kalau cookie expired.</p>
+    </div>
+    <div class="working"><span class="spin"></span> Working · terminal</div>
+  </div>
+  <div class="composer">
+    <div class="c-pill">
+      <textarea class="c-input" rows="1" placeholder="Message…"></textarea>
+      <button class="c-btn c-send">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ SCREEN: GROUPS ══════════════ -->
+<div class="screen" id="scr-groups">
+  <div class="hdr">
+    <div class="hdr-main"><div class="hdr-title">Groups</div><div class="hdr-sub">NUC · group chat bots</div></div>
+    <button class="iconbtn">＋</button>
+    <span class="dot"></span>
+  </div>
+  <div class="body">
+    <div class="lbl">Rooms · 2</div>
+    <div class="card"><div class="ava a1" style="width:38px;height:38px;font-size:14px">R</div>
+      <div><div class="t">Riset harian</div><div class="s">3 member · aktif 2 jam lalu</div></div>
+      <span class="badge b-ok">active</span></div>
+    <div class="card"><div class="ava a5" style="width:38px;height:38px;font-size:14px">D</div>
+      <div><div class="t">Dream cycle review</div><div class="s">2 member · kemarin</div></div>
+      <span class="badge b-off">idle</span></div>
+  </div>
+</div>
+
+<!-- ══════════════ SCREEN: BOTS ══════════════ -->
+<div class="screen" id="scr-bots">
+  <div class="hdr">
+    <div class="hdr-main"><div class="hdr-title">Bots</div><div class="hdr-sub">NUC · bot profiles</div></div>
+    <span class="dot"></span>
+  </div>
+  <div class="body">
+    <div class="lbl">Bot profiles · 3</div>
+    <div class="card"><div class="ava a2" style="width:38px;height:38px;font-size:14px">B</div>
+      <div><div class="t">builder</div><div class="s">coding · CI · testing</div></div>
+      <span class="badge b-ok">online</span></div>
+    <div class="card"><div class="ava a4" style="width:38px;height:38px;font-size:14px">I</div>
+      <div><div class="t">infra</div><div class="s">deploy · network · observability</div></div>
+      <span class="badge b-off">idle</span></div>
+    <div class="card"><div class="ava a3" style="width:38px;height:38px;font-size:14px">S</div>
+      <div><div class="t">studio</div><div class="s">media · design</div></div>
+      <span class="badge b-off">idle</span></div>
+  </div>
+</div>
+
+<!-- ══════════════ SCREEN: RUNS ══════════════ -->
+<div class="screen" id="scr-runs">
+  <div class="hdr">
+    <div class="hdr-main"><div class="hdr-title">Runs</div><div class="hdr-sub">NUC · cron + API runs</div></div>
+    <span class="dot"></span>
+  </div>
+  <div class="body">
+    <div class="lbl">Active · 1</div>
+    <div class="card">
+      <div><div class="t">agent-workflow-intel-site</div><div class="s">run_8f3k2 · /research · 6 menit</div></div>
+      <span class="badge b-run">running</span></div>
+    <div class="lbl">Done · 3</div>
+    <div class="card">
+      <div><div class="t">dream-cycle-mini</div><div class="s">run_7aq91 · 2 jam lalu · ok</div></div>
+      <span class="badge b-ok">done</span></div>
+    <div class="card">
+      <div><div class="t">memory-hygiene-weekly</div><div class="s">run_6bx02 · kemarin · ok</div></div>
+      <span class="badge b-ok">done</span></div>
+  </div>
+</div>
+
+<!-- ══════════════ SCREEN: SETTINGS ══════════════ -->
+<div class="screen" id="scr-settings">
+  <div class="hdr">
+    <div class="hdr-main"><div class="hdr-title">Settings</div><div class="hdr-sub">NUC · nuc.tailcf7779.ts.net:8451</div></div>
+    <span class="dot"></span>
+  </div>
+  <div class="body">
+    <div class="lbl">Devices</div>
+    <div class="card">
+      <div><div class="t">NUC</div><div class="s">nuc.tailcf7779.ts.net:8451 · connected</div></div>
+      <span class="badge b-ok">active</span></div>
+    <div class="lbl">Chat</div>
+    <div class="card"><div class="t" style="flex:1">Ukuran font chat</div>
+      <span style="color:var(--fg-3);font-size:13px">15px ›</span></div>
+    <div class="card"><div class="t" style="flex:1">Streaming animation</div><span class="toggle on"></span></div>
+    <div class="lbl">Connection</div>
+    <div class="card"><div class="t" style="flex:1;color:var(--red)">Disconnect dari NUC</div></div>
+  </div>
+</div>
+
+<!-- ══════════════ TAB BAR ══════════════ -->
+<nav class="tabbar" id="tabbar">
+  <button class="tab" data-nav="home" onclick="go('home')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="8" height="8" rx="2"/><rect x="13" y="4" width="8" height="8" rx="2"/><rect x="3" y="14" width="8" height="6" rx="2"/><rect x="13" y="14" width="8" height="6" rx="2"/></svg>
+    Board</button>
+  <button class="tab" data-nav="chats" onclick="go('chats')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 11.5a8.38 8.38 0 01-9 8.35 8.5 8.5 0 01-3.8-.9L3 21l1.9-5.2a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 018.5-8.5 8.38 8.38 0 018.5 8z"/></svg>
+    Chats</button>
+  <button class="tab" data-nav="groups" onclick="go('groups')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+    Groups</button>
+  <button class="tab" data-nav="bots" onclick="go('bots')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="8" width="16" height="12" rx="3"/><circle cx="9" cy="14" r="1.2" fill="currentColor"/><circle cx="15" cy="14" r="1.2" fill="currentColor"/><path d="M12 8V4M8 4h8"/></svg>
+    Bots</button>
+  <button class="tab" data-nav="runs" onclick="go('runs')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+    Runs</button>
+  <button class="tab" data-nav="settings" onclick="go('settings')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33h0a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51h0a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82v0a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    Settings</button>
+</nav>
+
+<!-- preview banner -->
+<div class="banner" id="banner">
+  <b>UI v4 preview</b> — mockup statis, tap tab &amp; kartu buat keliling. Data contoh.
+  <button class="x" onclick="document.getElementById('banner').remove()">×</button>
+</div>
+
+<script>
+const NAV={home:"scr-home",chats:"scr-chats",chat:"scr-chat",groups:"scr-groups",bots:"scr-bots",runs:"scr-runs",settings:"scr-settings"};
+const ROOT=new Set(["home","chats","groups","bots","runs","settings"]);
+function go(id){
+  for(const [k,el] of Object.entries(NAV)) document.getElementById(el).classList.toggle("on",k===id);
+  const root=ROOT.has(id);
+  document.getElementById("tabbar").style.display=root?"flex":"none";
+  document.getElementById("banner").style.display=root?"flex":"none";
+  if(root){
+    document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("on",t.dataset.nav===id));
+  }
+}
+// composer auto-grow demo
+const ta=document.querySelector(".c-input");
+ta.addEventListener("input",()=>{ta.style.height="auto";ta.style.height=Math.min(ta.scrollHeight,120)+"px";});
+go(NAV[location.hash.slice(1)]?location.hash.slice(1):"home");
+</script>
+</body>
+</html>
