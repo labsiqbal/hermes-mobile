@@ -9,6 +9,7 @@ import ChatView from './screens/ChatView';
 
 import { Groups } from './screens/Groups';
 import { Settings } from './screens/Settings';
+import { Appearance } from './screens/Appearance';
 import Header from './components/Header';
 import TabBar, { type NavId } from './components/TabBar';
 import CommandPalette from './components/CommandPalette';
@@ -19,7 +20,7 @@ const Manage = lazy(() => import('./screens/Manage'));
 const Cronjobs = lazy(() => import('./screens/Cronjobs'));
 const Workspace = lazy(() => import('./screens/Workspace'));
 
-const TITLES: Record<ShellScreen, string> = { home:'Hermes', chats:'Chats', bots:'Bots', activity:'Cronjobs', manage:'Manage', groups:'Groups', settings:'Settings', workspace:'Workspace', chat:'Chat' };
+const TITLES: Record<ShellScreen, string> = { home:'Hermes', chats:'Chats', bots:'Bots', activity:'Cronjobs', manage:'Manage', groups:'Groups', settings:'Settings', appearance:'Appearance', workspace:'Workspace', chat:'Chat' };
 const ROOTS: ShellScreen[] = ['home', 'chats', 'bots', 'activity', 'manage'];
 
 /** Contain chunk/render failures in the body, never the shared navigation or chat.
@@ -220,7 +221,8 @@ export default function App() {
           {screen === 'groups' && <Groups client={client!} conn={activeConn!} onOpenGroup={openGroup} />}
           {screen === 'activity' && <Cronjobs client={client!} conn={activeConn!} />}
           {screen === 'manage' && <Manage conn={activeConn!} client={client!} navigationViews={manageViews} onSettings={() => destination('settings')} onBots={() => destination('bots')} onWorkspace={() => destination('workspace')} />}
-          {screen === 'settings' && <Settings conn={activeConn!} store={store} state={connState} onConnect={handleConnect} onDisconnect={disconnect} />}
+          {screen === 'settings' && <Settings conn={activeConn!} store={store} state={connState} onConnect={handleConnect} onDisconnect={disconnect} onAppearance={() => destination('appearance')} />}
+          {screen === 'appearance' && <Appearance />}
         </ScreenBoundary>
       </div>
       {isRoot && <TabBar active={screen as NavId} onNavigate={destination} />}

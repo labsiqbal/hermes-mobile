@@ -10,6 +10,15 @@
 .chat-filters label { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; color: var(--fg-dim); font-size: var(--text-12); }
 .chat-filters select { width: 100%; min-width: 0; min-height: 44px; padding: var(--space-8); color: var(--fg); background: var(--card); border: 1px solid var(--line-soft); border-radius: var(--space-10); font: inherit; font-size: var(--text-13); }
 .chat-filters > button { align-self: end; min-height: 44px; }
+/* Reflow before readable native labels collide with the reserved arrow gutter. */
+@media (max-width: 360px) {
+  .chat-filters { grid-template-columns: minmax(0, 1fr) 44px; }
+  .chat-filters label:first-child { grid-column: 1 / -1; }
+}
+@media (max-width: 400px) {
+  :root[data-ui-scale="125"] .chat-filters { grid-template-columns: minmax(0, 1fr) 44px; }
+  :root[data-ui-scale="125"] .chat-filters label:first-child { grid-column: 1 / -1; }
+}
 .chat-scope { margin: 0; flex: none; }
 .chat-scope summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; }
 .chat-scope summary::before { content: 'ⓘ'; margin-right: var(--space-6); }

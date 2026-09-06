@@ -9,7 +9,7 @@ export const ROOT_DESTINATIONS = [
   { id: 'manage', label: 'Manage', description: 'Capabilities, identity and workspace tools' },
 ] as const;
 export type RootScreen = typeof ROOT_DESTINATIONS[number]['id'];
-export type ShellScreen = RootScreen | 'chat' | 'workspace' | 'groups' | 'settings';
+export type ShellScreen = RootScreen | 'chat' | 'workspace' | 'groups' | 'settings' | 'appearance';
 export type GatewayIdentity = Pick<SavedConnection, 'id' | 'url'>;
 export interface ConversationIdentity {
   /** Stable durable session ID, or a unique local draft ID until created. */
@@ -31,7 +31,7 @@ interface HistoryAdapter {
   replaceState(data: unknown, unused: string, url?: string): void;
   back(): void;
 }
-const screens: readonly string[] = [...ROOT_DESTINATIONS.map(d => d.id), 'chat', 'workspace', 'groups', 'settings'];
+const screens: readonly string[] = [...ROOT_DESTINATIONS.map(d => d.id), 'chat', 'workspace', 'groups', 'settings', 'appearance'];
 const home = (): ShellRoute => ({ screen: 'home', profile: 'default' });
 function cleanRoute(route: ShellRoute): ShellRoute {
   const session = route.conversation?.session;
@@ -90,7 +90,7 @@ export class ShellNavigation {
     const r = this.current;
     const screen = r.screen === 'workspace' ? (r.conversation ? 'chat' : 'manage')
       : r.screen === 'chat' ? r.returnTo ?? (r.conversation?.groupId ? 'groups' : 'chats')
-      : r.screen === 'settings' ? 'manage' : r.screen === 'groups' ? 'chats' : 'home';
+      : r.screen === 'appearance' ? 'settings' : r.screen === 'settings' ? 'manage' : r.screen === 'groups' ? 'chats' : 'home';
     return this.go({ ...r, screen, profile:screen === 'chat' ? r.profile : 'default', conversation: screen === 'chat' ? r.conversation : undefined }, true);
   }
 }

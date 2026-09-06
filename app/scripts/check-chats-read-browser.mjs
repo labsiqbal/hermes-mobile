@@ -75,7 +75,21 @@ try {
     await browser.viewport(width,844);
     await check(`two compact 44px filters; truthful global failure at ${width}`,async()=>{
       const geometry=await browser.evaluate(`(()=>{const t=document.querySelector('.chat-filters'),r=t.getBoundingClientRect();return {width:innerWidth,height:r.height,selects:[...t.querySelectorAll('select')].map(e=>e.getAttribute('aria-label')),targets:[...t.querySelectorAll('select,button')].map(e=>{const a=e.getBoundingClientRect();return {left:a.left,right:a.right,width:a.width,height:a.height,bottom:a.bottom}})}})()`);
-      assert.equal(geometry.width,width);assert.deepEqual(geometry.selects,['Project filter','Profile filter']);assert.ok(geometry.height<=68,JSON.stringify(geometry));
+      assert.equal(geometry.width,width);assert.deepEqual(geometry.selects,['Project filter','Profile filter']);
+      // HM-UX-09: narrow controls reflow rather than sacrifice readable labels
+      // to the inset arrow. Preserve the original one-row bound elsewhere.
+      const [project,profile,refresh]=geometry.targets;
+      if(width<=360) {
+        assert.ok(geometry.height<=140,JSON.stringify(geometry));
+        assert.ok(project.bottom<=profile.bottom-profile.height,JSON.stringify(geometry));
+        assert.equal(project.left,profile.left);
+        assert.equal(project.right,refresh.right);
+        assert.equal(profile.bottom,refresh.bottom);
+      } else {
+        assert.ok(geometry.height<=68,JSON.stringify(geometry));
+        assert.equal(project.bottom,profile.bottom);
+        assert.equal(profile.bottom,refresh.bottom);
+      }
       assert.ok(geometry.targets.every(r=>r.height>=44 && r.width>=44 && r.left>=0 && r.right<=width));
       browser.readMode='failed';await j.tap('Refresh Chats');await loaded();
       assert.equal(await browser.evaluate(`document.querySelectorAll('.chat-read-status[role="status"]').length`),1);

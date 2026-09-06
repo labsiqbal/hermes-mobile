@@ -54,6 +54,22 @@ for (const target of ['chat', 'chats', 'home', 'home']) {
   assert.equal(directNav.current.screen, target);
   assert.equal(direct.entries.length, 1, 'synthetic Back must replace, never push');
 }
+const appearanceHistory = new History();
+appearanceHistory.replaceState({shell:1, depth:0, route:{screen:'appearance', gateway, profile:'default'}});
+const appearanceNav = new ShellNavigation(appearanceHistory);
+assert.equal(appearanceNav.current.screen, 'appearance');
+for (const target of ['settings', 'manage', 'home', 'home']) {
+  appearanceNav.back();
+  assert.equal(appearanceNav.current.screen, target);
+  assert.equal(appearanceHistory.entries.length, 1, 'Appearance parent fallback replaces, never oscillates');
+}
+appearanceNav.go({screen:'settings', gateway, profile:'default'});
+appearanceNav.go({screen:'appearance', gateway, profile:'default'});
+appearanceNav.back(); appearanceNav.restore();
+assert.equal(appearanceNav.current.screen, 'settings');
+appearanceHistory.forward(); appearanceNav.restore();
+assert.equal(appearanceNav.current.screen, 'appearance');
+assert.deepEqual(appearanceNav.current.gateway, gateway);
 const views = new ConversationViews();
 const pk = conversationKey(project), bk = conversationKey(bot);
 views.update(pk, {draft:'Project draft', scroll:{top:281, atBottom:false}, attachments:[{kind:'image', name:'shot.png', path:'/staged/image'}]});
