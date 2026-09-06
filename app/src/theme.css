@@ -13,6 +13,7 @@
   --fg-faint: #9ba3af;
   --line: #30343a;
   --line-soft: #292d33;
+  --focus-field: #b9bdc4;
   --blue: #99baff;
   --blue-deep: #285bd4;
   --warm: #cf806d;
@@ -1066,7 +1067,8 @@ button, [role="button"], select { min-height:44px; }
 button:not(.shell-tab) { min-width:44px; }
 button:disabled { opacity:.5; cursor:not-allowed; }
 :focus-visible { outline:2px solid var(--blue); outline-offset:3px; }
-.field:focus-visible { outline:2px solid var(--blue); }
+input:focus-visible, textarea:focus-visible, select:focus-visible { outline-color:var(--focus-field); outline-offset:-2px; }
+.field:focus-visible { outline-color:var(--focus-field); outline-offset:-2px; }
 .field, .field.mono { font-size:var(--text-16); min-height:44px; }
 .body { padding:var(--space-24) var(--space-20) var(--space-28); }
 .hint, .error-line { font-size:var(--text-14); }
@@ -1099,7 +1101,14 @@ button:disabled { opacity:.5; cursor:not-allowed; }
 .palette-heading { display:flex; align-items:center; gap:var(--space-12); }
 .palette-heading h2 { flex:1; margin:0; font-size:var(--text-24); }
 .palette-search { display:flex; align-items:center; gap:var(--space-8); margin:var(--space-18) 0 var(--space-8); border:1px solid var(--line); border-radius:var(--space-12); padding:0 var(--space-12); }
+.palette-search:focus-within { border-color:var(--focus-field); outline:2px solid var(--focus-field); outline-offset:-2px; }
 .palette-search input { min-width:0; width:100%; min-height: max(44px, var(--space-48)); background:none; color:var(--fg); border:0; font-size:var(--text-16); }
+.palette-search input:focus-visible { outline:0; }
+
+@media (forced-colors: active) {
+  input:focus-visible, textarea:focus-visible, select:focus-visible, .field:focus-visible { outline-color:Highlight; }
+  .palette-search:focus-within { border-color:Highlight; outline-color:Highlight; }
+}
 .palette-results .collection-link { padding-left:var(--space-4); padding-right:var(--space-4); }
 .accent-control { display:flex; align-items:center; gap:var(--space-12); min-height: max(44px, var(--space-48)); margin:var(--space-8) 0; }
 .accent-control input[type="color"] { margin-left:auto; width:var(--space-64); height:44px; }

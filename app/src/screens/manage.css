@@ -10,7 +10,7 @@
 .manage button, .manage input, .manage select, .manage textarea, .manage-confirm button { font: inherit; }
 .manage button, .manage-confirm button { cursor: pointer; }
 .manage button:disabled, .manage-confirm button:disabled { opacity: .5; cursor: not-allowed; }
-.manage button:focus-visible, .manage summary:focus-visible, .manage select:focus-visible, .manage input:focus-visible, .manage textarea:focus-visible, .manage-confirm button:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+.manage button:focus-visible, .manage summary:focus-visible, .manage-confirm button:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
 .manage-hero { margin-bottom: var(--space-24); }
 .manage-hero p { max-width: 35em; }
 .manage-eyebrow { font-size: var(--text-12); letter-spacing: .09em; text-transform: uppercase; color: var(--fg-dim); margin-bottom: var(--space-12); }
