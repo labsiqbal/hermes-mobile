@@ -29,7 +29,7 @@ try {
     await browser.settle();
     assert.equal(await browser.evaluate('document.documentElement.dataset.uiScale'),String(scale));
   };
-  const settings = async () => { await j.root('Manage'); if(await browser.evaluate('!!__qaDOM.find("Back to Manage")')) await j.tap('Back to Manage'); await j.tap('Devices & gateways','body',false); await j.text('UI scale'); };
+  const settings = async () => { await j.root('Manage'); if(await browser.evaluate('!!__qaDOM.find("Back to Manage")')) await j.tap('Back to Manage'); await j.tap('Devices & gateways','body',false); await j.tap('Appearance','body',false); await j.text('UI scale'); };
   const audit = async (name, shot=false) => {
     await check(name,async()=>{
       await j.auditLayout(name);
@@ -72,6 +72,7 @@ try {
       await resize(w,h);
       for(const root of ROOTS) { await j.root(root); await audit(`${tag}-${root}`,true); }
       await j.tap('Devices & gateways','body',false); await audit(`${tag}-Settings`,true);
+      await j.tap('Appearance','body',false); await audit(`${tag}-Appearance`,true); await j.tap('Back');
       await j.tap('Erase Hermes Mobile data'); await audit(`${tag}-erase-confirmation`,detailShots); await j.tap('Cancel'); await j.tap('Back');
       for(const [section,expected,detail] of [
         ['Profiles','Profiles on this gateway','QA Fixture Bot'],['Capabilities','QA Fixture Skill'],['Memory','QA Fixture Memory','QA Fixture Memory'],['Schedules & cron','QA Fixture Schedule','QA Fixture Schedule'],['Messaging','QA Fixture Messaging','QA Fixture Messaging'],['Webhooks','No webhook request was sent'],['Kanban','QA Fixture Board','QA Fixture Board'],['Appearance & preferences','Model and reasoning controls'],['Native capabilities','SSH & cloud lifecycle'],
@@ -136,7 +137,7 @@ try {
   });
   await check('Settings erase removes appearance and keeps unrelated origin data',async()=>{
     await j.tap(fixture.gateway.label,'body',false); await settings(); await select(125);
-    await browser.evaluate('localStorage.setItem("unrelated-app","keep")'); await j.tap('Erase Hermes Mobile data'); await j.tap('Erase & reload'); await browser.waitFor('document.documentElement.dataset.uiScale === "100"');
+    await browser.evaluate('localStorage.setItem("unrelated-app","keep")'); await j.tap('Back'); await j.tap('Erase Hermes Mobile data'); await j.tap('Erase & reload'); await browser.waitFor('document.documentElement.dataset.uiScale === "100"');
     assert.equal(await browser.evaluate('localStorage.getItem("hermes-mobile.ui-scale")'),null); assert.equal(await browser.evaluate('localStorage.getItem("unrelated-app")'),'keep');
   });
   await check('storage unavailable still applies local appearance safely',async()=>{

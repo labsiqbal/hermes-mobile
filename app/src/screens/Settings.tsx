@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { connectionLabel, isAppStorageKey } from "../lib/shell-state";
 import type { ConnectionState, ConnectionStore, HermesConnection, SavedConnection } from "../lib/hermes-client";
 import Connections from "./Connections";
-import { applyScale, currentScale, setScale } from "../lib/appearance";
+import { ChevronRightIcon } from "../components/icons";
+import { applyScale } from "../lib/appearance";
 
 // Keep-in-sync dengan "version" di package.json — dibaca manual karena
 // import package.json butuh resolveJsonModule + env khusus Vite.
@@ -16,36 +17,24 @@ export function Settings({
   store,
   onConnect,
   onDisconnect,
+  onAppearance,
 }: {
   conn: SavedConnection;
   state: ConnectionState;
   store: ConnectionStore;
   onConnect: (conn: SavedConnection, client: HermesConnection) => void;
   onDisconnect: () => void;
+  onAppearance: () => void;
 }) {
   const [confirmWipe, setConfirmWipe] = useState(false);
   const [wipeError, setWipeError] = useState('');
   const confirmation = useRef<HTMLDialogElement>(null);
-  const [accent, setAccent] = useState(() => document.documentElement.style.getPropertyValue('--scratch-accent') || '#99baff');
-  const [accentEnabled, setAccentEnabled] = useState(() => Boolean(document.documentElement.style.getPropertyValue('--scratch-accent')));
-  function scratchAccent(color: string, enabled: boolean) {
-    setAccent(color); setAccentEnabled(enabled);
-    if (enabled) document.documentElement.style.setProperty('--scratch-accent', color);
-    else document.documentElement.style.removeProperty('--scratch-accent');
-  }
   useEffect(() => {
     if (!confirmWipe) return;
     const previous = document.activeElement;
     confirmation.current?.showModal();
     return () => { if (previous instanceof HTMLElement && previous.isConnected) previous.focus(); };
   }, [confirmWipe]);
-  const [scale, setScaleState] = useState(currentScale);
-  const [appearanceSaved, setAppearanceSaved] = useState(true);
-  function changeScale(value: string) {
-    setAppearanceSaved(setScale(value));
-    setScaleState(currentScale());
-  }
-
   const wipeLocalData = () => {
     try {
       for (const storage of [localStorage, sessionStorage]) {
@@ -110,27 +99,9 @@ export function Settings({
           </button>
         </div>
 
-        <div className="section-label">Appearance</div>
-        <div className="card">
-          <label className="appearance-scale" htmlFor="ui-scale">
-            <span className="rowcard-title">UI scale</span>
-            <select id="ui-scale" aria-label="UI scale" className="field" value={scale} onChange={event => changeScale(event.target.value)}>
-              <option value="75">75% Compact</option>
-              <option value="100">100% Standard</option>
-              <option value="125">125% Large</option>
-            </select>
-          </label>
-          <p className="hint">All screens, including chat text. Saved on this device only. Touch targets and text keep readable minimum sizes; browser zoom still works.</p>
-          {!appearanceSaved && <p role="status" className="hint">Applied for now. Browser storage is unavailable; this choice may reset on reload.</p>}
-        </div>
-
-        <div className="card scratch-accent">
-          <div className="rowcard-title">Scratch accent</div>
-          <p className="hint">A temporary accent for tab indicators and decorative edges. Text and status colors stay readable. This does not change your gateway or profile; reloading restores the authored defaults.</p>
-          <label className="accent-control"><input type="checkbox" checked={accentEnabled} onChange={event => scratchAccent(accent, event.target.checked)} />Enable scratch accent</label>
-          <label className="accent-control">Accent color<input type="color" aria-label="Scratch accent color" value={accent} onChange={event => scratchAccent(event.target.value, true)} /></label>
-          <button className="btn btn-ghost" onClick={() => scratchAccent('#99baff', false)}>Restore authored defaults</button>
-        </div>
+        <button className="collection-link" onClick={onAppearance}>
+          <span>Appearance</span><ChevronRightIcon size={18} />
+        </button>
 
         <div className="section-label">About</div>
         <div className="card">
@@ -148,6 +119,8 @@ export function Settings({
             rel="noreferrer"
             style={{
               display: "block",
+              minHeight: 44,
+              lineHeight: "44px",
               fontSize: "var(--text-11_5)",
               color: "var(--blue)",
               marginTop: "var(--space-8)",
