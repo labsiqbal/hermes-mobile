@@ -278,11 +278,11 @@ export function Groups({
                   flexDirection: "column",
                   alignItems: "center",
                   justifyContent: "center",
-                  gap: 10,
+                  gap: "var(--space-10)",
                 }}
               >
                 <span className="chip chip-warm">groups</span>
-                <div className="appbar-title" style={{ fontSize: 15 }}>
+                <div className="appbar-title" style={{ fontSize: "var(--text-15)" }}>
                   Group Chat
                 </div>
                 <div className="hint" style={{ textAlign: "center", maxWidth: 260 }}>
@@ -389,7 +389,7 @@ function GroupRow({
       </span>
       <div className="rowcard-main">
         <div className="rowcard-title">{room.name}</div>
-        <div className="rowcard-sub" style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+        <div className="rowcard-sub" style={{ display: "flex", flexWrap: "wrap", gap: "var(--space-4)" }}>
           {room.members.slice(0, 4).map((member) => {
             const tint = botTint(member.handle || member.name);
             return (
@@ -532,7 +532,7 @@ function CreateGroupCard({
     <>
       <div className="section-label">Group baru · pilih {MIN_GROUP_MEMBERS}–{MAX_GROUP_MEMBERS} bot</div>
       {selected.length > 0 && (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--space-6)" }}>
           {selected.map((bot) => {
             const handle = botHandle(bot);
             const tint = botTint(handle);
@@ -588,7 +588,7 @@ function CreateGroupCard({
               {botInitials(handle)}
             </span>
             <div className="rowcard-main">
-              <div className="rowcard-title mono" style={{ color: "var(--cyan)", fontSize: 12 }}>
+              <div className="rowcard-title mono" style={{ color: "var(--cyan)", fontSize: "var(--text-12)" }}>
                 @{handle}
               </div>
               <div className="rowcard-sub">{bot.description || bot.display_name || "—"}</div>
@@ -596,14 +596,14 @@ function CreateGroupCard({
             <span
               aria-hidden="true"
               style={{
-                width: 20,
-                height: 20,
-                borderRadius: 6,
+                width: "var(--space-20)",
+                height: "var(--space-20)",
+                borderRadius: "var(--space-6)",
                 flex: "none",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: 12,
+                fontSize: "var(--text-12)",
                 fontWeight: 700,
                 border: checked ? "none" : "1px solid var(--line)",
                 background: checked ? tint.bg : "transparent",
@@ -622,7 +622,7 @@ function CreateGroupCard({
         maxLength={64}
         onChange={(e) => setName(e.target.value)}
       />
-      <div style={{ display: "flex", gap: 8 }}>
+      <div style={{ display: "flex", gap: "var(--space-8)" }}>
         <button
           className="btn btn-primary"
           style={{ flex: 1 }}

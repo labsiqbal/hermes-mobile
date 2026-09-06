@@ -16,7 +16,7 @@ export default function Soon({
     <div className="body" style={{ alignItems: "center", justifyContent: "center" }}>
       <span className="soon-icon">{icon ?? <ClockIcon size={26} />}</span>
       <span className="chip chip-warm">soon</span>
-      <div className="appbar-title" style={{ fontSize: 15 }}>{title}</div>
+      <div className="appbar-title" style={{ fontSize: "var(--text-15)" }}>{title}</div>
       <div className="hint" style={{ textAlign: "center", maxWidth: 260 }}>{note}</div>
     </div>
   );

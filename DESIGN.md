@@ -96,7 +96,7 @@ Owner selected **A — Shell** for the production migration on 2026-09-06. Its a
 
 Five root destinations: **Home / Chats / Bots / Cronjobs / Manage**. HM-UX-04 replaces Activity's visible label and makes schedules the main surface; Runs remains reachable inside Cronjobs. Groups belongs within Chats; Files, Git, Terminal boundaries and Preview belong to contextual Workspace tools, not extra permanent tabs. Management details preserve the selected gateway/profile. Browser Back restores the actual context, not just a route name; the conversation keeps its draft and scroll when returning from tools. A screen with an unsupported backend remains explicitly unavailable rather than populated with demonstration data.
 
-The [HM-UX-04 contract](docs/production/chat-cron-acceptance.md) adds combined Project/Profile/Bot filters and local multi-project pins without membership or context changes. Session deletion is confirmed and scope-restricted. The compact model pill belongs above the composer, right-aligned, with a 44px touch target.
+The [HM-UX-04 contract](docs/production/chat-cron-acceptance.md) added local multi-project pins without membership or context changes. [HM-UX-06](docs/production/chats-read-filters.md) supersedes its three-filter UI with compact **Project + Profile** controls; canonical Bot Chats remain part of history, without a separate Type dropdown. Read failures use one concise status with Retry and disclosed diagnostics, retaining verified history. Session deletion is confirmed and scope-restricted. [HM-UX-07](docs/production/appearance-scale.md) supersedes that placement: input above attach/model/reasoning and opposite send/stop inside one compact rounded composer card. Workspace/project and profile context remain above the transcript. Settings > Appearance controls device-local global density: 75% Compact, 100% Standard (default), 125% Large; text and hit targets have safety floors, and browser zoom is untouched.
 
 ## Overview
 
@@ -160,7 +160,7 @@ Palet gelap beraksen tunggal: satu keluarga netral nyaris-hitam di bawah, enam w
 ### Hierarchy
 - **Display** (700, 17px, -0.015em): judul appbar layar utama ("Chats", "Bots").
 - **Title** (600–700, 13.5–14px, -0.01em): nama device/sesi, judul sheet, judul appbar dalam.
-- **Body** (400, 11.5–12.5px, 1.5–1.55): deskripsi bot dan hint line. Isi pesan dan composer memakai 13px secara default, dapat diatur 11–16px dari Settings.
+- **Body** (400, 11.5–12.5px, 1.5–1.55): deskripsi bot dan hint line. Ukuran aktual mengikuti token density HM-UX-07, termasuk transcript; kontrol input memiliki minimum 16px dan target interaksi minimum 44px. Slider ukuran chat lama digantikan UI scale global.
 - **Label** (600, 9.5–11px mono): handle, chip, metadata, section header (uppercase, letter-spacing .08em), timestamp.
 
 ### Named Rules

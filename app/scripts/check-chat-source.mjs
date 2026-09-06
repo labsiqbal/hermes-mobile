@@ -38,5 +38,43 @@ try {
  await test('exact detail narrowly projects secrets',async()=>{const adapter=new ManagementClient(client,async()=>Response.json({...row(),system_prompt:'PRIVATE',model_config:{key:'PRIVATE'}}));assert.deepEqual(await adapter.sessionIdentity('builder','same'),{id:'same',profile:'builder'});});
  await test('literal default serialized for list/tree/project/delete',async()=>{const wire=[];const real=new HermesConnection({url:'https://fixture.invalid',username:'fixture',password:'fictional'});real.rpc=async(method,params)=>{wire.push({method,params});return {};};await real.listSessions({profile:'default'});await real.projectTree(3,'default');await real.projectSessions('p','default');await real.sessionDelete('id','default');assert.ok(wire.every(call=>call.params.profile==='default'));assert.deepEqual(wire.at(-1),{method:'session.delete',params:{session_id:'id',profile:'default'}});});
  await test('new pin and expansion keys included in existing app-data wipe',async()=>{const key=preferenceKey({id:'x',url:'https://fixture.invalid'});assert.equal(isAppStorageKey(key),true);assert.equal(isAppStorageKey(`${key}:expanded`),true);});
+ await test('partial refresh preserves owned history and hydrated rows without stale project membership',async()=>{
+  let fail=false;
+  const scoped={...client,profilesList:async()=>[{name:'builder'},{name:'default'}],projectSessions:async()=>({id:'p',sessionCount:1,previewSessions:[row('older')]})};
+  const reads={...manager,sessions:async profile=>{if(fail&&profile==='builder')throw new ManagementError('network','Read failed.');return [row(fail?'new-default':'initial',profile)];}};
+  const cached=new ChatSource(scoped,reads);await cached.load();await cached.project('p','builder');fail=true;
+  const next=await cached.load();assert.deepEqual(next.sessions.map(r=>[r.profile,r.id]),[['builder','initial'],['builder','older'],['default','new-default']]);assert.deepEqual(next.failedProfiles,['builder']);assert.equal(next.projects.length,0);
+ });
+ await test('verified rows from a partial tree failure survive a later list failure',async()=>{
+  let step=0;
+  const cached=new ChatSource({...client,profilesList:async()=>[{name:'builder'}],projectTree:async()=>{throw Error('PRIVATE_RPC_BODY');}},{...manager,sessions:async()=>{if(step++)throw Error('PRIVATE_NETWORK');return [row('newly-read')];}});
+  const first=await cached.load();assert.equal(first.sessions[0].id,'newly-read');assert.ok(!first.warnings.join().includes('PRIVATE'));
+  const second=await cached.load();assert.deepEqual(second.sessions,first.sessions);
+ });
+ await test('successful empty refresh retires cache; removed roster owner cannot revive stale history',async()=>{
+  let owners=[{name:'builder'}],empty=false,fail=false;
+  const cached=new ChatSource({...client,profilesList:async()=>owners},{...manager,sessions:async()=>{if(fail)throw Error('read failed');return empty?[]:[row()];}});
+  await cached.load();empty=true;assert.deepEqual((await cached.load()).sessions,[]);fail=true;assert.deepEqual((await cached.load()).sessions,[]);
+  fail=false;empty=false;await cached.load();owners=[];await cached.load();owners=[{name:'builder'}];fail=true;assert.deepEqual((await cached.load()).sessions,[]);
+ });
+ await test('late older load cannot overwrite newer verified cache',async()=>{
+  let release,step=0;
+  const cached=new ChatSource({...client,profilesList:async()=>[{name:'builder'}]},{...manager,sessions:async()=>{if(step++===0)return new Promise(resolve=>{release=resolve;});if(step===2)return [row('new')];throw Error('read failed');}});
+  const old=cached.load();while(!release)await new Promise(resolve=>setTimeout(resolve,0));await cached.load();release([row('old')]);await old;assert.deepEqual((await cached.load()).sessions.map(r=>r.id),['new']);
+ });
+ await test('confirmed exact deletion cannot reappear from retained read cache',async()=>{
+  let deleted=false;
+  const cached=new ChatSource({...client,profilesList:async()=>[{name:'builder'}],sessionFindBotChat:async()=>null,sessionDelete:async id=>{deleted=true;return {deleted:id};}},{...manager,sessions:async()=>{if(deleted)throw Error('later read failed');return [row('gone')];},sessionIdentity:async(profile,id)=>{if(deleted)throw new ManagementError('unsupported','Absent','none',404);return {profile,id};}});
+  await cached.load();await cached.delete(row('gone'),true);assert.deepEqual((await cached.load()).sessions,[]);
+ });
+ await test('later-page failure retains verified first-page rows with explicit incomplete coverage',async()=>{
+  const adapter=new ManagementClient(client,async input=>{const url=new URL(input);if(url.pathname==='/api/profiles/active')return Response.json({current:'builder'});const offset=Number(url.searchParams.get('offset'));return offset?Response.json({detail:'PRIVATE'},{status:503}):Response.json({sessions:[row('page-one')],total:101,limit:100,offset:0});});
+  const cached=new ChatSource({...client,profilesList:async()=>[{name:'builder'}]},adapter);const data=await cached.load();
+  assert.deepEqual(data.sessions.map(r=>r.id),['page-one']);assert.deepEqual(data.failedProfiles,['builder']);assert.equal(data.readFailures[0].status,503);assert.equal(data.projects.length,0);
+ });
+ await test('read diagnostics preserve HTTP class but redact dynamic path, query and server body',async()=>{
+  const adapter=new ManagementClient(client,async()=>Response.json({detail:'PRIVATE_BODY'},{status:503}));
+  await assert.rejects(()=>adapter.sessionIdentity('builder','PRIVATE_ID'),e=>e.status===503&&e.operation==='GET /api/sessions/:id'&&!e.message.includes('PRIVATE')&&!e.message.includes('No state changed.'));
+ });
  console.log(`chat source: ${checks} checks PASS`);
 } finally {rmSync(out,{recursive:true,force:true});}

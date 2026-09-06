@@ -83,6 +83,16 @@ jobs:
         timeout-minutes: 4
         run: npm run check:layout-overlap:browser -- "$RUNNER_TEMP/production-browser/layout-overlap"
 
+      - name: Chats native fetch and two-filter regression (built App, intercepted HTTP)
+        id: chats_native
+        timeout-minutes: 3
+        run: npm run check:chats-read:browser -- "$RUNNER_TEMP/production-browser/chats-read"
+
+      - name: Global appearance and unified composer (built App, fixtures only)
+        id: appearance
+        timeout-minutes: 6
+        run: npm run check:appearance:browser -- "$RUNNER_TEMP/production-browser/appearance"
+
       - name: Browser harness self-test
         id: browser_self_test
         timeout-minutes: 2
@@ -94,7 +104,7 @@ jobs:
         run: npm run check:production-browser -- --output "$RUNNER_TEMP/production-browser"
 
       - name: Preserve fixture browser evidence, including failures
-        if: ${{ always() && (steps.browser_self_test.outcome != 'skipped' || steps.browser.outcome != 'skipped') }}
+        if: ${{ always() && (steps.appearance.outcome != 'skipped' || steps.chats_native.outcome != 'skipped' || steps.browser_self_test.outcome != 'skipped' || steps.browser.outcome != 'skipped') }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: production-browser-${{ github.run_id }}-${{ github.run_attempt }}

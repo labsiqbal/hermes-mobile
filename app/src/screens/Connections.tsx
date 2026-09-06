@@ -255,7 +255,7 @@ export default function Connections({ store, onConnect, embedded }: Props) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
-              <div style={{ display: "flex", gap: 8 }}>
+              <div style={{ display: "flex", gap: "var(--space-8)" }}>
                 <button
                   className="btn btn-ghost"
                   disabled={testing || !url.trim()}

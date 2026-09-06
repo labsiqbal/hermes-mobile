@@ -297,7 +297,7 @@ export function Runs({ client, conn }: { client?: HermesConnection; conn?: Saved
 
         <div className="card form-stack">
           <div className="hint">Track a run by ID (e.g. from another client):</div>
-          <div style={{ display: "flex", gap: 8 }}>
+          <div style={{ display: "flex", gap: "var(--space-8)" }}>
             <input
               className="field mono"
               style={{ flex: 1, minWidth: 0 }}
@@ -341,7 +341,7 @@ export function Runs({ client, conn }: { client?: HermesConnection; conn?: Saved
           const detail = details[run.run_id];
 
           return (
-            <div key={run.run_id} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <div key={run.run_id} style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
               <button className="rowcard" onClick={() => void toggleRun(run)}>
                 <span
                   className={`dot ${dotClass}`}
@@ -363,7 +363,7 @@ export function Runs({ client, conn }: { client?: HermesConnection; conn?: Saved
               </button>
 
               {isOpen && (
-                <div className="card card-sunken" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <div className="card card-sunken" style={{ display: "flex", flexDirection: "column", gap: "var(--space-8)" }}>
                   <div className="rowcard-meta" style={{ textAlign: "left", whiteSpace: "normal" }}>
                     {run.run_id}
                   </div>
@@ -381,10 +381,10 @@ export function Runs({ client, conn }: { client?: HermesConnection; conn?: Saved
                   {detail?.events && detail.events.length > 0 && (
                     <>
                       <div className="section-label">Timeline</div>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
                         {mergeDeltas(detail.events).map((e, i) => (
                           <div key={i}>
-                            <div className="rowcard-sub mono" style={{ fontSize: 10.5 }}>
+                            <div className="rowcard-sub mono" style={{ fontSize: "var(--text-10_5)" }}>
                               {eventLine(e)}
                             </div>
                             {eventPreview(e) && (
@@ -417,7 +417,7 @@ export function Runs({ client, conn }: { client?: HermesConnection; conn?: Saved
                   {source === "tracked" && (
                     <button
                       className="btn btn-destructive"
-                      style={{ padding: "8px 12px", fontSize: 12 }}
+                      style={{ padding: "8px 12px", fontSize: "var(--text-12)" }}
                       onClick={() => removeTracked(run.run_id)}
                     >
                       Berhenti melacak
@@ -431,7 +431,7 @@ export function Runs({ client, conn }: { client?: HermesConnection; conn?: Saved
 
         <button
           className="btn btn-ghost"
-          style={{ padding: "8px 12px", fontSize: 12 }}
+          style={{ padding: "8px 12px", fontSize: "var(--text-12)" }}
           onClick={() => {
             api.clearApiKey();
             setHasKey(false);

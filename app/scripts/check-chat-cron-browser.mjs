@@ -71,11 +71,16 @@ try {
   await j.type('textarea','OTHER PROFILE DRAFT');await j.tap('Back');await j.back(1);await j.text('QA restored answer qa-project-session');
   assert.equal(await browser.evaluate('document.querySelector("textarea").value'),'OTHER PROFILE DRAFT');await j.tap('Back');await waitLoaded();
  });
- await check('Bot filter uses canonical identity, no title heuristic or duplicate',async()=>{
-  await select('Chat type','bot');
+ await check('Two filters retain canonical identity without title heuristic or duplicate',async()=>{
+  assert.equal(await browser.evaluate("document.querySelectorAll('.chat-filters select').length"),2);
+  assert.equal(await browser.evaluate("!!document.querySelector('select[aria-label=\"Chat type\"]')"),false);
+  await select('Project filter','recent');await select('Profile filter','qa-bot');
   assert.deepEqual(await rows(),[['qa-bot','qa-bot-session']]);
   assert.equal(await browser.evaluate("document.querySelector('.chat-delete').disabled"),true);
-  await select('Profile filter','default');assert.equal((await rows()).length,0);
+  await select('Profile filter','default');
+  assert.ok((await rows()).some(([,id])=>id==='qa-misleading'));
+  assert.equal(await browser.evaluate("!!document.querySelector('[data-session-id=qa-misleading] .chip')"),false);
+  assert.equal(await browser.evaluate("document.querySelector('[data-session-id=qa-misleading] .chat-delete').disabled"),false);
   await select('Profile filter','qa-bot');await j.tap('Bot Chat','.chat-session-row',false);await j.text('QA restored answer qa-bot-session');
   assert.equal(await browser.evaluate('history.state.route.profile'),'qa-bot');await j.tap('Back');await waitLoaded();
  });
@@ -98,15 +103,15 @@ try {
  });
  await check('unsupported projects retain owner-verified history in Recent',async()=>{
   await f("f.unsupported.push('projects.tree');");await j.tap('Refresh Chats');await browser.waitFor("document.querySelector('[aria-label=\"Refresh Chats\"]').disabled===false");
-  assert.ok((await rows()).some(([p,id])=>p==='default'&&id==='qa-project-session'));await j.text('not supported');
+  assert.ok((await rows()).some(([p,id])=>p==='default'&&id==='qa-project-session'));await j.text('History is incomplete');await j.tap('Read details');await j.text('RPC projects.tree');
   await f("f.unsupported=[];");await j.tap('Refresh Chats');await waitLoaded();
  });
- await check('model above-right placement and compact 44px target at mobile widths',async()=>{
+ await check('model inside-card placement and compact 44px target at mobile widths',async()=>{
   await j.tap('QA Project conversation','.chat-session-row',false);await j.text('QA restored answer qa-project-session');
   for(const width of [360,390,430]) {
    await browser.viewport(width,844);await j.auditLayout(`model-${width}`);
-   const geometry=await browser.evaluate("(()=>{const p=document.querySelector('.model-pill'),c=document.querySelector('.composer-pill'),a=p.getBoundingClientRect(),b=c.getBoundingClientRect();return{above:a.bottom<=b.top,right:Math.abs(a.right-b.right),height:a.height,width:a.width,header:!!p.closest('header'),parent:p.parentElement.parentElement.className}})()");
-   assert.equal(geometry.above,true);assert.ok(geometry.right<=1);assert.ok(geometry.height>=44&&geometry.width>=44);assert.equal(geometry.header,false);report.checks.push({name:`model geometry ${width}`,geometry,status:'passed'});
+   const geometry=await browser.evaluate("(()=>{const p=document.querySelector('.model-pill'),c=document.querySelector('.composer-pill'),a=p.getBoundingClientRect(),b=c.getBoundingClientRect();return{contained:a.top>=b.top&&a.bottom<=b.bottom&&a.left>=b.left&&a.right<=b.right,height:a.height,width:a.width,header:!!p.closest('header'),parent:p.parentElement.parentElement.className}})()");
+   assert.equal(geometry.contained,true);assert.ok(geometry.height>=44&&geometry.width>=44);assert.equal(geometry.header,false);report.checks.push({name:`model geometry ${width}`,geometry,status:'passed'});
    await j.shot(`model-closed-${width}`);await j.clickCSS('.model-pill');await j.text('QA Fixture Provider');await j.shot(`model-open-${width}`);await j.tap('Close');
   }
   await j.tap('Back');

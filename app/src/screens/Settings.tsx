@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { connectionLabel, isAppStorageKey } from "../lib/shell-state";
 import type { ConnectionState, ConnectionStore, HermesConnection, SavedConnection } from "../lib/hermes-client";
 import Connections from "./Connections";
+import { applyScale, currentScale, setScale } from "../lib/appearance";
 
 // Keep-in-sync dengan "version" di package.json — dibaca manual karena
 // import package.json butuh resolveJsonModule + env khusus Vite.
@@ -38,24 +39,12 @@ export function Settings({
     confirmation.current?.showModal();
     return () => { if (previous instanceof HTMLElement && previous.isConnected) previous.focus(); };
   }, [confirmWipe]);
-  const [fontSize, setFontSizeState] = useState(() => {
-    try {
-      return parseFloat(localStorage.getItem("hermes-mobile.font-size") || "15");
-    } catch {
-      return 15;
-    }
-  });
-
-  const setFontSize = (size: number) => {
-    setFontSizeState(size);
-    try {
-      localStorage.setItem("hermes-mobile.font-size", String(size));
-    } catch {
-      /* ignore */
-    }
-    // Apply to CSS variable
-    document.documentElement.style.setProperty("--chat-font-size", `${size}px`);
-  };
+  const [scale, setScaleState] = useState(currentScale);
+  const [appearanceSaved, setAppearanceSaved] = useState(true);
+  function changeScale(value: string) {
+    setAppearanceSaved(setScale(value));
+    setScaleState(currentScale());
+  }
 
   const wipeLocalData = () => {
     try {
@@ -63,6 +52,7 @@ export function Settings({
         const keys = Array.from({length:storage.length}, (_, i) => storage.key(i));
         for (const key of keys) if (key && isAppStorageKey(key)) storage.removeItem(key);
       }
+      applyScale(100);
       onDisconnect();
       location.reload();
     } catch {
@@ -82,9 +72,9 @@ export function Settings({
           <div
             className="mono"
             style={{
-              fontSize: 11.5,
+              fontSize: "var(--text-11_5)",
               color: "var(--fg-dim)",
-              marginTop: 4,
+              marginTop: "var(--space-4)",
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
@@ -94,7 +84,7 @@ export function Settings({
           </div>
           <button
             className="btn btn-ghost"
-            style={{ marginTop: 12 }}
+            style={{ marginTop: "var(--space-12)" }}
             onClick={onDisconnect}
           >
             Switch device
@@ -113,7 +103,7 @@ export function Settings({
           </div>
           <button
             className="btn btn-destructive"
-            style={{ marginTop: 12 }}
+            style={{ marginTop: "var(--space-12)" }}
             onClick={() => setConfirmWipe(true)}
           >
             Erase Hermes Mobile data
@@ -122,24 +112,16 @@ export function Settings({
 
         <div className="section-label">Appearance</div>
         <div className="card">
-          <div className="title-row">
-            <div className="rowcard-title">Chat text size</div>
-            <span className="chip">{fontSize}px</span>
-          </div>
-          <input
-            aria-label="Chat text size"
-            type="range"
-            min={11}
-            max={16}
-            step={0.5}
-            value={fontSize}
-            onChange={(e) => setFontSize(parseFloat(e.target.value))}
-            style={{ width: "100%", marginTop: 8 }}
-          />
-          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
-            <span className="hint" style={{ padding: 0 }}>Small</span>
-            <span className="hint" style={{ padding: 0 }}>Large</span>
-          </div>
+          <label className="appearance-scale" htmlFor="ui-scale">
+            <span className="rowcard-title">UI scale</span>
+            <select id="ui-scale" aria-label="UI scale" className="field" value={scale} onChange={event => changeScale(event.target.value)}>
+              <option value="75">75% Compact</option>
+              <option value="100">100% Standard</option>
+              <option value="125">125% Large</option>
+            </select>
+          </label>
+          <p className="hint">All screens, including chat text. Saved on this device only. Touch targets and text keep readable minimum sizes; browser zoom still works.</p>
+          {!appearanceSaved && <p role="status" className="hint">Applied for now. Browser storage is unavailable; this choice may reset on reload.</p>}
         </div>
 
         <div className="card scratch-accent">
@@ -156,7 +138,7 @@ export function Settings({
             <div className="rowcard-title">Hermes Mobile</div>
             <span className="chip">v{APP_VERSION}</span>
           </div>
-          <div className="hint" style={{ padding: 0, marginTop: 4 }}>
+          <div className="hint" style={{ padding: 0, marginTop: "var(--space-4)" }}>
             Unofficial client for Hermes-Agent.
           </div>
           <a
@@ -166,9 +148,9 @@ export function Settings({
             rel="noreferrer"
             style={{
               display: "block",
-              fontSize: 11.5,
+              fontSize: "var(--text-11_5)",
               color: "var(--blue)",
-              marginTop: 8,
+              marginTop: "var(--space-8)",
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
