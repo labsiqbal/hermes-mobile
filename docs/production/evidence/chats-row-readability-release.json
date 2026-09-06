@@ -1,0 +1,91 @@
+{
+  "task": "HM-UX-08",
+  "status": "published-anonymously-verified-receipt-finalization-pending",
+  "verified_at": "2026-09-06T06:56:05.332586+00:00",
+  "source_delivery": {
+    "status": "source-merged-ci-green",
+    "source_head": "07ce2c9f72a5a4a475a0862522b36e86a3cfc433",
+    "source_merge": "4e736b9676bb168aba46df0ab26fd2b78163d447",
+    "source_pr": {
+      "headRefOid": "07ce2c9f72a5a4a475a0862522b36e86a3cfc433",
+      "mergeCommit": {
+        "oid": "4e736b9676bb168aba46df0ab26fd2b78163d447"
+      },
+      "mergedAt": "2026-09-06T06:45:11Z",
+      "number": 9,
+      "state": "MERGED",
+      "url": "https://github.com/labsiqbal/hermes-mobile/pull/9"
+    },
+    "pr_checks": [
+      {
+        "link": "https://github.com/labsiqbal/hermes-mobile/actions/runs/34017097879/job/101442682490",
+        "name": "React Shell A / fixture gate",
+        "state": "SUCCESS"
+      }
+    ],
+    "pr_ci": {
+      "attempt": 1,
+      "conclusion": "success",
+      "databaseId": 34017097879,
+      "event": "pull_request",
+      "headSha": "07ce2c9f72a5a4a475a0862522b36e86a3cfc433",
+      "status": "completed",
+      "url": "https://github.com/labsiqbal/hermes-mobile/actions/runs/34017097879"
+    },
+    "main_ci": {
+      "attempt": 1,
+      "conclusion": "success",
+      "databaseId": 34017317439,
+      "event": "push",
+      "headSha": "4e736b9676bb168aba46df0ab26fd2b78163d447",
+      "status": "completed",
+      "url": "https://github.com/labsiqbal/hermes-mobile/actions/runs/34017317439"
+    },
+    "canonical_ff_receipt": "/tmp/hmux08-release-xgk7hczc/ff-4e736b9676bb168aba46df0ab26fd2b78163d447.json"
+  },
+  "artifact_manifest_sha256": "4ad73d4128aae58217e6aa5a7ef7a4aa0c7bf47194a97e80f18a41085d9b8ca9",
+  "publication": {
+    "assets_added": 6,
+    "entry_replaced": true,
+    "error": null,
+    "expected_entry_sha256": "4cdfb4b705c173e12ab07a703af937140a113c3bd7b5826685facc2e2417434d",
+    "manifest_sha256": "4ad73d4128aae58217e6aa5a7ef7a4aa0c7bf47194a97e80f18a41085d9b8ca9",
+    "mode": "publish",
+    "new_entry_sha256": "6f91f1f0c7f7f9cfa7fc207806d1ee78d2ffdc68f1664fe3f4406ae57ac1598f",
+    "planned_additions": 6,
+    "retained_files": 38,
+    "route_sha256": "b8f93e33860152933c5314075d09f5995437755d59b621f7a258a64d141450c6",
+    "stage": "complete",
+    "status": "published"
+  },
+  "verification_summary": {
+    "status": "passed",
+    "timestamp": "2026-09-06T06:55:12.678889+00:00",
+    "origin": "https://nuc.tailcf7779.ts.net:8451",
+    "artifact_files": 12,
+    "live_tree_files": 45,
+    "retained_non_entry_files": 38,
+    "anonymous_gets": 90,
+    "route_sha256": "b8f93e33860152933c5314075d09f5995437755d59b621f7a258a64d141450c6",
+    "entry_sha256": "6f91f1f0c7f7f9cfa7fc207806d1ee78d2ffdc68f1664fe3f4406ae57ac1598f",
+    "policy": "Separate anonymous urllib verifier: no proxies, authorization, cookies or redirect following; every approved and retained file verified plain and cache-busted"
+  },
+  "browser_status": "passed",
+  "visual_entry_review": "Complete anonymous registry, zero devices and empty form; no loading/error overlay.",
+  "durable_receipt_files_sha256": {
+    "docs/production/evidence/chats-row-readability-artifact-manifest.json": "4ad73d4128aae58217e6aa5a7ef7a4aa0c7bf47194a97e80f18a41085d9b8ca9",
+    "docs/production/evidence/chats-row-readability-source-delivery.json": "b4f9c932eca1fd899b3fa5855183abf6972da565ae2211cee9a87e9cffa4d384",
+    "docs/production/evidence/chats-row-readability-route-guard-acceptance.json": "822383a596af55e94ce53ba9710f4a10c3deef3bede6dd95ac6cc552b8de97f7",
+    "docs/production/evidence/chats-row-readability-blocked-dry-run.json": "b5e929bb85fff1478569b475b7de49bee954400e5049911d50687d3847574b1d",
+    "docs/production/evidence/chats-row-readability-dry-run.json": "26b63dfc0a94e82a3d32c22000c6a08db3273513b1f5e2b00d7c21c6f37a3a79",
+    "docs/production/evidence/chats-row-readability-dry-run-acceptance.json": "9413da5b4ced9dc8ab4fc07c346c1d5c2d23e5f9ee4f9519fed8cfeb135dd997",
+    "docs/production/evidence/chats-row-readability-publication.json": "98b31b57af80a278f77a458054985dd9bb96cfb15121a22949cbbb04fcaae689",
+    "docs/production/evidence/chats-row-readability-served-verification.json": "69ff9fbf76c2f37affcd06e5a1119e7ededd84821a502dd6bee075ee6e2628c9",
+    "docs/production/evidence/chats-row-readability-browser-verification.json": "d9854911665cd741fde46b3a9495ee67d63465cccc6d3451f0a024c6c35dfcdd",
+    "docs/production/evidence/chats-row-readability-served-entry.png": "9186408dee4201fe0b143040b9605c6dd6fc40d4a263359c5d8d3000638d82f1"
+  },
+  "receipt_branch": "docs/hmux08-release-receipt",
+  "finalization_pointer": "/tmp/hmux08-release-xgk7hczc/final-state.json plus byte-verified final comment on receipt PR",
+  "parent_independent_readback": "Parent-owned; not claimed by executor",
+  "boundary": "Only approved static root publication. No build/test reruns during resume, routes/services/restarts/auth/backend/secrets/dependencies changes. Prior evidence and six known untracked files preserved."
+}
