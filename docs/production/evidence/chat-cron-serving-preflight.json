@@ -1,0 +1,318 @@
+{
+  "anonymous_status_after": {
+    "auth_providers": [
+      "basic"
+    ],
+    "auth_required": true,
+    "gateway_running": true,
+    "gateway_state": "running",
+    "overall": "ok",
+    "version": "0.21.0"
+  },
+  "anonymous_status_before": {
+    "auth_providers": [
+      "basic"
+    ],
+    "auth_required": true,
+    "gateway_running": true,
+    "gateway_state": "running",
+    "overall": "ok",
+    "version": "0.21.0"
+  },
+  "anonymous_status_http_status": 200,
+  "blockers": [],
+  "candidate_certified": false,
+  "candidate_pending_gates": [
+    "In-progress candidate has not been inspected or certified",
+    "Independent candidate review and source/build provenance",
+    "Frozen complete candidate manifest outside both live and candidate trees with approved exact-byte SHA-256",
+    "Candidate-specific collision/path checks and exact guarded publisher dry-run",
+    "Explicit owner publication approval after final gates"
+  ],
+  "checks": {
+    "all_live_files_plain_and_cache_busted_match": true,
+    "anonymous_health_unchanged": true,
+    "disk_entry_guard_matches": true,
+    "disk_tree_unchanged": true,
+    "prior_receipt_guards_match": true,
+    "root_identity_unchanged": true,
+    "route_guard_and_exact_mount_match": true
+  },
+  "existing_serving_verified": true,
+  "expected_entry_sha256": "9783bf21c838108f53e837f1dcf307631f7100a09096ccfebe0048ea5b4c9fd0",
+  "expected_route_sha256": "5759f3513fa7dd18a01d1eefc840816737f9089387fbc30ea06b166c3aa6a1a5",
+  "finished_at_utc": "2026-09-06T01:05:00.633002+00:00",
+  "https_files": [
+    {
+      "file": "assets/Bots-CLatOz21.js",
+      "http_status": 200,
+      "matches_disk": true,
+      "sha256": "9145c6695df02597457e6af4d286e44cbb36981940d10fce65c7eb99ecafd4dc",
+      "variant": "plain"
+    },
+    {
+      "file": "assets/Bots-CLatOz21.js",
+      "http_status": 200,
+      "matches_disk": true,
+      "sha256": "9145c6695df02597457e6af4d286e44cbb36981940d10fce65c7eb99ecafd4dc",
+      "variant": "cache_busted"
+    },
+    {
+      "file": "assets/Bots-CtgJptyd.js",
+      "http_status": 200,
+      "matches_disk": true,
+      "sha256": "05e243dec1f4b3ba34bc598600378b18d94a89d0bbb6587316e296361c984268",
+      "variant": "plain"
+    },
+    {
+      "file": "assets/Bots-CtgJptyd.js",
+      "http_status": 200,
+      "matches_disk": true,
+      "sha256": "05e243dec1f4b3ba34bc598600378b18d94a89d0bbb6587316e296361c984268",
+      "variant": "cache_busted"
+    },
+    {
+      "file": "assets/Manage-CM5gyP7I.css",
+      "http_status": 200,
+      "matches_disk": true,
+      "sha256": "2f3faa1fa11cb691db6bc5323f12b78d2d5990407b068359182548d1b3789593",
+      "variant": "plain"
+    },
+    {
+      "file": "assets/Manage-CM5gyP7I.css",
+      "http_status": 200,
+      "matches_disk": true,
+      "sha256": "2f3faa1fa11cb691db6bc5323f12b78d2d5990407b068359182548d1b3789593",
+      "variant": "cache_busted"
+    },
+    {
+      "file": "assets/Manage-DLwTut4g.js",
+      "http_status": 200,
+      "matches_disk": true,
+      "sha256": "e7c5cf4f1764ae7ff510da9b71767d47145403727f39b0989f21a06e1dabdf7c",
+      "variant": "plain"
+    },
+    {
+      "file": "assets/Manage-DLwTut4g.js",
+      "http_status": 200,
+      "matches_disk": true,
+      "sha256": "e7c5cf4f1764ae7ff510da9b71767d47145403727f39b0989f21a06e1dabdf7c",
+      "variant": "cache_busted"
+    },
+    {
+      "file": "assets/Workspace-CqGyTPxR.css",
+      "http_status": 200,
+      "matches_disk": true,
+      "sha256": "870dc60a117e7a1e7747343198455da2ba6d4875ef78133aa0581ef7ed410072",
+      "variant": "plain"
+    },
+    {
+      "file": "assets/Workspace-CqGyTPxR.css",
+      "http_status": 200,
+      "matches_disk": true,
+      "sha256": "870dc60a117e7a1e7747343198455da2ba6d4875ef78133aa0581ef7ed410072",
+      "variant": "cache_busted"
+    },
+    {
+      "file": "assets/Workspace-HFlfx1vy.js",
+      "http_status": 200,
+      "matches_disk": true,
+      "sha256": "2874068b0d4c7153df27b5b9dd99e2315e70d7a559f224b3c6e151a896afd9e7",
+      "variant": "plain"
+    },
+    {
+      "file": "assets/Workspace-HFlfx1vy.js",
+      "http_status": 200,
+      "matches_disk": true,
+      "sha256": "2874068b0d4c7153df27b5b9dd99e2315e70d7a559f224b3c6e151a896afd9e7",
+      "variant": "cache_busted"
+    },
+    {
+      "file": "assets/index-BhyYfsUU.css",
+      "http_status": 200,
+      "matches_disk": true,
+      "sha256": "64c49c04642695425d738fd6f912d1a52a4c0fae57eaa77645c87e8f8edf7579",
+      "variant": "plain"
+    },
+    {
+      "file": "assets/index-BhyYfsUU.css",
+      "http_status": 200,
+      "matches_disk": true,
+      "sha256": "64c49c04642695425d738fd6f912d1a52a4c0fae57eaa77645c87e8f8edf7579",
+      "variant": "cache_busted"
+    },
+    {
+      "file": "assets/index-C1XuVG8v.css",
+      "http_status": 200,
+      "matches_disk": true,
+      "sha256": "92999231c4d3b8118df804fe2a9375036fc26abb25921634048ce471b28f09af",
+      "variant": "plain"
+    },
+    {
+      "file": "assets/index-C1XuVG8v.css",
+      "http_status": 200,
+      "matches_disk": true,
+      "sha256": "92999231c4d3b8118df804fe2a9375036fc26abb25921634048ce471b28f09af",
+      "variant": "cache_busted"
+    },
+    {
+      "file": "assets/index-D3oIXUXY.js",
+      "http_status": 200,
+      "matches_disk": true,
+      "sha256": "10f90d3d4f6eaa9cc0207f31c0a970d32777034c6c38ac46935a0f6e9ae4d5b9",
+      "variant": "plain"
+    },
+    {
+      "file": "assets/index-D3oIXUXY.js",
+      "http_status": 200,
+      "matches_disk": true,
+      "sha256": "10f90d3d4f6eaa9cc0207f31c0a970d32777034c6c38ac46935a0f6e9ae4d5b9",
+      "variant": "cache_busted"
+    },
+    {
+      "file": "assets/index-Ze4ZOai8.js",
+      "http_status": 200,
+      "matches_disk": true,
+      "sha256": "f7fbce76237d18b31964243fa8c1071d885f4db2b6f848a8d1c345f32cd1463b",
+      "variant": "plain"
+    },
+    {
+      "file": "assets/index-Ze4ZOai8.js",
+      "http_status": 200,
+      "matches_disk": true,
+      "sha256": "f7fbce76237d18b31964243fa8c1071d885f4db2b6f848a8d1c345f32cd1463b",
+      "variant": "cache_busted"
+    },
+    {
+      "file": "assets/refresh-cw-DYmkRgmW.js",
+      "http_status": 200,
+      "matches_disk": true,
+      "sha256": "b562763c89b99198fcbf29e5474606ad805768477516373da52184beeff63f40",
+      "variant": "plain"
+    },
+    {
+      "file": "assets/refresh-cw-DYmkRgmW.js",
+      "http_status": 200,
+      "matches_disk": true,
+      "sha256": "b562763c89b99198fcbf29e5474606ad805768477516373da52184beeff63f40",
+      "variant": "cache_busted"
+    },
+    {
+      "file": "index.html",
+      "http_status": 200,
+      "matches_disk": true,
+      "sha256": "9783bf21c838108f53e837f1dcf307631f7100a09096ccfebe0048ea5b4c9fd0",
+      "variant": "plain"
+    },
+    {
+      "file": "index.html",
+      "http_status": 200,
+      "matches_disk": true,
+      "sha256": "9783bf21c838108f53e837f1dcf307631f7100a09096ccfebe0048ea5b4c9fd0",
+      "variant": "cache_busted"
+    },
+    {
+      "file": "logo.png",
+      "http_status": 200,
+      "matches_disk": true,
+      "sha256": "2eaff911b9da9b1f1fcc81adb02f4992bb9ea6b781f4dd048cd79349927ddb7a",
+      "variant": "plain"
+    },
+    {
+      "file": "logo.png",
+      "http_status": 200,
+      "matches_disk": true,
+      "sha256": "2eaff911b9da9b1f1fcc81adb02f4992bb9ea6b781f4dd048cd79349927ddb7a",
+      "variant": "cache_busted"
+    },
+    {
+      "file": "manifest.webmanifest",
+      "http_status": 200,
+      "matches_disk": true,
+      "sha256": "3d22b80afea0926ace467d10607775eb49be77abe8d78b3dfcfff10a8d44db95",
+      "variant": "plain"
+    },
+    {
+      "file": "manifest.webmanifest",
+      "http_status": 200,
+      "matches_disk": true,
+      "sha256": "3d22b80afea0926ace467d10607775eb49be77abe8d78b3dfcfff10a8d44db95",
+      "variant": "cache_busted"
+    }
+  ],
+  "live_file_sha256": {
+    "assets/Bots-CLatOz21.js": "9145c6695df02597457e6af4d286e44cbb36981940d10fce65c7eb99ecafd4dc",
+    "assets/Bots-CtgJptyd.js": "05e243dec1f4b3ba34bc598600378b18d94a89d0bbb6587316e296361c984268",
+    "assets/Manage-CM5gyP7I.css": "2f3faa1fa11cb691db6bc5323f12b78d2d5990407b068359182548d1b3789593",
+    "assets/Manage-DLwTut4g.js": "e7c5cf4f1764ae7ff510da9b71767d47145403727f39b0989f21a06e1dabdf7c",
+    "assets/Workspace-CqGyTPxR.css": "870dc60a117e7a1e7747343198455da2ba6d4875ef78133aa0581ef7ed410072",
+    "assets/Workspace-HFlfx1vy.js": "2874068b0d4c7153df27b5b9dd99e2315e70d7a559f224b3c6e151a896afd9e7",
+    "assets/index-BhyYfsUU.css": "64c49c04642695425d738fd6f912d1a52a4c0fae57eaa77645c87e8f8edf7579",
+    "assets/index-C1XuVG8v.css": "92999231c4d3b8118df804fe2a9375036fc26abb25921634048ce471b28f09af",
+    "assets/index-D3oIXUXY.js": "10f90d3d4f6eaa9cc0207f31c0a970d32777034c6c38ac46935a0f6e9ae4d5b9",
+    "assets/index-Ze4ZOai8.js": "f7fbce76237d18b31964243fa8c1071d885f4db2b6f848a8d1c345f32cd1463b",
+    "assets/refresh-cw-DYmkRgmW.js": "b562763c89b99198fcbf29e5474606ad805768477516373da52184beeff63f40",
+    "index.html": "9783bf21c838108f53e837f1dcf307631f7100a09096ccfebe0048ea5b4c9fd0",
+    "logo.png": "2eaff911b9da9b1f1fcc81adb02f4992bb9ea6b781f4dd048cd79349927ddb7a",
+    "manifest.webmanifest": "3d22b80afea0926ace467d10607775eb49be77abe8d78b3dfcfff10a8d44db95"
+  },
+  "live_root": "/home/iqbal/workspace/personal/hermes-mobile/app/dist",
+  "mode": "read_only_existing_serving_preflight",
+  "notes": [
+    "Canonical receipt is docs/production/evidence/publication.json; top-level evidence/publication.json is absent",
+    "Documentation example old-entry guard predates prior publication; supplied guard matches prior receipt new entry",
+    "Requests used fixed HTTPS origin, no proxy/cookies/auth headers, no redirects, identity encoding, no-cache; only static URLs and anonymous /api/status",
+    "Raw route JSON and HTTP response bodies were neither printed nor persisted"
+  ],
+  "origin": "https://nuc.tailcf7779.ts.net:8451",
+  "publication_authorized": false,
+  "publisher_constraints": [
+    "Fixed production origin and existing app/dist mount; no alternate roots/routes/services",
+    "New files only flat assets/<name>-<hash>.<extension> with >=8-character hash token and existing parent directory",
+    "Existing non-entry collisions must be byte-identical, including logo.png and manifest.webmanifest",
+    "No new stable support/worker/HTML URLs; review runtime service-worker behavior separately",
+    "Retain all old non-entry files; no pruning or live-root builds",
+    "Normalized absolute disjoint candidate/live trees; external manifest; exact coverage/digests; reject symlinks/hardlinks/nonregular and unsafe paths",
+    "Publisher defaults dry-run; only exact --publish writes; entry last; no automatic rollback"
+  ],
+  "route_after": {
+    "exact_root_matches": true,
+    "guard_matches": true,
+    "sha256": "5759f3513fa7dd18a01d1eefc840816737f9089387fbc30ea06b166c3aa6a1a5"
+  },
+  "route_before": {
+    "exact_root_matches": true,
+    "guard_matches": true,
+    "sha256": "5759f3513fa7dd18a01d1eefc840816737f9089387fbc30ea06b166c3aa6a1a5"
+  },
+  "scope": {
+    "allowed_output": "/tmp/hm-ux04-release-preflight.json",
+    "authenticated_requests": false,
+    "backups": false,
+    "builds_or_installs": false,
+    "candidate_inspected": false,
+    "credential_or_runtime_config_reads": false,
+    "publisher_invoked": false,
+    "real_prompts": false,
+    "route_or_service_changes": false,
+    "route_status_json_read_only": true,
+    "static_writes": false
+  },
+  "started_at_utc": "2026-09-06T01:04:59.836334+00:00",
+  "support_asset_source_comparison": {
+    "logo.png": {
+      "live_sha256": "2eaff911b9da9b1f1fcc81adb02f4992bb9ea6b781f4dd048cd79349927ddb7a",
+      "matches_live": true,
+      "publisher_refusal_if_used": null,
+      "source_sha256": "2eaff911b9da9b1f1fcc81adb02f4992bb9ea6b781f4dd048cd79349927ddb7a"
+    },
+    "manifest.webmanifest": {
+      "live_sha256": "3d22b80afea0926ace467d10607775eb49be77abe8d78b3dfcfff10a8d44db95",
+      "matches_live": true,
+      "publisher_refusal_if_used": null,
+      "source_sha256": "3d22b80afea0926ace467d10607775eb49be77abe8d78b3dfcfff10a8d44db95"
+    }
+  },
+  "support_comparison_scope": "Current canonical app/public only; not the in-progress candidate bundle or its provenance.",
+  "task": "HM-UX-04"
+}

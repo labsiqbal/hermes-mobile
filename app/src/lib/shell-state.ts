@@ -4,7 +4,7 @@ export const ROOT_DESTINATIONS = [
   { id: 'home', label: 'Home', description: 'Devices and recent conversations' },
   { id: 'chats', label: 'Chats', description: 'Projects, conversations and groups' },
   { id: 'bots', label: 'Bots', description: 'Profiles and canonical bot conversations' },
-  { id: 'activity', label: 'Activity', description: 'Runs, schedules and routines' },
+  { id: 'activity', label: 'Cronjobs', description: 'Scheduled jobs and the Runs journal' },
   { id: 'manage', label: 'Manage', description: 'Capabilities, identity and workspace tools' },
 ] as const;
 export type RootScreen = typeof ROOT_DESTINATIONS[number]['id'];

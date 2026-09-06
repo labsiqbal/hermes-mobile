@@ -1,368 +1,140 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type {
-  HermesConnection,
-  ProjectTreeItem,
-  SavedConnection,
-  SessionSummary,
-} from "../lib/hermes-client";
-import {
-  formatSessionTime,
-  isRelaySession,
-} from "./chat-list-utils";
-import { botTint } from "./bots-utils";
-import { isActive } from "../lib/active-sessions";
-import { ChevronDownIcon, ChevronRightIcon } from "../components/icons";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Pin, Trash2 } from 'lucide-react';
+import type { HermesConnection, ProjectTreeItem, SavedConnection, SessionSummary } from '../lib/hermes-client';
+import { ChatSource } from '../lib/chat-source';
+import { chatKey, uniqueChats, orderedProjects, preferenceKey, readIds, type BrowserChat } from '../lib/chat-browser';
+import { formatSessionTime } from './chat-list-utils';
+import { botTint } from './bots-utils';
+import { isActive } from '../lib/active-sessions';
+import { ChevronDownIcon, ChevronRightIcon } from '../components/icons';
+import './chat-list.css';
 
 interface Props {
-  conn: SavedConnection;
-  client: HermesConnection;
-  onOpenChat: (session: SessionSummary | null) => void; // null = new chat
+  conn: SavedConnection; client: HermesConnection;
+  onOpenChat: (session: SessionSummary | null) => void;
   onDisconnect: () => void;
 }
+type Snapshot = Awaited<ReturnType<ChatSource['load']>>;
+const projectSessions = (project: ProjectTreeItem) => project.repos?.flatMap(repo=>repo.groups?.flatMap(group=>group.sessions || []) || []) || project.previewSessions || [];
 
-/** theme.css belum punya varian warm; trio tint/border/teks dari DESIGN.md. */
-const RELAY_CHIP_STYLE = {
-  background: "rgba(207, 128, 109, 0.12)",
-  borderColor: "rgba(207, 128, 109, 0.22)",
-  color: "var(--warm)",
-} as const;
-
-const LONG_PRESS_MS = 500;
-/** Gerakan pointer di atas ini (px) membatalkan long-press (user sedang scroll). */
-const LONG_PRESS_MOVE_TOLERANCE = 10;
-
-export default function ChatList({ conn, client, onOpenChat }: Props) {
-  const [sessions, setSessions] = useState<SessionSummary[]>([]);
-  const [projects, setProjects] = useState<ProjectTreeItem[]>([]);
-  const [scopedIds, setScopedIds] = useState<Set<string>>(new Set());
-  const [hydrated, setHydrated] = useState<Record<string, ProjectTreeItem>>({});
-  const [expanded, setExpanded] = useState<Set<string>>(() => {
-    try {
-      return new Set(JSON.parse(localStorage.getItem(`hermes-projects-expanded:${conn.id}`) || "[]") as string[]);
-    } catch {
-      return new Set();
-    }
-  });
-  const [loadingProjects, setLoadingProjects] = useState<Set<string>>(new Set());
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [recentExpanded, setRecentExpanded] = useState(true);
-  const [pendingDelete, setPendingDelete] = useState<SessionSummary | null>(null);
-  const [deleting, setDeleting] = useState(false);
-
-  const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pressStart = useRef<{ x: number; y: number } | null>(null);
-  /** true saat long-press baru saja terpicu — menekan click susulan. */
-  const longPressFired = useRef(false);
+export default function ChatList({conn,client,onOpenChat}: Props) {
+  const source = useMemo(()=>new ChatSource(client),[client]);
+  const [data,setData] = useState<Snapshot>();
+  const [loading,setLoading] = useState(true);
+  const [error,setError] = useState('');
+  const [status,setStatus] = useState('');
+  const [hydrated,setHydrated] = useState<Record<string,ProjectTreeItem>>({});
+  const [projectErrors,setProjectErrors] = useState<Record<string,string>>({});
+  const requests = useRef(new Set<string>());
+  const generation = useRef(0);
+  const pinsKey = preferenceKey(conn);
+  const expandedKey = `${pinsKey}:expanded`;
+  const [pins,setPins] = useState(()=>readIds(pinsKey));
+  const [expanded,setExpanded] = useState(()=>readIds(expandedKey));
+  const [recentExpanded,setRecentExpanded] = useState(true);
+  const [projectFilter,setProjectFilter] = useState('');
+  const [profileFilter,setProfileFilter] = useState('');
+  const [typeFilter,setTypeFilter] = useState('');
+  const [pendingDelete,setPendingDelete] = useState<BrowserChat | null>(null);
 
   const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [nextSessions, tree] = await Promise.all([
-        client.listSessions(),
-        client.projectTree().catch(() => ({ projects: [], scoped_session_ids: [] })),
-      ]);
-      setSessions(nextSessions);
-      setProjects(tree.projects);
-      setScopedIds(new Set(tree.scoped_session_ids ?? []));
-      setHydrated({});
-      setError("");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setLoading(false);
-    }
-  }, [client]);
-
-  useEffect(() => {
-    // oxlint-disable-next-line react/set-state-in-effect -- Sync initial gateway state on mount.
+    const version = ++generation.current;
+    requests.current.clear(); setPendingDelete(null); setLoading(true); setHydrated({}); setProjectErrors({}); setError('');
+    try { const next = await source.load(); if (version===generation.current) setData(next); }
+    catch (err) { if (version===generation.current) { setData(undefined); setError(err instanceof Error ? err.message : 'Chats could not be loaded.'); } }
+    finally { if (version===generation.current) setLoading(false); }
+  },[source]);
+  useEffect(()=>{
+    // oxlint-disable-next-line react/set-state-in-effect -- Fetch gateway state on mount.
     void load();
-    return client.addStateHandler((state) => {
-      if (state === "open") void load();
-    });
-  }, [client, load]);
-
-  // Re-render list when active badges change (events fire globally in App).
-  useEffect(() => {
-    const t = setInterval(() => setSessions((prev) => [...prev]), 2000);
-    return () => clearInterval(t);
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (pressTimer.current) clearTimeout(pressTimer.current);
+    const unsubscribe=client.addStateHandler(state=>{setPendingDelete(null);if(state==='open') void load();});
+    return ()=>{
+      // oxlint-disable-next-line react-hooks/exhaustive-deps -- Generation counter, not a DOM ref.
+      generation.current++; unsubscribe();
     };
-  }, []);
-
-  const cancelPress = useCallback(() => {
-    if (pressTimer.current) {
-      clearTimeout(pressTimer.current);
-      pressTimer.current = null;
+  },[client,load]);
+  // Activity indicators are read from the existing event cache, never title inference.
+  const [,tick]=useState(0);
+  useEffect(()=>{const timer=setInterval(()=>tick(value=>value+1),2000);return ()=>clearInterval(timer);},[]);
+  useEffect(()=>{
+    if (!data || loading) return;
+    for (const project of data.projects) {
+      if (project.isNoProject || !project.sessionCount || !expanded.has(project.id) || hydrated[project.id] || projectErrors[project.id] || requests.current.has(project.id)) continue;
+      requests.current.add(project.id);
+      const version=generation.current;
+      source.project(project.sourceId,project.profile).then(full=>{
+        if(version===generation.current) setHydrated(previous=>({...previous,[project.id]:full}));
+      },err=>{if(version===generation.current) setProjectErrors(previous=>({...previous,[project.id]:err instanceof Error ? err.message : 'Could not load project sessions.'}));})
+        .finally(()=>{if(version===generation.current) requests.current.delete(project.id);});
     }
-  }, []);
+  },[data,loading,expanded,hydrated,projectErrors,source]);
 
-  const onRowPointerDown = useCallback(
-    (e: React.PointerEvent, s: SessionSummary) => {
-      longPressFired.current = false;
-      pressStart.current = { x: e.clientX, y: e.clientY };
-      cancelPress();
-      pressTimer.current = setTimeout(() => {
-        pressTimer.current = null;
-        longPressFired.current = true;
-        navigator.vibrate?.(10);
-        setPendingDelete(s);
-      }, LONG_PRESS_MS);
-    },
-    [cancelPress],
-  );
-
-  const onRowPointerMove = useCallback(
-    (e: React.PointerEvent) => {
-      if (!pressTimer.current || !pressStart.current) return;
-      const dx = e.clientX - pressStart.current.x;
-      const dy = e.clientY - pressStart.current.y;
-      if (dx * dx + dy * dy > LONG_PRESS_MOVE_TOLERANCE ** 2) cancelPress();
-    },
-    [cancelPress],
-  );
-
-  const confirmDelete = useCallback(async () => {
-    const target = pendingDelete;
-    if (!target || deleting || isRelaySession(target)) return;
-    setDeleting(true);
-    try {
-      await client.sessionDelete(target.id);
-      // Optimistic: buang dari list lokal dulu, lalu refresh untuk
-      // menyelaraskan dengan state server (chain compression dsb.).
-      setSessions((prev) => prev.filter((s) => s.id !== target.id));
-      setPendingDelete(null);
-      setError("");
-      void load();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-      setPendingDelete(null);
-      void load();
-    } finally {
-      setDeleting(false);
-    }
-  }, [client, pendingDelete, deleting, load]);
-
-  const projectSessions = useCallback((project: ProjectTreeItem): SessionSummary[] => {
-    const full = hydrated[project.id];
-    const rows = full?.repos?.flatMap((repo) =>
-      (repo.groups ?? []).flatMap((lane) => lane.sessions ?? []),
-    ) ?? project.previewSessions ?? [];
-    return [...new Map(rows.map((session) => [session.id, session])).values()];
-  }, [hydrated]);
-
-  const hydrateProject = useCallback(async (project: ProjectTreeItem) => {
-    if (hydrated[project.id] || loadingProjects.has(project.id) || project.sessionCount === 0) return;
-    setLoadingProjects((previous) => new Set(previous).add(project.id));
-    try {
-      const full = await client.projectSessions(project.id);
-      if (full) setHydrated((previous) => ({ ...previous, [project.id]: full }));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setLoadingProjects((previous) => {
-        const next = new Set(previous);
-        next.delete(project.id);
-        return next;
-      });
-    }
-  }, [client, hydrated, loadingProjects]);
-
-  const toggleProject = useCallback((project: ProjectTreeItem) => {
-    const opening = !expanded.has(project.id);
-    setExpanded((previous) => {
-      const next = new Set(previous);
-      if (opening) next.add(project.id);
-      else next.delete(project.id);
-      localStorage.setItem(`hermes-projects-expanded:${conn.id}`, JSON.stringify([...next]));
-      return next;
-    });
-    if (opening) void hydrateProject(project);
-  }, [conn.id, expanded, hydrateProject]);
-
-  // Persisted-open groups must hydrate on mount/refresh; previewSessions only
-  // carries the first three rows.
-  useEffect(() => {
-    for (const project of projects) {
-      if (expanded.has(project.id)) void hydrateProject(project);
-    }
-  }, [expanded, hydrateProject, projects]);
-
-  const projectRows = useMemo(() => projects
-    // Daftar chat hanya menampilkan proyek nyata yang berisi percakapan.
-    .filter((project) => !project.isNoProject && project.sessionCount > 0)
-    .map((project) => ({ project, sessions: projectSessions(project) })),
-  [projectSessions, projects]);
-  const fallbackSessions = projects.length === 0
-    ? sessions
-    : sessions.filter((session) => {
-        // projects.tree dapat memakai root lineage atau continuation tip sebagai scope.
-        const grouped = scopedIds.has(session.id) || Boolean(session.resolved_id && scopedIds.has(session.resolved_id));
-        return !grouped;
-      });
-
-  function renderSessionRow(session: SessionSummary) {
-    return (
-      <button
-        key={session.id}
-        className="rowcard"
-        onClick={() => {
-          if (longPressFired.current) {
-            longPressFired.current = false;
-            return;
-          }
-          onOpenChat(session);
-        }}
-        onPointerDown={(event) => onRowPointerDown(event, session)}
-        onPointerMove={onRowPointerMove}
-        onPointerUp={cancelPress}
-        onPointerCancel={cancelPress}
-        onPointerLeave={cancelPress}
-      >
-        <span
-          className="sess-avatar"
-          style={{
-            background: botTint(session.title || "?").bg,
-            color: botTint(session.title || "?").fg,
-          }}
-        >
-          {(session.title || "?").trim().charAt(0)}
-        </span>
-        <div className="rowcard-main">
-          <div className="rowcard-title">
-            {session.title || "Untitled"}
-            {isRelaySession(session) && <span className="chip" style={RELAY_CHIP_STYLE}>relay</span>}
-            {isActive(conn.id, session.id, session.resolved_id) && (
-              <span className="chip chip-amber chip-live">active</span>
-            )}
-          </div>
-          <div className="rowcard-sub">{session.preview || "—"}</div>
-        </div>
-        <div className="rowcard-meta">
-          {formatSessionTime(session, "")}
-          <br />
-          {session.message_count} msg
-        </div>
+  function persist(key:string,next:Set<string>) { try { localStorage.setItem(key,JSON.stringify([...next])); } catch { setError('This browser could not save project display preferences.'); } }
+  function togglePin(id:string) { const next=new Set(pins); if(next.has(id)) next.delete(id); else next.add(id); setPins(next); persist(pinsKey,next); }
+  function toggleProject(id:string) { const next=new Set(expanded); if(next.has(id)) next.delete(id); else next.add(id); setExpanded(next); persist(expandedKey,next); }
+  const identify = (rows: SessionSummary[]) => uniqueChats(rows.map(row=>{
+    const bot=data?.bots.find(bot=>bot.profile===row.profile && [bot.id,bot.resolved_id].some(id=>id && [row.id,row.resolved_id].includes(id)));
+    return bot ? {...row,...bot} : row;
+  }));
+  const matches = (row:BrowserChat) => (!profileFilter || row.profile===profileFilter) && (!typeFilter || row.bot===true);
+  const realProjects=data?.projects.filter(project=>!project.isNoProject && project.sessionCount>0) || [];
+  const projects=orderedProjects(realProjects,pins).filter(project=>(!projectFilter || projectFilter===project.id) && (!profileFilter || profileFilter===project.profile));
+  const hydratedKeys=new Set(Object.values(hydrated).flatMap(project=>projectSessions(project).flatMap(row=>[chatKey(row),...(row.resolved_id ? [chatKey({...row,id:row.resolved_id})] : [])])));
+  const recent = identify(uniqueChats([...(data?.bots || []),...(data?.sessions || [])])).filter(row=>{
+    const keys=[chatKey(row),...(row.resolved_id ? [chatKey({...row,id:row.resolved_id})] : [])];
+    const claimed=keys.some(key=>data?.scopedIds.has(key) || hydratedKeys.has(key));
+    return !claimed && matches(row);
+  });
+  const available = (row:BrowserChat) => !row.bot && row.profile===data?.profile && client.connectionState==='open' && !isActive(conn.id,row.id,row.resolved_id);
+  function renderRow(row:BrowserChat) {
+    const tint=botTint(row.title || '?');
+    return <div className="chat-session-row" key={chatKey(row)} data-session-id={row.id} data-profile={row.profile}>
+      <button className="rowcard" onClick={()=>onOpenChat(row)}>
+        <span className="sess-avatar" style={{background:tint.bg,color:tint.fg}}>{(row.title || '?').trim().charAt(0)}</span>
+        <span className="rowcard-main"><span className="rowcard-title">{row.title || 'Untitled'}{row.bot && <span className="chip">bot</span>}{isActive(conn.id,row.id,row.resolved_id) && <span className="chip chip-amber chip-live">active</span>}</span><span className="rowcard-sub">{row.profile} · {row.preview || '—'}</span></span>
+        <span className="rowcard-meta">{formatSessionTime(row,'')}<br />{row.message_count} msg</span>
       </button>
-    );
+      <button className="iconbtn chat-delete" aria-label={`Delete session ${row.title || 'Untitled'}`} disabled={!available(row)} title={row.bot ? 'Canonical bot chats cannot be deleted here' : !available(row) ? 'Only inactive sessions in the verified running profile can be deleted' : 'Delete this session and its history'} onClick={()=>{setStatus('');setPendingDelete({...row});}}><Trash2 size={17} aria-hidden="true" /></button>
+    </div>;
   }
-
-  return (
-    <div className="screen">
-      <div className="body chatlist">
-        {error && <div className="error-line">{error}</div>}
-        {!loading && sessions.length === 0 && !error && (
-          <div className="hint">No sessions on this machine yet. Start one with the + button above.</div>
-        )}
-        {projectRows.map(({ project, sessions: rows }) => {
-          const open = expanded.has(project.id);
-          const loadingProject = loadingProjects.has(project.id);
-          const visibleRows = hydrated[project.id] ? rows : rows.slice(0, 3);
-          const panelId = `project-sessions-${project.id.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
-          return (
-            <section key={project.id} className="project-group">
-              <button
-                type="button"
-                className="project-group-head"
-                aria-expanded={open}
-                aria-controls={panelId}
-                onClick={() => toggleProject(project)}
-              >
-                {open ? <ChevronDownIcon size={16} /> : <ChevronRightIcon size={16} />}
-                <span className="project-group-name">{project.label}</span>
-                <span className="project-group-count">{project.sessionCount}</span>
-              </button>
-              {open && (
-                <div id={panelId} className="project-group-rows">
-                  {loadingProject && <div className="hint" role="status">Loading sessions…</div>}
-                  {!loadingProject && visibleRows.map(renderSessionRow)}
-                  {!loadingProject && visibleRows.length === 0 && (
-                    <div className="hint">No sessions</div>
-                  )}
-                </div>
-              )}
-            </section>
-          );
-        })}
-        {fallbackSessions.length > 0 && (
-          <section className="project-group">
-            <button
-              type="button"
-              className="project-group-head"
-              aria-expanded={recentExpanded}
-              aria-controls="recent-sessions"
-              onClick={() => setRecentExpanded((open) => !open)}
-            >
-              {recentExpanded ? <ChevronDownIcon size={16} /> : <ChevronRightIcon size={16} />}
-              <span className="project-group-name">Recent</span>
-              <span className="project-group-count">{fallbackSessions.length}</span>
-            </button>
-            {recentExpanded && (
-              <div id="recent-sessions" className="project-group-rows">
-                {fallbackSessions.map(renderSessionRow)}
-              </div>
-            )}
-          </section>
-        )}
-      </div>
-      {pendingDelete && (
-        <>
-          <div
-            className="sheet-dim"
-            onClick={() => {
-              if (!deleting) setPendingDelete(null);
-            }}
-          />
-          <div className="sheet" role="dialog" aria-modal="true">
-            <div className="sheet-grab" />
-            {isRelaySession(pendingDelete) ? (
-              <>
-                <div className="rowcard-title">System relay session</div>
-                <div className="hint" style={{ margin: "8px 0 14px" }}>
-                  “Bot Chat” is the Bot Mode relay session owned by the system —
-                  it can't be deleted from here.
-                </div>
-                <div className="sheet-actions">
-                  <button
-                    className="btn btn-ghost"
-                    onClick={() => setPendingDelete(null)}
-                  >
-                    Close
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="rowcard-title">Delete this session?</div>
-                <div className="hint" style={{ margin: "8px 0 14px" }}>
-                  “{pendingDelete.title || "Untitled"}” and its entire history
-                  will be permanently deleted. This can't be undone.
-                </div>
-                <div className="sheet-actions">
-                  <button
-                    className="btn btn-destructive"
-                    disabled={deleting}
-                    onClick={() => void confirmDelete()}
-                  >
-                    {deleting ? "Deleting…" : "Delete"}
-                  </button>
-                  <button
-                    className="btn btn-ghost"
-                    disabled={deleting}
-                    onClick={() => setPendingDelete(null)}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </>
-      )}
+  return <div className="screen"><div className="body chatlist">
+    <div className="chat-filters" aria-label="Filter chats">
+      <label>Project<select aria-label="Project filter" value={projectFilter} onChange={e=>{setProjectFilter(e.target.value);setPendingDelete(null);}}><option value="">All projects</option><option value="recent">Recent</option>{realProjects.map(project=><option key={project.id} value={project.id}>{project.label} · {project.profile}</option>)}</select></label>
+      <label>Profile<select aria-label="Profile filter" value={profileFilter} onChange={e=>{setProfileFilter(e.target.value);setPendingDelete(null);}}><option value="">All profiles</option>{data?.profiles.map(profile=><option key={profile.name} value={profile.name}>{profile.name}</option>)}</select></label>
+      <label>Type<select aria-label="Chat type" value={typeFilter} onChange={e=>setTypeFilter(e.target.value)}><option value="">All chats</option><option value="bot">Bot chats</option></select></label>
+      <button className="btn btn-ghost" disabled={loading} onClick={()=>void load()} aria-label="Refresh Chats">Refresh</button>
     </div>
-  );
+    {data && <details className="hint chat-scope"><summary>Browsing & deletion limits</summary><p>Profile-owned history and projects from this gateway. Pins only change display order. Delete is available only for inactive sessions in the running profile ({data.profile || 'unverified'}). Other profiles and canonical bot chats are protected. A disabled trash button means deletion is unavailable here.</p></details>}
+    {error && <div className="error-line" role="alert">{error}</div>}{data?.warnings.map(warning=><p className="error-line" role="alert" key={warning}>{warning}</p>)}
+    {status && <div className="hint" role="status">{status}</div>}
+    {loading ? <div className="hint" role="status">Loading chats…</div> : <>
+      {projects.map(project=>{
+        const open=expanded.has(project.id), full=hydrated[project.id];
+        const rows=identify(full ? projectSessions(full) : project.previewSessions || []).filter(matches);
+        const panelId=`project-${encodeURIComponent(project.id)}`;
+        return <section className="project-group" key={project.id} data-project-id={project.id}>
+          <div className="project-heading"><button className="project-group-head" aria-expanded={open} aria-controls={panelId} onClick={()=>toggleProject(project.id)}>{open ? <ChevronDownIcon size={16} /> : <ChevronRightIcon size={16} />}<span className="project-group-name">{project.label}<small>{project.profile}</small></span><span className="project-group-count">{project.sessionCount}</span></button><button className="iconbtn project-pin" aria-label={`${pins.has(project.id) ? 'Unpin' : 'Pin'} project ${project.label}`} aria-pressed={pins.has(project.id)} onClick={()=>togglePin(project.id)}><Pin size={17} aria-hidden="true" /></button></div>
+          {open && <div className="project-group-rows" id={panelId}>{projectErrors[project.id] ? <><p role="alert" className="error-line">{projectErrors[project.id]} Showing the verified preview only. Refresh Chats to retry.</p>{rows.map(renderRow)}</> : !full ? <p className="hint" role="status">Loading sessions…</p> : rows.length ? rows.map(renderRow) : <p className="hint">No chats match these filters in this project.</p>}</div>}
+        </section>;
+      })}
+      {(!projectFilter || projectFilter==='recent') && recent.length>0 && <section className="project-group"><button className="project-group-head" aria-expanded={recentExpanded} aria-controls="recent-sessions" onClick={()=>setRecentExpanded(open=>!open)}>{recentExpanded ? <ChevronDownIcon size={16} /> : <ChevronRightIcon size={16} />}<span className="project-group-name">Recent</span><span className="project-group-count">{recent.length}</span></button>{recentExpanded && <div className="project-group-rows" id="recent-sessions">{recent.map(renderRow)}</div>}</section>}
+      {!error && projects.length===0 && (projectFilter && projectFilter!=='recent' || recent.length===0) && <p className="hint">No chats match these filters.</p>}
+    </>}
+  </div>{pendingDelete && <DeleteDialog target={pendingDelete} device={conn.label} available={()=>available(pendingDelete)} source={source} onClose={()=>setPendingDelete(null)} onFinished={message=>{setPendingDelete(null);setStatus(message);void load();}} />}</div>;
+}
+
+function DeleteDialog({target,device,source,available,onClose,onFinished}:{target:BrowserChat;device:string;source:ChatSource;available:()=>boolean;onClose:()=>void;onFinished:(message:string)=>void}) {
+  const dialog=useRef<HTMLDialogElement>(null), lock=useRef(false);
+  const request=useRef<AbortController | null>(null);
+  useEffect(()=>()=>request.current?.abort(),[]);
+  const [busy,setBusy]=useState(false);
+  useEffect(()=>{const previous=document.activeElement;dialog.current?.showModal();return ()=>{if(previous instanceof HTMLElement && previous.isConnected) previous.focus();};},[]);
+  async function confirm() {
+    if(lock.current || !available()) return;
+    lock.current=true;setBusy(true);
+    const controller=new AbortController();request.current=controller;
+    try {await source.delete(target,true,controller.signal);if(!controller.signal.aborted) onFinished('Deletion acknowledged; exact session no longer returned. Refreshing Chats.');}
+    catch(err) {if(!controller.signal.aborted) onFinished(err instanceof Error ? err.message : 'Deletion could not be verified. Refresh Chats.');}
+  }
+  return <dialog ref={dialog} className="chat-delete-dialog" aria-labelledby="delete-title" onCancel={event=>{event.preventDefault();if(!busy) onClose();}}><h2 id="delete-title">Delete this session?</h2><p>The stored session “{target.title || 'Untitled'}” and its messages will be deleted. Branch and compression continuations may remain. This cannot be undone.</p><p className="mono">{device} / {target.profile}<br />{target.id}</p><div className="sheet-actions"><button className="btn btn-ghost" autoFocus disabled={busy} onClick={onClose}>Cancel</button><button className="btn btn-destructive" disabled={busy || !available()} onClick={()=>void confirm()}>{busy ? 'Deleting…' : 'Delete'}</button></div></dialog>;
 }

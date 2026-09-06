@@ -1,7 +1,7 @@
 /** Narrow management adapter. Contracts: docs/production/management-contracts.md.
  * No config/env endpoint, implicit profile, login, secret extraction or retries.
  */
-import type { HermesConnection } from './hermes-client';
+import type { HermesConnection, SessionSummary } from './hermes-client';
 
 type Gateway = Pick<HermesConnection, 'url' | 'rpc' | 'profilesList'>;
 type Json = Record<string, unknown>;
@@ -217,6 +217,46 @@ export class ManagementClient {
     const r = object(await this.scopedGet('/api/learning/node', profile, { id }, signal));
     if (r.ok !== true || r.kind !== 'memory' || r.id !== id) throw new ManagementError('invalid', 'The memory response did not match the request.');
     return required(r.content);
+  }
+  /** Owner-echo REST browser. total includes hidden roots; include_pinned appends
+   * missed pinned rows outside LIMIT/OFFSET. Scan the bounded total horizon and
+   * deduplicate that documented backfill, not by comparing visible count to total. */
+  async sessions(profile: string, signal?: AbortSignal): Promise<SessionSummary[]> {
+    profileName(profile);
+    const rows: SessionSummary[] = [];
+    let total: number | null = null;
+    const seen = new Set<string>();
+    for (let offset=0; offset<5000; offset+=100) {
+      const query=new URLSearchParams({profile,limit:'100',offset:String(offset),order:'recent',archived:'exclude',full:'false'});
+      const page=object(await this.get(`/api/sessions?${query}`,signal));
+      if (count(page.total)===null || page.limit!==100 || page.offset!==offset || (total!==null && page.total!==total)) throw new ManagementError('invalid','The session list changed or pagination was invalid. Refresh Chats.');
+      total=page.total as number;
+      const batch=list(page.sessions);
+      if (batch.filter(item=>object(item).pinned!==true).length>100) throw new ManagementError('invalid','The session page exceeded its unpinned row limit.');
+      for (const item of batch) {
+        const row=object(item), id=required(row.id);
+        if(row.profile!==profile) throw new ManagementError('scope','Session ownership did not match. Results were not displayed.');
+        if(seen.has(id)) {
+          if(row.pinned===true) continue;
+          throw new ManagementError('invalid','An unpinned session repeated across pages. Refresh Chats.');
+        }
+        seen.add(id);
+        rows.push({id,profile,title:text(row.title),preview:text(row.preview),source:text(row.source),started_at:typeof row.started_at==='number' ? row.started_at : 0,message_count:count(row.message_count) || 0,resolved_id:text(row.resolved_id) || undefined,cwd:text(row.cwd) || null,git_repo_root:text(row.git_repo_root) || null,git_branch:text(row.git_branch) || null});
+      }
+      if(offset+100>=total) return rows;
+    }
+    throw new ManagementError('unsupported','This profile exceeds the 5,000-session mobile read limit. Results were not displayed.');
+  }
+  /** Project the full detail response immediately; never expose config or system prompts. */
+  async sessionIdentity(profile:string,id:string,signal?:AbortSignal): Promise<{id:string;profile:string}> {
+    profileName(profile);
+    const row=object(await this.get(`/api/sessions/${encodeURIComponent(id)}?${new URLSearchParams({profile})}`,signal));
+    if(row.id!==id || row.profile!==profile) throw new ManagementError('scope','The session identity did not match the exact requested owner and ID.');
+    return {id,profile};
+  }
+  /** Process identity, never the sticky CLI default. Used by no-echo session reads. */
+  async runningProfile(signal?: AbortSignal): Promise<string> {
+    return profileName(required(object(await this.get('/api/profiles/active', signal)).current));
   }
   async schedules(profile: string, signal?: AbortSignal): Promise<Schedule[]> {
     return list(await this.scopedGet('/api/cron/jobs', profile, {}, signal)).map(item => {

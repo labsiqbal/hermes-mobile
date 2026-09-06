@@ -1620,6 +1620,19 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
             </button>
           </div>
         )}
+        {!isGroup && liveSid && (
+          <div className="model-row">
+            <button type="button" className="model-pill" disabled={state !== "open"} onClick={() => void openModelSheet()}>
+              <span className="model-pill-name">
+                {(info?.model || catalog?.model || "model").split("/").pop()}
+                {info?.reasoning_effort && info.reasoning_effort !== "none"
+                  ? ` · ${info.reasoning_effort.slice(0, 1).toUpperCase()}${info.reasoning_effort.slice(1, 3)}`
+                  : ""}
+              </span>
+              <ChevronDownIcon size={13} />
+            </button>
+          </div>
+        )}
         <div className="composer-pill">
           {!isGroup && (
             <button
@@ -1698,19 +1711,6 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
             </button>
           )}
         </div>
-        {!isGroup && liveSid && (
-          <div className="model-row model-row-below">
-            <button type="button" className="model-pill" disabled={state !== "open"} onClick={() => void openModelSheet()}>
-              <span className="model-pill-name">
-                {(info?.model || catalog?.model || "model").split("/").pop()}
-                {info?.reasoning_effort && info.reasoning_effort !== "none"
-                  ? ` · ${info.reasoning_effort.slice(0, 1).toUpperCase()}${info.reasoning_effort.slice(1, 3)}`
-                  : ""}
-              </span>
-              <ChevronDownIcon size={13} />
-            </button>
-          </div>
-        )}
         <input
           ref={imageInputRef}
           type="file"

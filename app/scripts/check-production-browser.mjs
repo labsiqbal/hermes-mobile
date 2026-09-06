@@ -8,13 +8,13 @@ import { fileURLToPath } from 'node:url';
 import { ChromePipe } from './production-browser-chrome-pipe.mjs';
 import { FIXTURE, installProductionFixtures } from './production-browser-fixtures.mjs';
 
-export const ROOTS = ['Home', 'Chats', 'Bots', 'Activity', 'Manage'];
+export const ROOTS = ['Home', 'Chats', 'Bots', 'Cronjobs', 'Manage'];
 export const JOURNEYS = ['login-connect', 'root-navigation', 'project-resume', 'workspace-history-draft', 'bot-profile-draft', 'groups', 'activity-runs', 'manage-sections', 'chat-controls-approval', 'transport-states', 'responsive', 'palette-focus', 'created-session-navigation', 'manage-navigation-context', 'transport-audit'];
 const NAV = 'nav[aria-label="Primary"], nav.tabbar, .tabbar';
 const CONTROLS = 'button, a[href], summary, input:not([type="hidden"]), textarea, select, [role="button"], [role="tab"]';
 const q = JSON.stringify;
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
-export function assertRoots(roots) { assert.deepEqual(roots, ROOTS, 'Exactly Home / Chats / Bots / Activity / Manage, in that order'); }
+export function assertRoots(roots) { assert.deepEqual(roots, ROOTS, 'Exactly Home / Chats / Bots / Cronjobs / Manage, in that order'); }
 export function assertReceipt(report) {
   for (const id of JOURNEYS) assert.equal(report.journeys.filter(j => j.id === id && j.status === 'passed').length, 1, `Missing or failed journey: ${id}`);
   assert.equal(report.journeys.length, JOURNEYS.length, 'No duplicate/unregistered journeys');
@@ -78,7 +78,7 @@ export async function serveDist(appDir, selfTest = false) {
   await collect(dist);
   files.set('/', index);
   // In-memory negative canary, only reachable in --self-test; never a production result.
-  if (selfTest) files.set('/__qa_canary', Buffer.from('<!doctype html><div id="root"><nav class="tabbar"><button>Home</button><button>Chats</button><button>Bots</button><button>Activity</button><button>Manage</button></nav></div>'));
+  if (selfTest) files.set('/__qa_canary', Buffer.from('<!doctype html><div id="root"><nav class="tabbar"><button>Home</button><button>Chats</button><button>Bots</button><button>Cronjobs</button><button>Manage</button></nav></div>'));
   const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.woff2': 'font/woff2' };
   const rejected = [];
   const server = createServer((req, res) => {
@@ -337,7 +337,7 @@ async function checkProduction(options) {
       await j.tap('Back');
     });
     await j.run('activity-runs', async () => {
-      await j.root('Activity'); await j.text('QA tracked run'); await j.tap('QA tracked run', 'body', false);
+      await j.root('Cronjobs'); await j.text('QA Fixture Schedule'); await j.tap('Runs'); await j.text('QA tracked run'); await j.tap('QA tracked run', 'body', false);
       await j.text('QA fixture run output'); await j.shot('activity-run-details');
       assert.ok((await trace()).some(t => t.route === 'GET /v1/runs/qa-run/events'), 'Retained Runs SSE details');
     });
@@ -563,7 +563,7 @@ async function selfTest(options) {
       const deniedCreate=await rpc('session.create',{});
       f.permits['session.create']=1;
       const created=await rpc('session.create',{});
-      const fresh=await fetch(${q(FIXTURE.gateway.url + '/api/sessions/qa-created-session/messages')});
+      const fresh=await fetch(${q(FIXTURE.gateway.url + '/api/sessions/qa-created-session/messages?profile=default')});
       const identity=await (await fetch(${q(FIXTURE.gateway.url + '/api/profiles/active')})).json();
       const managementInit={method:'GET',credentials:'include',redirect:'error',cache:'no-store'};
       const memory=await (await fetch(${q(FIXTURE.gateway.url + '/api/learning/graph?profile=default')},managementInit)).json();

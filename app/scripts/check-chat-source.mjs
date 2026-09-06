@@ -1,0 +1,42 @@
+#!/usr/bin/env node
+import assert from 'node:assert/strict';
+import {buildSync} from 'esbuild';
+import {mkdtempSync,rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {pathToFileURL} from 'node:url';
+const out=mkdtempSync(join(tmpdir(),'hm-chat-source-'));let checks=0;
+const test=async(name,fn)=>{await fn();checks++;console.log(`PASS ${name}`);};
+try {
+ buildSync({stdin:{contents:"export {ChatSource} from './src/lib/chat-source';export {ManagementClient,ManagementError} from './src/lib/management-client';export {HermesConnection} from './src/lib/hermes-client';export {isAppStorageKey} from './src/lib/shell-state';export {preferenceKey} from './src/lib/chat-browser';",resolveDir:new URL('..',import.meta.url).pathname},outfile:join(out,'source.mjs'),bundle:true,platform:'node',format:'esm',logLevel:'silent'});
+ const {ChatSource,ManagementClient,ManagementError,HermesConnection,isAppStorageKey,preferenceKey}=await import(pathToFileURL(join(out,'source.mjs')));
+ const row=(id='same',profile='builder')=>({id,profile,title:'Misleading Bot Chat',preview:'',source:'cli',started_at:1,message_count:1});
+ let rows=[row()],current='builder',ack='valid',canonical=null,calls=[];
+ const client={url:'https://fixture.invalid',connectionState:'open',profilesList:async()=>[{name:'builder',canonical_session:null},{name:'default',canonical_session:{id:'same'}}],projectTree:async()=>({projects:[],scoped_session_ids:[]}),sessionFindBotChat:async()=>canonical,sessionDelete:async(id,profile)=>{calls.push(['delete',id,profile]);rows=[];return ack==='valid'?{deleted:id}:null;}};
+ const manager={runningProfile:async()=>current,sessions:async profile=>profile==='builder'?rows:[],sessionIdentity:async(profile,id)=>{calls.push(['detail',id,profile]);if(!rows.some(r=>r.id===id)) throw new ManagementError('unsupported','Absent','none',404);return {id,profile};}};
+ const source=new ChatSource(client,manager),target=row();
+ await test('ordinary and canonical owner provenance',async()=>{const data=await source.load();assert.equal(data.sessions[0].profile,'builder');assert.equal(data.bots[0].profile,'default');});
+ await test('cancel makes no write',async()=>{await assert.rejects(()=>source.delete(target,false),/confirmation/);assert.equal(calls.length,0);});
+ await test('cross-profile deletion unavailable',async()=>{await assert.rejects(()=>source.delete({...target,profile:'default'},true),/running profile/);assert.equal(calls.length,0);});
+ await test('canonical marker protection',async()=>{await assert.rejects(()=>source.delete({...target,bot:true},true),/canonical/);});
+ await test('null roster canonical uses exact lookup and protects target',async()=>{canonical={id:'same'};await assert.rejects(()=>source.delete(target,true),/canonical/);assert.equal(calls.filter(c=>c[0]==='delete').length,0);canonical=null;});
+ await test('failed canonical lookup fails closed',async()=>{const bad=new ChatSource({...client,sessionFindBotChat:async()=>{throw Error('lookup unavailable');}},manager);await assert.rejects(()=>bad.delete(target,true),/lookup unavailable/);assert.equal(calls.filter(c=>c[0]==='delete').length,0);});
+ await test('confirmed exact-owner deletion acknowledgment plus exact readback',async()=>{calls=[];await source.delete(target,true);assert.deepEqual(calls,[['detail','same','builder'],['delete','same','builder'],['detail','same','builder']]);});
+ await test('malformed acknowledgment means unknown',async()=>{rows=[target];ack='invalid';await assert.rejects(()=>source.delete(target,true),/outcome is unknown/);ack='valid';});
+ await test('readback failure means unknown, not success',async()=>{rows=[target];const bad=new ChatSource({...client,sessionDelete:async()=>({deleted:'same'})},manager);await assert.rejects(()=>bad.delete(target,true),/outcome is unknown/);});
+ await test('context cancellation during preflight cannot dispatch',async()=>{const controller=new AbortController();calls=[];const bad=new ChatSource(client,{...manager,sessionIdentity:async(profile,id)=>{controller.abort();return {profile,id};}});await assert.rejects(()=>bad.delete(target,true,controller.signal),/confirmation changed/);assert.equal(calls.filter(c=>c[0]==='delete').length,0);});
+ await test('disconnected review cannot dispatch',async()=>{client.connectionState='closed';await assert.rejects(()=>source.delete(target,true),/connection/);client.connectionState='open';});
+ await test('project failure preserves verified profile history',async()=>{rows=[target];const bad=new ChatSource({...client,projectTree:async()=>{throw Error('unsupported projects');}},manager);const data=await bad.load();assert.deepEqual(data.sessions,[target]);assert.equal(data.warnings.length,2);});
+ await test('ownerless project rows are rejected without discarding REST history',async()=>{const bad=new ChatSource({...client,projectTree:async()=>({projects:[{id:'p',sessionCount:1,previewSessions:[{id:'same'}]}]})},manager);const data=await bad.load();assert.equal(data.projects.length,0);assert.equal(data.sessions.length,1);});
+ const fetchPage=(fn)=>new ManagementClient(client,async input=>{const url=new URL(input);assert.equal(url.pathname,'/api/sessions');assert.equal(url.searchParams.get('profile'),'builder');return Response.json(fn(Number(url.searchParams.get('offset'))));});
+ await test('pinned backfill beyond 100 rows deduplicates across offset pages',async()=>{const batch=Array.from({length:100},(_,i)=>row(String(i)));const pin={...row('old-pin'),pinned:true};const offsets=[];const adapter=fetchPage(offset=>{offsets.push(offset);return {sessions:offset===0?[...batch,pin]:[pin],total:101,limit:100,offset};});assert.equal((await adapter.sessions('builder')).length,101);assert.deepEqual(offsets,[0,100]);});
+ await test('hidden roots in total do not invalidate visible results',async()=>{assert.equal((await fetchPage(offset=>({sessions:[row()],total:2,limit:100,offset})).sessions('builder')).length,1);});
+ await test('owner echo required for every row including duplicate pin',async()=>{await assert.rejects(()=>fetchPage(offset=>({sessions:[{...row(),profile:'default',pinned:true}],total:1,limit:100,offset})).sessions('builder'),/ownership/);});
+ await test('unpinned repeated pages fail visibly',async()=>{await assert.rejects(()=>fetchPage(offset=>({sessions:[row()],total:101,limit:100,offset})).sessions('builder'),/repeated/);});
+ await test('changing totals fail visibly',async()=>{await assert.rejects(()=>fetchPage(offset=>({sessions:[row(String(offset))],total:offset?102:101,limit:100,offset})).sessions('builder'),/changed/);});
+ await test('scope token is literal, never normalized',async()=>{await assert.rejects(()=>fetchPage(()=>({})).sessions(' Builder '),/identifier/);});
+ await test('exact detail narrowly projects secrets',async()=>{const adapter=new ManagementClient(client,async()=>Response.json({...row(),system_prompt:'PRIVATE',model_config:{key:'PRIVATE'}}));assert.deepEqual(await adapter.sessionIdentity('builder','same'),{id:'same',profile:'builder'});});
+ await test('literal default serialized for list/tree/project/delete',async()=>{const wire=[];const real=new HermesConnection({url:'https://fixture.invalid',username:'fixture',password:'fictional'});real.rpc=async(method,params)=>{wire.push({method,params});return {};};await real.listSessions({profile:'default'});await real.projectTree(3,'default');await real.projectSessions('p','default');await real.sessionDelete('id','default');assert.ok(wire.every(call=>call.params.profile==='default'));assert.deepEqual(wire.at(-1),{method:'session.delete',params:{session_id:'id',profile:'default'}});});
+ await test('new pin and expansion keys included in existing app-data wipe',async()=>{const key=preferenceKey({id:'x',url:'https://fixture.invalid'});assert.equal(isAppStorageKey(key),true);assert.equal(isAppStorageKey(`${key}:expanded`),true);});
+ console.log(`chat source: ${checks} checks PASS`);
+} finally {rmSync(out,{recursive:true,force:true});}
