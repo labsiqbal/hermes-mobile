@@ -1,0 +1,30 @@
+{
+  "status": "accepted",
+  "authority": "Owner: live in bro gw mau test; delegated combined HMUX06+07 release executor",
+  "dry_run_sha256": "a270dbe950da7f489e674fa554f84e4107f10f976c1abc874a1a8de5576852e9",
+  "arguments": [
+    "python3",
+    "-B",
+    "deploy/publish-static.py",
+    "--artifact",
+    "/tmp/hm-ux0607-release-p72qsv83/source/app/dist",
+    "--manifest",
+    "/tmp/hm-ux0607-release-p72qsv83/artifact.json",
+    "--manifest-sha256",
+    "c20dd0d40d7e24c1c47ef84664f45957680b147951958ede8fd76f4bc4cb0b83",
+    "--expected-entry-sha256",
+    "1fa8bc2fd6d267f6dd58be5cf0c813ff7f739b1ad2b5391f14dfd179b19dfb91",
+    "--expected-route-sha256",
+    "5759f3513fa7dd18a01d1eefc840816737f9089387fbc30ea06b166c3aa6a1a5"
+  ],
+  "scope": "Existing fixed static root only, index-last retained chunks. Identical publish invocation appends --publish only. No route/service/auth/gateway/config changes.",
+  "source_merge": "c7d5483bbe9bf2213c6bd849ba2640c6064f6367",
+  "main_ci": {
+    "conclusion": "success",
+    "databaseId": 34015537112,
+    "event": "push",
+    "headSha": "c7d5483bbe9bf2213c6bd849ba2640c6064f6367",
+    "status": "completed",
+    "url": "https://github.com/labsiqbal/hermes-mobile/actions/runs/34015537112"
+  }
+}

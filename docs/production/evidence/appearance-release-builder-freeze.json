@@ -1,0 +1,1638 @@
+{
+  "task": "HM-UX-06 + HM-UX-07",
+  "status": "frozen-builder-verified-awaiting-default-review",
+  "worktree": "/home/iqbal/workspace/.worktrees/hermes-mobile/chats-read-filters",
+  "branch": "fix/chats-read-filters",
+  "head": "f2f9ef9d052885ac75173a6db1e38fb99a937e9c",
+  "stagedTree": "0e999f5b57acffcfef66f628a6d40998afb54b0f",
+  "stagedFileCount": 40,
+  "stagedFiles": [
+    {
+      "path": ".github/workflows/check.yml",
+      "sha256": "6b0e464ccde309f4eb0586fd5fe945f16cfa4b886300c2a1e7c214d9da46a918",
+      "bytes": 4189
+    },
+    {
+      "path": "DESIGN.md",
+      "sha256": "13032e33d34e88d0bdce22f7d9d226129d379df292244ee429498644b83b7790",
+      "bytes": 19528
+    },
+    {
+      "path": "README.md",
+      "sha256": "f7962bbb7e178732e81a57edaf82cb36893e6044d474422391cea3a2d1caa99c",
+      "bytes": 10450
+    },
+    {
+      "path": "app/package.json",
+      "sha256": "af12cee07a4109a7cd27e4d29ccdc19b13d34f0c18a2f1b7a6bfa67c16b6f3bf",
+      "bytes": 2199
+    },
+    {
+      "path": "app/scripts/check-appearance-browser.mjs",
+      "sha256": "edf473c684e72fb9608f2ad8dfedffcb704826b32223f4dd06d6fb9d3fe1571f",
+      "bytes": 17978
+    },
+    {
+      "path": "app/scripts/check-appearance.mjs",
+      "sha256": "6b9a7347d49cbbc06d1e40cf85a898ee7b1211c741eedb8333148b904b2221ce",
+      "bytes": 1248
+    },
+    {
+      "path": "app/scripts/check-chat-cron-browser.mjs",
+      "sha256": "1013153808ad8af8cd0abe6d4a27fe2b46bd4d26dee16198dd64c77c195ed4da",
+      "bytes": 14847
+    },
+    {
+      "path": "app/scripts/check-chat-source.mjs",
+      "sha256": "381a5a4dc5d240bc05b07d7de4b8f14cda78d98c8dbc2fef0d50ed72af173752",
+      "bytes": 12514
+    },
+    {
+      "path": "app/scripts/check-chats-read-browser.mjs",
+      "sha256": "8d7a72f7a7d1d3e1ce873cdcfb46813d658f5dc9c3b9d3092071122b07499c80",
+      "bytes": 15113
+    },
+    {
+      "path": "app/scripts/check-layout-overlap-browser.mjs",
+      "sha256": "e3e26ee84de47c0fbcbbc19cc7030877e08aeec868fa59c3e68c2bf170ffc338",
+      "bytes": 13564
+    },
+    {
+      "path": "app/scripts/check-management.mjs",
+      "sha256": "78b096eec3ca4c304db1f09c0a360b6ab27796be925c27abaeec4fff6c577f62",
+      "bytes": 27037
+    },
+    {
+      "path": "app/scripts/production-browser-fixtures.mjs",
+      "sha256": "30686f7bddaef3f6445ca4818e3136ec54c07a9daedd8e722e3315fcfa34cfd5",
+      "bytes": 21841
+    },
+    {
+      "path": "app/src/appearance.css",
+      "sha256": "51407f515b22ae9d4345666753ae49aba739f4cb0015f66fe21036c8bef6529a",
+      "bytes": 4743
+    },
+    {
+      "path": "app/src/components/icons.tsx",
+      "sha256": "7d3e4cc01c0a0a72374427997bb420fa14941e555614125dc64346348dd4313f",
+      "bytes": 1926
+    },
+    {
+      "path": "app/src/lib/appearance-transcript.ts",
+      "sha256": "76338e523580d67f22287f8b3e446777380125ba54fd83e15b3d1021946d91be",
+      "bytes": 3946
+    },
+    {
+      "path": "app/src/lib/appearance.ts",
+      "sha256": "feeff89e65205a884f84931b0cb1203310fe51f331b8ee7b386694126a0abc29",
+      "bytes": 1767
+    },
+    {
+      "path": "app/src/lib/chat-source.ts",
+      "sha256": "b25d6d22a5a4044467c93a20cc85ca75a2d7e77bf7b4e96a223c2e3e94a9ed21",
+      "bytes": 8174
+    },
+    {
+      "path": "app/src/lib/management-client.ts",
+      "sha256": "309b895224e5330410d4a40143ea264ac22cbe2e841db3c495e2e635ee34cbde",
+      "bytes": 21598
+    },
+    {
+      "path": "app/src/lib/shell-state.ts",
+      "sha256": "0c9f00bda48c9ee7a2b5dba661d40382fe4c2617959e3bd33fc5401cc8303856",
+      "bytes": 7672
+    },
+    {
+      "path": "app/src/main.tsx",
+      "sha256": "6fc33b3cb06d2e6dffe118d387ee81ba0077029042029413088688bd8b0897c1",
+      "bytes": 420
+    },
+    {
+      "path": "app/src/screens/Bots.tsx",
+      "sha256": "ffcd69272809f73933f29288b21cdfbe92a217500a403e01416b6c22005891da",
+      "bytes": 7029
+    },
+    {
+      "path": "app/src/screens/ChatList.tsx",
+      "sha256": "284fc99975bfcfb329ec73dff1628b4368ba59efa2e66aad02551432bce18d12",
+      "bytes": 15340
+    },
+    {
+      "path": "app/src/screens/ChatView.tsx",
+      "sha256": "d237d9b4d649f070f56e999d8f99b86041d31c14ef1adda83eb68e87f82f093f",
+      "bytes": 70481
+    },
+    {
+      "path": "app/src/screens/Connections.tsx",
+      "sha256": "d56284cb48a005b26ec45cb8b51e7719b8749f19e707745a8f60e8e96d598a1c",
+      "bytes": 10335
+    },
+    {
+      "path": "app/src/screens/Groups.tsx",
+      "sha256": "117c8a733b11d93d37c986c5eedfd1729abffefc2e0dc13570f3452de643a218",
+      "bytes": 21460
+    },
+    {
+      "path": "app/src/screens/Rooms.tsx",
+      "sha256": "ba5b12fe0d10f74c2558de61cee8665313b0c8dea91f0c28f828714a791e0be7",
+      "bytes": 15384
+    },
+    {
+      "path": "app/src/screens/Runs.tsx",
+      "sha256": "1a32b429b358f526057dede2d65bdc4c5fbc69f26d7e4e17542ea768b4e0380a",
+      "bytes": 16453
+    },
+    {
+      "path": "app/src/screens/Settings.tsx",
+      "sha256": "5eb1ea60d4d9ef476f3acc174fdb8e804314e8d7897d25083d871ca8b96c3a81",
+      "bytes": 8101
+    },
+    {
+      "path": "app/src/screens/Soon.tsx",
+      "sha256": "a357f75ed60216370723012f172a014de1f715b8d452a34082d0e5d43724c37b",
+      "bytes": 776
+    },
+    {
+      "path": "app/src/screens/chat-list.css",
+      "sha256": "4742c13d1bc0889aa5f9d953931891afeea8956aff63aa00b1809d92a428c513",
+      "bytes": 2975
+    },
+    {
+      "path": "app/src/screens/chat-view.css",
+      "sha256": "0bdb6ee7796e5c68035beb2d40346dd832d2a05f037d440be53ad16e327c37dd",
+      "bytes": 20790
+    },
+    {
+      "path": "app/src/screens/cronjobs.css",
+      "sha256": "b26b42131cc7687440e8f408cf11b5b3cd215899c263fc04c4b284b09548ce46",
+      "bytes": 401
+    },
+    {
+      "path": "app/src/screens/manage.css",
+      "sha256": "20ead6ab982f6475d58aa60385d5ff359d425e237cd1e94b0ea1754b87d9af50",
+      "bytes": 7426
+    },
+    {
+      "path": "app/src/screens/workspace.css",
+      "sha256": "f2668b0ea39a719c356d1737dee43506ee0b50039735f40c917d13f2870ca6eb",
+      "bytes": 4618
+    },
+    {
+      "path": "app/src/theme.css",
+      "sha256": "829bf0d163992365c0bdcf3d14883cc2174a10983c16e2b5b46b48cb8e119aaa",
+      "bytes": 28027
+    },
+    {
+      "path": "backlog.md",
+      "sha256": "8c1187d2a4ebed305c7e20f89ab30e27659ac345c625eab1eebf29d7af8d5e72",
+      "bytes": 20586
+    },
+    {
+      "path": "docs/production/appearance-scale.md",
+      "sha256": "be62eec1b9aa8d099e72943642b6360e9273c4b15952e9c7c334f123b5f89532",
+      "bytes": 6816
+    },
+    {
+      "path": "docs/production/chats-read-filters.md",
+      "sha256": "e645f6586b9152a9da1f5a193270f43fd13a223b423178776ff756fa8f0b9c48",
+      "bytes": 9411
+    },
+    {
+      "path": "docs/production/evidence/appearance-scale.json",
+      "sha256": "03902cc80c950db7f994a67523d56a0adbc926c6bd22c6b6a6a22122a3151c11",
+      "bytes": 8843
+    },
+    {
+      "path": "docs/production/evidence/chats-read-filters.json",
+      "sha256": "80cf31e21a6d3beb9273df4ac406adcdca4bc76aced4f071073d0938d2080613",
+      "bytes": 7519
+    }
+  ],
+  "buildSourceFiles": [
+    {
+      "path": "app/index.html",
+      "sha256": "a45afadfaf23abb94a8d33cf3db952a7a429b9d2b509c1cd72a5bff82d835e7c"
+    },
+    {
+      "path": "app/package-lock.json",
+      "sha256": "e2ab9849583cc2fb89d1e4f49aee74dc063a1c62d9d7e3e8c719ae83d5fb0aef"
+    },
+    {
+      "path": "app/package.json",
+      "sha256": "af12cee07a4109a7cd27e4d29ccdc19b13d34f0c18a2f1b7a6bfa67c16b6f3bf"
+    },
+    {
+      "path": "app/public/logo.png",
+      "sha256": "2eaff911b9da9b1f1fcc81adb02f4992bb9ea6b781f4dd048cd79349927ddb7a"
+    },
+    {
+      "path": "app/public/manifest.webmanifest",
+      "sha256": "3d22b80afea0926ace467d10607775eb49be77abe8d78b3dfcfff10a8d44db95"
+    },
+    {
+      "path": "app/scripts/check-appearance-browser.mjs",
+      "sha256": "edf473c684e72fb9608f2ad8dfedffcb704826b32223f4dd06d6fb9d3fe1571f"
+    },
+    {
+      "path": "app/scripts/check-appearance.mjs",
+      "sha256": "6b9a7347d49cbbc06d1e40cf85a898ee7b1211c741eedb8333148b904b2221ce"
+    },
+    {
+      "path": "app/scripts/check-bots-utils.mjs",
+      "sha256": "5fc5deef47e2ea2ae6d56303e335ffe3f82b9bb8331220aa3a61098fca5d11c9"
+    },
+    {
+      "path": "app/scripts/check-chat-browser.mjs",
+      "sha256": "f0cbf78e9f87982288aa2b36a7b5bd0be6cd8e91882a4ede42d6704a986c22aa"
+    },
+    {
+      "path": "app/scripts/check-chat-cron-browser.mjs",
+      "sha256": "1013153808ad8af8cd0abe6d4a27fe2b46bd4d26dee16198dd64c77c195ed4da"
+    },
+    {
+      "path": "app/scripts/check-chat-resume.mjs",
+      "sha256": "54cb1dc2501b343506e7104c605cb1f7743bf3ca923f651340e17115236524bd"
+    },
+    {
+      "path": "app/scripts/check-chat-reveal.mjs",
+      "sha256": "892b554e659a235008ea2ccb410de2ff6431dfbe4be19ec5dca6a37a577c04f3"
+    },
+    {
+      "path": "app/scripts/check-chat-review-browser.mjs",
+      "sha256": "d896f237127fe692ac1cabbc9e5cd49ef1462fa9dc7c36ea9a0fc9ac80391834"
+    },
+    {
+      "path": "app/scripts/check-chat-source.mjs",
+      "sha256": "381a5a4dc5d240bc05b07d7de4b8f14cda78d98c8dbc2fef0d50ed72af173752"
+    },
+    {
+      "path": "app/scripts/check-chats-read-browser.mjs",
+      "sha256": "8d7a72f7a7d1d3e1ce873cdcfb46813d658f5dc9c3b9d3092071122b07499c80"
+    },
+    {
+      "path": "app/scripts/check-layout-overlap-browser.mjs",
+      "sha256": "e3e26ee84de47c0fbcbbc19cc7030877e08aeec868fa59c3e68c2bf170ffc338"
+    },
+    {
+      "path": "app/scripts/check-management.mjs",
+      "sha256": "78b096eec3ca4c304db1f09c0a360b6ab27796be925c27abaeec4fff6c577f62"
+    },
+    {
+      "path": "app/scripts/check-production-browser.mjs",
+      "sha256": "f836ecee88d63ae6d1835d755d25064f3fbb22e7ae399a47b1673b892eaf101e"
+    },
+    {
+      "path": "app/scripts/check-shell-navigation.mjs",
+      "sha256": "a57491918f30d2a1840d8845e5455a2d1475a29c387f4efdc1ed7ca152fc796d"
+    },
+    {
+      "path": "app/scripts/check-shell-render.mjs",
+      "sha256": "b2a9b458e84445487cefd86deb5b097e6e69922a61f988a9f20e3e0a37b27548"
+    },
+    {
+      "path": "app/scripts/check-shell-state.mjs",
+      "sha256": "68770bd97d065bc21913c69e10ab4b5198992f9f29e28e31300a740738dc8d50"
+    },
+    {
+      "path": "app/scripts/check-workspace.mjs",
+      "sha256": "ca52815aa24ac6376d574aad83d71a826f48d3f094e4b9dbc31a355b263535f2"
+    },
+    {
+      "path": "app/scripts/fixtures/chat-review.tsx",
+      "sha256": "577460d93f92ee3dd9426e055c152fe9da01167aa0357e7f02f9eb2b97e2cffa"
+    },
+    {
+      "path": "app/scripts/production-browser-chrome-pipe.mjs",
+      "sha256": "9515c239d7757c33f19151554156582c616edf95870f5d961cd3269c09c650aa"
+    },
+    {
+      "path": "app/scripts/production-browser-fixtures.mjs",
+      "sha256": "30686f7bddaef3f6445ca4818e3136ec54c07a9daedd8e722e3315fcfa34cfd5"
+    },
+    {
+      "path": "app/scripts/smoke.mjs",
+      "sha256": "bf7b57c37222386ca370721485a91e3aa8654baee3d98d11c20e5a8ea337fd98"
+    },
+    {
+      "path": "app/src/App.tsx",
+      "sha256": "0bd7c9f3871e32c5bf679bad7b5b48197ff844b83a37254355356024a2d5a8dd"
+    },
+    {
+      "path": "app/src/appearance.css",
+      "sha256": "51407f515b22ae9d4345666753ae49aba739f4cb0015f66fe21036c8bef6529a"
+    },
+    {
+      "path": "app/src/components/BotsStub.tsx",
+      "sha256": "3771eefa7605a9ef5127233f7cc92135db2e37c54d09ac6468561b8a4465bdb2"
+    },
+    {
+      "path": "app/src/components/CommandPalette.tsx",
+      "sha256": "997ca90382ae72559e45cba439126533732b48a6a6391ae67f4c971744d837e9"
+    },
+    {
+      "path": "app/src/components/Header.tsx",
+      "sha256": "ff62452c34498abc28fd1dd7a712db0b7dd608b34821b9dd1e3e85853dba5210"
+    },
+    {
+      "path": "app/src/components/MessageContent.tsx",
+      "sha256": "eb0e3b4e4640804a40b9210d071efa114f93366c2455e055a7771f7dcfe1412a"
+    },
+    {
+      "path": "app/src/components/TabBar.tsx",
+      "sha256": "3951f62d15d3600046ee4978bf59d00f2b0cba116689022f073ab84ce4c2f4ef"
+    },
+    {
+      "path": "app/src/components/icons.tsx",
+      "sha256": "7d3e4cc01c0a0a72374427997bb420fa14941e555614125dc64346348dd4313f"
+    },
+    {
+      "path": "app/src/lib/active-sessions.ts",
+      "sha256": "3eaebd53eaa9d33920e7af8b0ddb05ce855df5b884ca89725498440954501865"
+    },
+    {
+      "path": "app/src/lib/appearance-transcript.ts",
+      "sha256": "76338e523580d67f22287f8b3e446777380125ba54fd83e15b3d1021946d91be"
+    },
+    {
+      "path": "app/src/lib/appearance.ts",
+      "sha256": "feeff89e65205a884f84931b0cb1203310fe51f331b8ee7b386694126a0abc29"
+    },
+    {
+      "path": "app/src/lib/chat-browser.ts",
+      "sha256": "e49eefc36e324811f96c14acbcc7def4273ae481d3c11339afe75fde5cd61103"
+    },
+    {
+      "path": "app/src/lib/chat-source.ts",
+      "sha256": "b25d6d22a5a4044467c93a20cc85ca75a2d7e77bf7b4e96a223c2e3e94a9ed21"
+    },
+    {
+      "path": "app/src/lib/group-driver.ts",
+      "sha256": "c7efd51cf4587ff8146c4ea5a5b6261d560d2d8eb13fcab4e30f0299b14e85c8"
+    },
+    {
+      "path": "app/src/lib/group-store.ts",
+      "sha256": "f3dba3a90741d8c5ed6a7046be4061140f0aee27692b2e8828673c2b165490e6"
+    },
+    {
+      "path": "app/src/lib/hermes-client.ts",
+      "sha256": "20f8d869a4476f0603cc3a2004d15b5c81c7e2267bd4418a2f212bd338c54b5b"
+    },
+    {
+      "path": "app/src/lib/management-client.ts",
+      "sha256": "309b895224e5330410d4a40143ea264ac22cbe2e841db3c495e2e635ee34cbde"
+    },
+    {
+      "path": "app/src/lib/rooms-store.ts",
+      "sha256": "de629be5e2f7eb50590a6e82a1acbf90bfd077787f5f02651f44dbef8764a51f"
+    },
+    {
+      "path": "app/src/lib/runs-client.ts",
+      "sha256": "8a88191273c1ebc6e87ed9ee1d640ce28a16db0c1c6827c44968fb2453e64e7e"
+    },
+    {
+      "path": "app/src/lib/shell-state.ts",
+      "sha256": "0c9f00bda48c9ee7a2b5dba661d40382fe4c2617959e3bd33fc5401cc8303856"
+    },
+    {
+      "path": "app/src/lib/workspace-client.ts",
+      "sha256": "2863582b74f6d467cb358ea3ed936ab0fd4435f33f9741f271dfc7f1fa9850a8"
+    },
+    {
+      "path": "app/src/main.tsx",
+      "sha256": "6fc33b3cb06d2e6dffe118d387ee81ba0077029042029413088688bd8b0897c1"
+    },
+    {
+      "path": "app/src/screens/Bots.tsx",
+      "sha256": "ffcd69272809f73933f29288b21cdfbe92a217500a403e01416b6c22005891da"
+    },
+    {
+      "path": "app/src/screens/ChatList.tsx",
+      "sha256": "284fc99975bfcfb329ec73dff1628b4368ba59efa2e66aad02551432bce18d12"
+    },
+    {
+      "path": "app/src/screens/ChatView.tsx",
+      "sha256": "d237d9b4d649f070f56e999d8f99b86041d31c14ef1adda83eb68e87f82f093f"
+    },
+    {
+      "path": "app/src/screens/Connections.tsx",
+      "sha256": "d56284cb48a005b26ec45cb8b51e7719b8749f19e707745a8f60e8e96d598a1c"
+    },
+    {
+      "path": "app/src/screens/Cronjobs.tsx",
+      "sha256": "31666d8e29224e146d4ed0a33affee679ea830fb90bb55213830b538175c7f9d"
+    },
+    {
+      "path": "app/src/screens/Groups.tsx",
+      "sha256": "117c8a733b11d93d37c986c5eedfd1729abffefc2e0dc13570f3452de643a218"
+    },
+    {
+      "path": "app/src/screens/Home.tsx",
+      "sha256": "a648006bea4b1dc3db9bdcc6cb66b88be179f67833acd68bab0368d6142add46"
+    },
+    {
+      "path": "app/src/screens/Manage.tsx",
+      "sha256": "223899d328e87cb34abdb650f6bd4f9215cc9cb4f62541949ad9ae8a1676e579"
+    },
+    {
+      "path": "app/src/screens/Rooms.tsx",
+      "sha256": "ba5b12fe0d10f74c2558de61cee8665313b0c8dea91f0c28f828714a791e0be7"
+    },
+    {
+      "path": "app/src/screens/Runs.tsx",
+      "sha256": "1a32b429b358f526057dede2d65bdc4c5fbc69f26d7e4e17542ea768b4e0380a"
+    },
+    {
+      "path": "app/src/screens/Settings.tsx",
+      "sha256": "5eb1ea60d4d9ef476f3acc174fdb8e804314e8d7897d25083d871ca8b96c3a81"
+    },
+    {
+      "path": "app/src/screens/Soon.tsx",
+      "sha256": "a357f75ed60216370723012f172a014de1f715b8d452a34082d0e5d43724c37b"
+    },
+    {
+      "path": "app/src/screens/Workspace.tsx",
+      "sha256": "a93b3e73d350e9a4ac6b2961219eca2fc345b5f1b6f824239790edcf7bdf63ac"
+    },
+    {
+      "path": "app/src/screens/bots-utils.ts",
+      "sha256": "96a32f7df0d58873977efba6cbfef8208ea20356a0073366c1bca2a4ff10837a"
+    },
+    {
+      "path": "app/src/screens/chat-list-utils.ts",
+      "sha256": "63d80c79e5e53773d70edbd11917cb99563dbd9a289879c49d393a4c62c5a85e"
+    },
+    {
+      "path": "app/src/screens/chat-list.css",
+      "sha256": "4742c13d1bc0889aa5f9d953931891afeea8956aff63aa00b1809d92a428c513"
+    },
+    {
+      "path": "app/src/screens/chat-resume-utils.ts",
+      "sha256": "181a976ea66bdf714e887f4d9fd50ca2d9db8b173410c16c929d1f79102ac482"
+    },
+    {
+      "path": "app/src/screens/chat-view.css",
+      "sha256": "0bdb6ee7796e5c68035beb2d40346dd832d2a05f037d440be53ad16e327c37dd"
+    },
+    {
+      "path": "app/src/screens/cronjobs.css",
+      "sha256": "b26b42131cc7687440e8f408cf11b5b3cd215899c263fc04c4b284b09548ce46"
+    },
+    {
+      "path": "app/src/screens/manage.css",
+      "sha256": "20ead6ab982f6475d58aa60385d5ff359d425e237cd1e94b0ea1754b87d9af50"
+    },
+    {
+      "path": "app/src/screens/workspace.css",
+      "sha256": "f2668b0ea39a719c356d1737dee43506ee0b50039735f40c917d13f2870ca6eb"
+    },
+    {
+      "path": "app/src/theme.css",
+      "sha256": "829bf0d163992365c0bdcf3d14883cc2174a10983c16e2b5b46b48cb8e119aaa"
+    },
+    {
+      "path": "app/tsconfig.app.json",
+      "sha256": "8e5d12ba330e7d86409edec74b95451e0db22ee09b9426c94b5bf817571eddb0"
+    },
+    {
+      "path": "app/tsconfig.json",
+      "sha256": "770b4140bbb581e2dfd9ea9946ffc9c75a1d86ba7d2db5f77c83e37cbdf9d808"
+    },
+    {
+      "path": "app/tsconfig.node.json",
+      "sha256": "d366cc0827139db39c61815f22491bbfda56c654354a42ad7795143d314e45e8"
+    },
+    {
+      "path": "app/vite.config.ts",
+      "sha256": "10638a7552ca4dbc9879d77cba30af18e1615e3341222cfd68ffc9798b09ec6b"
+    }
+  ],
+  "artifact": {
+    "dist": "/home/iqbal/workspace/.worktrees/hermes-mobile/chats-read-filters/app/dist",
+    "fileCount": 12,
+    "files": [
+      {
+        "path": "/assets/Bots-D0pgzQWD.js",
+        "sha256": "d3c806ab6080966a63164932700698638cd101611570ccc774756f0b5e1891fc",
+        "bytes": 3353
+      },
+      {
+        "path": "/assets/Cronjobs-0XIoz1gU.css",
+        "sha256": "a03ef37a134c63d77c94c3ebeff06cb4136c02ac9e7cab46512d6d8be3136396",
+        "bytes": 272
+      },
+      {
+        "path": "/assets/Cronjobs-CUCqX3jw.js",
+        "sha256": "43c47c959523ee1dbfa35a5c4a210f482b37886bae68ef66e66974eced54d0c5",
+        "bytes": 14269
+      },
+      {
+        "path": "/assets/Manage-BnONVrga.js",
+        "sha256": "0c33ec2630675e297fa5497c81e448ed7ebbdce7eccfe616254e6b5c2a28a773",
+        "bytes": 23111
+      },
+      {
+        "path": "/assets/Manage-C6leMz4z.css",
+        "sha256": "6dea8f398bbf0be34f70f7d4aeeef70768f18cd76e155772d6521f39608cfb32",
+        "bytes": 6572
+      },
+      {
+        "path": "/assets/Workspace-B29n8XHd.js",
+        "sha256": "45c82428ba312c2806063994b952dbab0ff4d7eddf5e24a12454f0d4a67a86eb",
+        "bytes": 22065
+      },
+      {
+        "path": "/assets/Workspace-DWGQ5qB-.css",
+        "sha256": "de93e2d0b3689e97bcdd87e82cbc54fffab69c77e53c4041991b4ebe6dc52891",
+        "bytes": 4038
+      },
+      {
+        "path": "/assets/index-BvKYzNGc.css",
+        "sha256": "d455efcd9ea5dc76e26946af7d79b80f6aed425b147a9253b3c8f8bde592bc4d",
+        "bytes": 41858
+      },
+      {
+        "path": "/assets/index-XvSn6Erm.js",
+        "sha256": "bfba04960fe216d3552a466a2e1667a485acf113fd9eb53306df25cfbde6d8f0",
+        "bytes": 480690
+      },
+      {
+        "path": "/index.html",
+        "sha256": "4cdfb4b705c173e12ab07a703af937140a113c3bd7b5826685facc2e2417434d",
+        "bytes": 805
+      },
+      {
+        "path": "/logo.png",
+        "sha256": "2eaff911b9da9b1f1fcc81adb02f4992bb9ea6b781f4dd048cd79349927ddb7a",
+        "bytes": 1319989
+      },
+      {
+        "path": "/manifest.webmanifest",
+        "sha256": "3d22b80afea0926ace467d10607775eb49be77abe8d78b3dfcfff10a8d44db95",
+        "bytes": 444
+      }
+    ]
+  },
+  "screenshots": [
+    {
+      "path": "/tmp/hm-appearance-final-review/75-320x844-Home.png",
+      "sha256": "edadb64ff9f203d1dec346643d0ae96722ffd56b3fd9123828e0657cae30b539",
+      "bytes": 43595
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-320x844-Chats.png",
+      "sha256": "52f95df41e3aa5704bedf4d2694ffab2f652bcd68ecfc1578619a86bd7e4bca1",
+      "bytes": 36965
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-320x844-Bots.png",
+      "sha256": "eaa98e22416ba1c6adc5aaf8061364a9574335d5d79a975b9ee0f4598d854576",
+      "bytes": 12955
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-320x844-Cronjobs.png",
+      "sha256": "999a105c44a75990f914be6ee8daf0fc2a9de77340dc281fe59b50718d64c3a2",
+      "bytes": 13906
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-320x844-Manage.png",
+      "sha256": "cda1a218314664a516f58b33d7d179f4f3c80f6da7d8eda5c99b0553e7076e33",
+      "bytes": 59404
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-320x844-Settings.png",
+      "sha256": "4eb23661edac228e866adb840fa5e4e07305a4a21931e974f9f27367391848bf",
+      "bytes": 49516
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-320x844-chat-single.png",
+      "sha256": "781b8224646f94b28366b38500ef7a89afe08f012270da444375db266e93634a",
+      "bytes": 80510
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-320x844-chat-multiline.png",
+      "sha256": "0a51bdcefb79902314756a9653d504f7491e8487efc74f8c65455a27b2d90b61",
+      "bytes": 72768
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-320x844-Model-sheet.png",
+      "sha256": "3e07a3696cf3c7780923614d64fa812f0292650bc7698991d0fb27266710998e",
+      "bytes": 62623
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-Home.png",
+      "sha256": "873d7c501447d9f246bd2612af543a8dc1802dbaa44a9d4e578e2caebb646e8d",
+      "bytes": 45025
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-Chats.png",
+      "sha256": "542edae6f19c99206e10e5a7a0717286c4d96249727a6c1e263e1bbb3b59e94e",
+      "bytes": 39813
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-Bots.png",
+      "sha256": "9b92d077868cd31036b934a6324cf1100a9d705f2cd29da7d267dda0f0b89e31",
+      "bytes": 27929
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-Cronjobs.png",
+      "sha256": "33d45c210c7208610f06423f15977e1e51e533fa6921b93bccbf404606583084",
+      "bytes": 41917
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-Manage.png",
+      "sha256": "b4acaa6605e74596bcdd14a6bd4745f119ccb192c4d5391039c835d2a22a9814",
+      "bytes": 62929
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-Settings.png",
+      "sha256": "e6b6a564fd25c4e300231c536a65a9126fbccad8f01807eccc1dc6b6e428b1a2",
+      "bytes": 52822
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-erase-confirmation.png",
+      "sha256": "a993f0d1cb497872ac60ed54036688ae32706a1ab52414d34d2ac9eeaeda264f",
+      "bytes": 52899
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-Manage-Profiles.png",
+      "sha256": "5b7e47829c89d3cd57e4f98de900b44b356d05734991c07bfb342f19964fa654",
+      "bytes": 48233
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-profile-review.png",
+      "sha256": "22fa6e2c194a8c2059db4f2f293170fa6f9406d7a7027400ad79a436d78c595a",
+      "bytes": 57253
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-Manage-Capabilities.png",
+      "sha256": "a7eefdce331c19265f43d45e98fce73dc1131fd496ac41d997f657f21d218312",
+      "bytes": 52755
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-Manage-Memory.png",
+      "sha256": "f8cc957493e569a12533a0fc4c02dda5f85a82a7b69f389efbff7981f889738e",
+      "bytes": 52785
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-Manage-Schedules-cron.png",
+      "sha256": "39d58e92ea3ba5db4abee3484dbf7b3b75ed6bb6ee70a0729ac89b0d06aa70cb",
+      "bytes": 55595
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-Manage-Messaging.png",
+      "sha256": "833628b5f527d54037f9d21dbbf4c578ef04c9132cd01ac519601afe8a02a0c4",
+      "bytes": 51381
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-Manage-Webhooks.png",
+      "sha256": "6c0254961566c2eaf78429a3ec4a5555ac84a8b3b1399d9f3906c5ee012d4896",
+      "bytes": 50280
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-Manage-Kanban.png",
+      "sha256": "812e8611c755a37241976b5446f24e787ee5c9a05a59b465dbd74b5e851b99d2",
+      "bytes": 49341
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-Manage-Appearance-preferences.png",
+      "sha256": "635a5414351c32fe3aef6dbd9a49a3e9ad0941b43a49a9d0b69baf53bb62b3ad",
+      "bytes": 64342
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-Manage-Native-capabilities.png",
+      "sha256": "b7133447519214f62997a3c809cbc76fe67f0ca4ec8c51769695bd47bd498fdb",
+      "bytes": 61580
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-Schedule.png",
+      "sha256": "0354744c8cf6216a9a1f7edb771d06b68a590979848ebfac7ad410755d8f1160",
+      "bytes": 52569
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-Run.png",
+      "sha256": "e1f089bd62cd18aeddd43c71e43c996a98c5d1164a4403452d0aa513aa5ebea3",
+      "bytes": 40489
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-Groups.png",
+      "sha256": "a86d9d87964e2c27813d49e96caa744720d7f1e224fdc87e61594b3ebd268172",
+      "bytes": 24117
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-Group-chat.png",
+      "sha256": "ebed418cd1f2fff5a6429ea5bd87df32a8142c9e4383d8501c651cdbea82b4f9",
+      "bytes": 17589
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-Bot-chat.png",
+      "sha256": "64b19920876618c4cc63842bfb0460a2cee821eca51f7437cff2a2534022ee0d",
+      "bytes": 26952
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-chat-single.png",
+      "sha256": "a718027a7dab049de097d78eb7af4070c0a4b5db644c1af6019bb8b7829779dd",
+      "bytes": 53724
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-chat-multiline.png",
+      "sha256": "9e80686516b50cb6484f6e4e780f9cf1b5d87aa52b626264b57dd451ade47d1e",
+      "bytes": 50140
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-Attach.png",
+      "sha256": "94d9e7d1105b729b3769dafc3fffb0bba7ba5f4fb60c2cb487caccf0719901ca",
+      "bytes": 56785
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-Model-sheet.png",
+      "sha256": "8d230d991ecd9c0f38c92c9a9f4ddd25ae0e4e02e06f366c87d5725b685e5e89",
+      "bytes": 50577
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-Model-search.png",
+      "sha256": "4f1af8c6aedb2a5ba1e767c4565019b0e41937e15fc940a1034a9abf4f792f14",
+      "bytes": 50670
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-Stop-and-steer.png",
+      "sha256": "f92f8732859130b3ce18e26ff1ee646f188d67c61079aa0007e63904eaf6131d",
+      "bytes": 55770
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-Approval.png",
+      "sha256": "21398e5a943f4c85399f85ab7a3dea9140ce15497f1d1d4b8be613ba162ef178",
+      "bytes": 59214
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-Workspace-Files.png",
+      "sha256": "db64a44e70905d381b3fe77011fbad0d25478d3a94760a9d9ce95314fccb5cb0",
+      "bytes": 41310
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-Workspace-Git.png",
+      "sha256": "c47afa0a772d3e689ce925de782b8d3179e2c9bac8b1e2d3ffa299162699a295",
+      "bytes": 50781
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-Workspace-Terminal.png",
+      "sha256": "59bcb160364d02f4cb0b118579f68ffa8a994606a73ab6f9d7d31ecd23a56a57",
+      "bytes": 47906
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-Workspace-Preview.png",
+      "sha256": "3ee8ced259f094c4c11f6d820c5e77c43bf1823c3d51fc94217f6ecc2f208215",
+      "bytes": 62540
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-Preview-review.png",
+      "sha256": "d40f90e52d2c523ec08419e6f4199aafdb9ce0b9c0e79743625d1d00e2d33fc0",
+      "bytes": 70103
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x844-Palette.png",
+      "sha256": "808b48c3e49cf9c269f76417e2762e8d64f7aa4b88fadcc2e6f5bde91254fd4c",
+      "bytes": 45540
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-430x844-Home.png",
+      "sha256": "60f00580f5272cec6c3999c8efb5f3e75768cf8c910f4fd3e749def9f160888d",
+      "bytes": 45295
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-430x844-Chats.png",
+      "sha256": "2a5c9ee98b5b513c18beee9a66667bc44ff7636c14efed09af0806096cba1188",
+      "bytes": 40173
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-430x844-Bots.png",
+      "sha256": "2c5acf458918dbdc65ecf3c7a035497884f539584eb3b4876c8b5480559c6d17",
+      "bytes": 27785
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-430x844-Cronjobs.png",
+      "sha256": "888c405bf211f30aef8ecd13f8d9ab26120ccd74cf43347dba9be91bd46b576f",
+      "bytes": 41985
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-430x844-Manage.png",
+      "sha256": "35e586e7e217acccde77c2d9c35e26958b0cc81b31fc44bdc2a47bacbaa84bfa",
+      "bytes": 62652
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-430x844-Settings.png",
+      "sha256": "c69dafa5ca3276397d5a709b5be5eb0adbf57cb1146fb7c3c98ff6a363baabbe",
+      "bytes": 55534
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-430x844-chat-single.png",
+      "sha256": "95993a8df0c5126b09e23e82e1c4b2a49e32e730230fe68e73e1a782aea3cc42",
+      "bytes": 80734
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-430x844-chat-multiline.png",
+      "sha256": "7d07c502349ff87f73ecdc1382cfa938e7ba8cf7cb0ed212ffef32dda6c684ef",
+      "bytes": 73654
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-430x844-Model-sheet.png",
+      "sha256": "64c15774d3d0e2ce3241f260d7312104396da660f8f9a651661ec566e74b1acd",
+      "bytes": 67161
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x480-Home.png",
+      "sha256": "6ef9f3dc2a2bb5790c08b9487fbeab7aa2974a2161593abae74fa7cad71f83ab",
+      "bytes": 35316
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x480-Chats.png",
+      "sha256": "8f356156c0d14f9c6639df887d3542620da84a71bf7324c1b13b254ced01c1e3",
+      "bytes": 26975
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x480-Bots.png",
+      "sha256": "2b8ad917795ac299e1bd970567ca548f4863d0116d648a73179b5f93b3b4ad3a",
+      "bytes": 26141
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x480-Cronjobs.png",
+      "sha256": "9fc6950a1740379b29a818843db32958bc040e70c85be197339c781402b3d5a9",
+      "bytes": 28327
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x480-Manage.png",
+      "sha256": "272464b33b64bda2f0e7028ba84a230164f2e0f390c05fe439c934ce5d2efb34",
+      "bytes": 34754
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x480-Settings.png",
+      "sha256": "b23e04f4f6ff5cfb85bd295a680dde095666b8227c3f9c3d96ae147203d17bff",
+      "bytes": 28022
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x480-chat-single.png",
+      "sha256": "8fd16999327fa446ffb1d3d7f779b43821f011e4b8f0b31c8828b9939072c0e2",
+      "bytes": 34189
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x480-chat-multiline.png",
+      "sha256": "3af4dda725c9505a41c73900e77948287372e4f36e01226035bd32512e25d91f",
+      "bytes": 32116
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/75-390x480-Model-sheet.png",
+      "sha256": "b6872a8d60331cc8354ec855e79019dff3f844260063d1d3937f3d9fa3a38e33",
+      "bytes": 27430
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-320x844-Home.png",
+      "sha256": "9a03715f1a464ead3f9100770bbc98345cde7fe64c60b886c9dcff4718c860e1",
+      "bytes": 52458
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-320x844-Chats.png",
+      "sha256": "758049fb68c2b687159f4540c6beec238a72f0542b8bd5507b3c54d08be39a87",
+      "bytes": 41072
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-320x844-Bots.png",
+      "sha256": "1bdd07a38ae26c9e4c328b666011a95bf9095215003129966841ed4519993c7b",
+      "bytes": 33267
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-320x844-Cronjobs.png",
+      "sha256": "c36036b643436d85bf5798562cee61e4975dbf024bcca0093e2465d6dacfa6d5",
+      "bytes": 52697
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-320x844-Manage.png",
+      "sha256": "3c0e376266964ed7ad9a0108f156084651e5f77fffaa4403657e44418a4151cc",
+      "bytes": 60876
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-320x844-Settings.png",
+      "sha256": "1ea2474dd4ca414714c6e7da08ac5607520f8ff98bcc73d3a4e7365fe8b97f3b",
+      "bytes": 47939
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-320x844-chat-single.png",
+      "sha256": "a71f8cd33a526f984084331fd9806a0d91b3be717b04a4f935e768e80af42600",
+      "bytes": 68429
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-320x844-chat-multiline.png",
+      "sha256": "9cc9cd5447a9932667ceb688902ea3ba49c0b23538e311c8d3414e44baaf995e",
+      "bytes": 63250
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-320x844-Model-sheet.png",
+      "sha256": "163af062f8389d8f83359919b5db58dc2261277c58e4d0485087dfd7703e8158",
+      "bytes": 51868
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-Home.png",
+      "sha256": "b6c30413db61c7cc88ad935e7f037a056dcc1c4c1f9b21b4c077155b707b2509",
+      "bytes": 52574
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-Chats.png",
+      "sha256": "6bfa8e361062f28eac5672508e5140eaa1aa62ad64c5c7a8b14930e7e2549751",
+      "bytes": 44453
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-Bots.png",
+      "sha256": "7265dbc073825d15b86d1078d4af03e4dfb41cb841bdb908c8984f50273aec07",
+      "bytes": 33587
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-Cronjobs.png",
+      "sha256": "71b942b395ffbf11fdff092a87caed193bb98adcd2079c72fd10a5ca059e3b1c",
+      "bytes": 52496
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-Manage.png",
+      "sha256": "753c35a209a2e36ad9dfbbda249a7a5c96d180a5da60f60ef63f0606cf647bb1",
+      "bytes": 62177
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-Settings.png",
+      "sha256": "589fb245e3b1cae12b72385eb2a552271349f22bfd0e8d056191298c49e4903f",
+      "bytes": 50651
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-erase-confirmation.png",
+      "sha256": "73d81ddcebc9bb5a894f8da171a973e21ccc4267c474d15d66c4ec258d29813c",
+      "bytes": 53435
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-Manage-Profiles.png",
+      "sha256": "5f6cfcc8aa253548ea13758a0c276627bb334b0acba91a44865d220c0fb37a37",
+      "bytes": 54381
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-profile-review.png",
+      "sha256": "7dad9024355611fd1d0cf608056f880518bcb5f47ae29120d1fb3e39630dc7b3",
+      "bytes": 62101
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-Manage-Capabilities.png",
+      "sha256": "d8e1252394717c26facf7822c96ec598f2c06fd03c4855595150a6d8a5d85a02",
+      "bytes": 50128
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-Manage-Memory.png",
+      "sha256": "39abe70950f447dc9eabd8c0449165093b5ae4bdb719f2fbe2edd45d259d7134",
+      "bytes": 51559
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-Manage-Schedules-cron.png",
+      "sha256": "3376b52792ab98d95c3c460a3e2a6abf26cd9acb74432057dc857a893ca43de5",
+      "bytes": 50203
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-Manage-Messaging.png",
+      "sha256": "79addf21378a61e6d2757c91357e0fbd795e2653143af2578f688c35fbdacd4a",
+      "bytes": 48362
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-Manage-Webhooks.png",
+      "sha256": "2ca4d47b77dec28853dff84e2db365e250da950cd1093e33e17d93d359a1de3a",
+      "bytes": 61767
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-Manage-Kanban.png",
+      "sha256": "b2b24574222e50faf480cec7b936fd0d5e100084734c121b296dbc33e39fc2fe",
+      "bytes": 54086
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-Manage-Appearance-preferences.png",
+      "sha256": "ad9952a177cc5464fb545c0798be616d21ed129461057458d03dc6694c7ed173",
+      "bytes": 62677
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-Manage-Native-capabilities.png",
+      "sha256": "f4aeaba296a8f27db5b7478be41dbdcfa914d395d87088a958051cc920e58e66",
+      "bytes": 64862
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-Schedule.png",
+      "sha256": "f48cf2468816fb894a7ff9b866e2315c81030f9f7bb5c1809b45332a6000291d",
+      "bytes": 51286
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-Run.png",
+      "sha256": "e125aa2819d523d019d640ccdf3259d7f5cb1cc1179f9fd8959ea1cbf9fd521e",
+      "bytes": 46421
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-Groups.png",
+      "sha256": "fc1c05470212a9a962bc9fe38e6e8fc2c15a93f0cb83637e3b8ee162edfa0e8d",
+      "bytes": 29480
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-Group-chat.png",
+      "sha256": "91b52273851c5112611e826385668c2e9ab396ce97e4e55e8c8defcf49eb17c5",
+      "bytes": 20463
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-Bot-chat.png",
+      "sha256": "262c94363c221694afb5f1fb70938e94ddcff0c5734923d747920ce457e051c8",
+      "bytes": 29812
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-chat-single.png",
+      "sha256": "8ce0c182447c47fa8b4706a2b97993629a4c50aa3e99b845a7422b86d2430d8b",
+      "bytes": 83616
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-chat-multiline.png",
+      "sha256": "c91f14fa9274b0581e79a2a6858b7c5dc5649077e95befb5d20ba3d24c700c4a",
+      "bytes": 74785
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-Attach.png",
+      "sha256": "5675feee375ac6ab4efb3222973dbcbc1eae843ad4525273ce4b1d78f9a28135",
+      "bytes": 83002
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-Model-sheet.png",
+      "sha256": "ac0adfa1840a00e240ee42c2a5906a210ea8a4f623d4f889edda75cc4b2a568d",
+      "bytes": 62708
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-Model-search.png",
+      "sha256": "a7a099cc92ae727dc4c416c141ec29bd5934ca8712f0bd642d52b0df608f4d82",
+      "bytes": 67395
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-Stop-and-steer.png",
+      "sha256": "5f08c2f9fb2281804d7f2988d201cd1635a7161481d62cc4efcb4f7df3e67346",
+      "bytes": 85990
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-Approval.png",
+      "sha256": "b10e845f54ca54eacbdfcaa45cf4de8f926527d94f5e0b7fc3673ff019b55032",
+      "bytes": 84681
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-Workspace-Files.png",
+      "sha256": "f070b31e4716ac7493685e995f34601810c78097e3229ec59ad3b5cff4e07c15",
+      "bytes": 47812
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-Workspace-Git.png",
+      "sha256": "94898d115f386525a6d3f3e9139ea18ad12a3116f54c28cd3f555b18c9c0a73f",
+      "bytes": 58580
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-Workspace-Terminal.png",
+      "sha256": "6fce82242157d7359d5fe0aa1c84db1a5c51abf5429fcccf09d2f77f999ce862",
+      "bytes": 60247
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-Workspace-Preview.png",
+      "sha256": "9478841ed8f914a81efd9a765ce968b06d64ed5d6381b278a91530f779c035d8",
+      "bytes": 70631
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-Preview-review.png",
+      "sha256": "c907bc47a45077b134e2fdd5b6bde802bd51309edc50c630e3002a90414698bf",
+      "bytes": 67871
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x844-Palette.png",
+      "sha256": "21fc2f450a466f738db016334f89a5d655ea61324980c175e049c60af9a6273b",
+      "bytes": 48505
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-430x844-Home.png",
+      "sha256": "60d9f4b0526785f04195b48a4c61d61b16d4ea92ed3a3632335f5a45081aa4b5",
+      "bytes": 53214
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-430x844-Chats.png",
+      "sha256": "d27f044b3c572df6f55c344ff031cb790c5c2537792bf7ba9e6c3837cc4edc99",
+      "bytes": 45801
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-430x844-Bots.png",
+      "sha256": "bcf7ee02d3da7c2b7c7e8c0d6eb0caf8f2ca166c9e058fa1e573befcf800cba0",
+      "bytes": 32968
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-430x844-Cronjobs.png",
+      "sha256": "3385b4e45771554c8fa7d49e69f4adf3977125e23ee20bb4a6d8cf78c56e3058",
+      "bytes": 51124
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-430x844-Manage.png",
+      "sha256": "79e5a1dcb08e69b1b2b1da06d2169f7b1177ab28a7e92f4e3cc5af08783b6aa4",
+      "bytes": 63013
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-430x844-Settings.png",
+      "sha256": "f4c894ddae4329e86c9d361fef870395d606e9168f9a0f9d5b61cab05688ff99",
+      "bytes": 52061
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-430x844-chat-single.png",
+      "sha256": "52fdf542116d03af5260c94ce87dddbeab115be9e3bed6827639e1194e6eb33f",
+      "bytes": 87378
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-430x844-chat-multiline.png",
+      "sha256": "d767ad4c3b4b1a6108b8a3b2a5ac77be5dc0c6ae5c5063c93f07ec1af8efab8d",
+      "bytes": 79494
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-430x844-Model-sheet.png",
+      "sha256": "902e84e554d575052d2d86aaafec728c223999a093b6dc912cfc85396547688f",
+      "bytes": 65957
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x480-Home.png",
+      "sha256": "73f056fb68875ab7ad9cab67e9e0d23efa75210ab53006aad0239968c4f57808",
+      "bytes": 33777
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x480-Chats.png",
+      "sha256": "3053b99280eef268fabc3493d19fd605c52b8f4dd6d896c11cc5a660566450c7",
+      "bytes": 27773
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x480-Bots.png",
+      "sha256": "7c1cf023ecd4c17a0de25f41699568980206b72bc1eb160d87038660db94b5bf",
+      "bytes": 31652
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x480-Cronjobs.png",
+      "sha256": "6e729d36ac63043bcc853e1fe56b4f086c0049211d9c54127295b6392bb98cef",
+      "bytes": 32468
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x480-Manage.png",
+      "sha256": "2b54ddd9b76bd9501c07fd5bbfa546c46d416d2d0872856bd3734f07142a4fcf",
+      "bytes": 36050
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x480-Settings.png",
+      "sha256": "43d55ffd3be29ac6841e935c9429809115682f88c90fb9ecaf109471d2093de0",
+      "bytes": 29347
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x480-chat-single.png",
+      "sha256": "9b15dff0aaf2451f854e32702ae8e6dc5ae25d96aff5c5a55edfc046ed21b061",
+      "bytes": 44256
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x480-chat-multiline.png",
+      "sha256": "f4e11e0cb6398e542e7599d891b98fe2e1255270821b492ba459eb27c4c9cd44",
+      "bytes": 38767
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/100-390x480-Model-sheet.png",
+      "sha256": "a56dad5c4cd67a9258505c8d74fa52416acb91c46556b42f5daafb1089484ba7",
+      "bytes": 27046
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-320x844-Home.png",
+      "sha256": "8b8628a14400b8af3a905bec0f869b09fc0d3cafab65072023cb4d05408eff78",
+      "bytes": 55303
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-320x844-Chats.png",
+      "sha256": "b77c6658f645b6515adc85f82e47a3330eb1e02cb013adebbeb1011326af765d",
+      "bytes": 47332
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-320x844-Bots.png",
+      "sha256": "e5858b62dfc9e41ce52393e811964e2a6f9a8c42f223b9ef9ea3e49038edc14b",
+      "bytes": 41299
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-320x844-Cronjobs.png",
+      "sha256": "a50cf1c690127db9c570fc24453b096322492432ffb3b25c8f8e5d99807bf995",
+      "bytes": 53781
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-320x844-Manage.png",
+      "sha256": "ec0d0c3b31ba44e15bdfa1f69e0b8ef4e510e4dcd6a366dc8c34a3e689d4d49d",
+      "bytes": 56845
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-320x844-Settings.png",
+      "sha256": "b8c6131aae568bfce63d1fd9531c65fd44c409c64faee71d2887cbb07aa774d6",
+      "bytes": 43771
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-320x844-chat-single.png",
+      "sha256": "1cce78eec5dd4283cc9783a5eb81cf437896e38ee5f93ad051b9e7f1507f8759",
+      "bytes": 77751
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-320x844-chat-multiline.png",
+      "sha256": "1e5add46ebdbcbfa9aad7a04d7c259ea4f8684a5adccb8702835d9d7bf4ce0ba",
+      "bytes": 73868
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-320x844-Model-sheet.png",
+      "sha256": "b6db7f486c438a5e0a84759bdf923a60604eb8b8735cd86ae17aebf29b4569d7",
+      "bytes": 55437
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-Home.png",
+      "sha256": "4fec9389d35d5626033c3f391f762864a9a06464bbac035367eae4b68341c52d",
+      "bytes": 61335
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-Chats.png",
+      "sha256": "c29809e36309253a4d970ffcfcef4759704b9b86119e05623b28480fc7e6988a",
+      "bytes": 52279
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-Bots.png",
+      "sha256": "da02cfe5610df47a5f7483dc0b1f2973ce2841869f27aabde7e54b6e0c94afe1",
+      "bytes": 43308
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-Cronjobs.png",
+      "sha256": "68b93a535c2615418802d34d0c4007f75c50bd8510596886c720ca6b1a755731",
+      "bytes": 60443
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-Manage.png",
+      "sha256": "1b6f328542ed3d0e4a4db92e7f1dcebe854529699bc0fe86e31225640e079912",
+      "bytes": 65568
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-Settings.png",
+      "sha256": "4c0884fe08d579eaf648a7efb72cd65320321296c83b129767e5470cba15ac38",
+      "bytes": 50240
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-erase-confirmation.png",
+      "sha256": "130931b415c58cd43cbf205c535f5f6a2de3726da12ae5438ebf9c3b1cf0c983",
+      "bytes": 60994
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-Manage-Profiles.png",
+      "sha256": "277097892243acf38f266ae9b085273441ed74e7967b07cc99f32b0ef8b7c019",
+      "bytes": 56804
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-profile-review.png",
+      "sha256": "f580d9da21c806b0154c68ef53e910f31791caacc181cd042c9acf4fcdb54862",
+      "bytes": 58934
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-Manage-Capabilities.png",
+      "sha256": "85f6bc6ac24044895acebf88e0dfa402e904cbe6dd9c07a23059d3e08835a4d9",
+      "bytes": 53489
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-Manage-Memory.png",
+      "sha256": "8a3128b7d96331b64bf9dcb227fc5698c8a287228a42d51971c5ddf4d281c68c",
+      "bytes": 60386
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-Manage-Schedules-cron.png",
+      "sha256": "33c2ffeedde8542989bc0ecf074c0a01aa842b6cdb404edf5de9a11c287fa2f2",
+      "bytes": 53576
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-Manage-Messaging.png",
+      "sha256": "20a04d53af1290ae5300f439ee742c3cb45a0492cb412e0fc9b54cd5178a3818",
+      "bytes": 55502
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-Manage-Webhooks.png",
+      "sha256": "36f93b953a073cea3a9e49dcf9956bf3ce7c5a7910b9bb33bfc5d8821d820532",
+      "bytes": 69088
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-Manage-Kanban.png",
+      "sha256": "8deb4b3296cb0a74ed586e9afaffa2a2d739e1e6fe974cfa96eaa9a5693bbe75",
+      "bytes": 54518
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-Manage-Appearance-preferences.png",
+      "sha256": "d56a9d75ce766efcc0de98435e67091d277797b907335e64770909db15233b51",
+      "bytes": 63371
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-Manage-Native-capabilities.png",
+      "sha256": "70edc02071e27aa4ed07277b2bf1e16363f52f56185f934985d6e54e2abb0406",
+      "bytes": 60282
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-Schedule.png",
+      "sha256": "adce21eb31d5e4e341a5dc454293598765ebe7ddc797fb041bb1f9d46fc11368",
+      "bytes": 53631
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-Run.png",
+      "sha256": "bf39db6a1004b17eae9a7db2ed64bcc6513c8586da2559cde91709fbd012e8be",
+      "bytes": 51726
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-Groups.png",
+      "sha256": "a9b5a8e6e954329737509f5549647fa37e68343716efd52908d6ca1c7cfa7728",
+      "bytes": 39719
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-Group-chat.png",
+      "sha256": "be9a77940e4d8832515dabc7398d34e6c55c6ada8b9c3d18c8f6ead20d3b49be",
+      "bytes": 23980
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-Bot-chat.png",
+      "sha256": "7591036aa894270adc4cd0e48d3327295c0e78b62d3bc39e1716013a493e8806",
+      "bytes": 36532
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-chat-single.png",
+      "sha256": "517325baf7186f6db2dbf0e55ee3369b8dadc27d8c0448e777a1d643d8cb74c6",
+      "bytes": 86413
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-chat-multiline.png",
+      "sha256": "2a6ffdd93e7f676be3afcbf59d60551509d2fc46a4213f5176a70e95b9072e0e",
+      "bytes": 82275
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-Attach.png",
+      "sha256": "e27d6cb1cd0c26467cc0c3072e679ee09048eef27971a2668adff8fbb20c3b03",
+      "bytes": 86198
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-Model-sheet.png",
+      "sha256": "b3e0519a973385a121d97c9ececfd6ebcd2bbcfe90081b7a28f61ccdda129f48",
+      "bytes": 58424
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-Model-search.png",
+      "sha256": "30ef11486cdeac1bc003f58decd382a725d337f6a2f0676adbb9b01acd045a1d",
+      "bytes": 64254
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-Stop-and-steer.png",
+      "sha256": "99c58ed8a5ab2fa4bb5546b1b47eed3a727a71569ad40a7f0901aea05824e2be",
+      "bytes": 89370
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-Approval.png",
+      "sha256": "71d9a50603d16c1ec8c9677268c6e9801fff0dc543b321bb71af432469a6304f",
+      "bytes": 93526
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-Workspace-Files.png",
+      "sha256": "1955df740a11ad24b215c0c6d57e8f8666759fd3923186c1f583a9dba0675d52",
+      "bytes": 62750
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-Workspace-Git.png",
+      "sha256": "e43a1c75638dd73fdbd70560182943c69c2c7e9c6900ff467c5ef752f7bda3cb",
+      "bytes": 61325
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-Workspace-Terminal.png",
+      "sha256": "c10766250476781637749db5111f7717a8d323225c0a89317945e845203650a2",
+      "bytes": 70060
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-Workspace-Preview.png",
+      "sha256": "3d4fc18fdaa9513876d4889da78502fd258fc88813d8e8b539c2bda1a5ef84ae",
+      "bytes": 68360
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-Preview-review.png",
+      "sha256": "643cc1e839ccd14ed4b078e5825d762a9e9c38eb283bf27b86121ee752e61890",
+      "bytes": 76271
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x844-Palette.png",
+      "sha256": "d157072d43c3c70c8911ce4647bf568c887b3294676ba57f57ac435c34b5fb25",
+      "bytes": 46942
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-430x844-Home.png",
+      "sha256": "ce4948f54de75bc628e60e1998d686e6d2c46d83e254a52777c70f8c52090316",
+      "bytes": 63192
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-430x844-Chats.png",
+      "sha256": "412271d24e7746dbbb334fa78fd9a99190d9be0feca0f04b11aea8f71b89c7dd",
+      "bytes": 54703
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-430x844-Bots.png",
+      "sha256": "1b7a69d886d74b12e97e9499f1c4ae176ff3575a5dd54fc56055fa16bc2d3764",
+      "bytes": 43532
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-430x844-Cronjobs.png",
+      "sha256": "20629fa6b67e2fb3e5796cfe229a066ed87e1fbb253e77435b49e84452419044",
+      "bytes": 66527
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-430x844-Manage.png",
+      "sha256": "6295870ae7b25cea335e86738a996e8ffc2021ba734a7cb7b3e9ca2fef3c9728",
+      "bytes": 66004
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-430x844-Settings.png",
+      "sha256": "f7170e5ecc3d60b3e76faf16eb9619156d1b3397674c0b891d206502241a3c37",
+      "bytes": 54502
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-430x844-chat-single.png",
+      "sha256": "14685e60f08e292b1b8c4ab8f28ceb05a4f1d05ef4725ad5f1e31fc82730a1e6",
+      "bytes": 108402
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-430x844-chat-multiline.png",
+      "sha256": "517311a43f0e10675d2ac9057783a48bce8c101749f15158fbec1c222ffa7be5",
+      "bytes": 100482
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-430x844-Model-sheet.png",
+      "sha256": "14463f0ea78860785af424ad530fdfb881fffbff93bff4df90edca5bd7b798bc",
+      "bytes": 66420
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x480-Home.png",
+      "sha256": "3f0655b91e645a9d241925a5903fe9e1f9a32bd40510412fefcba89301e40d87",
+      "bytes": 36211
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x480-Chats.png",
+      "sha256": "519e44efc5c995f184c526e4029d43716ae73b0d940206c2989e3351c74b1f6b",
+      "bytes": 31099
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x480-Bots.png",
+      "sha256": "df56231600c90fca6b4cba6cb75d174358e7378dba62ad7dbf4ef31aaa7c829f",
+      "bytes": 34475
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x480-Cronjobs.png",
+      "sha256": "6eb089ad103780138be208fe34956852b165382b77b5c832655c1c6f15dc5b9f",
+      "bytes": 36764
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x480-Manage.png",
+      "sha256": "451f54fb41d018e621b2a2eb3b4014c9e087dd80db5fa3e024d6be3aa79ec58e",
+      "bytes": 40562
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x480-Settings.png",
+      "sha256": "6b956cf3bb09690263d1d70b990937ebac227fdbfb6fa4f7d206c7b653a8fedc",
+      "bytes": 27118
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x480-chat-single.png",
+      "sha256": "f7dfc353a5803a1aeec6a78ae36e9d387a36110ce17363f1d6330872db38789b",
+      "bytes": 45118
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x480-chat-multiline.png",
+      "sha256": "7e5e029f6e66c3d3137e0e30b6014c718205c6a63adaa95a5ef0a645596a2c1a",
+      "bytes": 40693
+    },
+    {
+      "path": "/tmp/hm-appearance-final-review/125-390x480-Model-sheet.png",
+      "sha256": "41235bd97c3f6a81d4dfa4b46c544ec55599f023246536cf7d1b4db9245c0581",
+      "bytes": 22579
+    }
+  ],
+  "suites": [
+    {
+      "suite": "appearance",
+      "status": "passed",
+      "count": 466,
+      "countUnit": "checks",
+      "report": "/tmp/hm-appearance-final-review/report.json",
+      "sha256": "93501116196274688474c4cc937ecd927e03412f506bd4d4aaa9eb7392326886",
+      "builtArtifactMatched": true,
+      "screenshots": 186
+    },
+    {
+      "suite": "native-fetch",
+      "status": "passed",
+      "count": 17,
+      "countUnit": "checks",
+      "report": "/tmp/hm-appearance-native-final/report.json",
+      "sha256": "e8bf3719b6d5b74d81d1628418ea2091c12ddc85665606908441e24c46e0200f",
+      "builtArtifactMatched": true,
+      "screenshots": 12
+    },
+    {
+      "suite": "features",
+      "status": "passed",
+      "count": 17,
+      "countUnit": "checks",
+      "report": "/tmp/hm-appearance-features-final/report.json",
+      "sha256": "4e0f1f447a3b4294d6207dc5164f7bb132ac2d6a3558d03f1d9a6cd49a33df53",
+      "builtArtifactMatched": true,
+      "screenshots": 11
+    },
+    {
+      "suite": "review",
+      "status": "passed",
+      "count": 6,
+      "countUnit": "checks",
+      "report": "/tmp/hm-appearance-review-final/report.json",
+      "sha256": "32ef86d9f3d09fe9ec0a8bc1ea3a697059ccbf6e523c201b039ae26bfa85a264",
+      "builtArtifactMatched": false,
+      "screenshots": 0
+    },
+    {
+      "suite": "layout",
+      "status": "passed",
+      "count": 62,
+      "countUnit": "checks",
+      "report": "/tmp/hm-appearance-layout-final/report.json",
+      "sha256": "9cd8ca03a713861990c66d63a4a7dbc002c2ef5a9e75509546dc2fa62e06c594",
+      "builtArtifactMatched": true,
+      "screenshots": 60
+    },
+    {
+      "suite": "production",
+      "status": "passed",
+      "count": 15,
+      "countUnit": "journeys",
+      "report": "/tmp/hm-appearance-production-final/report.json",
+      "sha256": "a8e6715dcfb6df932a9716b71fd9ebd32099b394109584806241e9929da342a0",
+      "builtArtifactMatched": true,
+      "screenshots": 54
+    },
+    {
+      "suite": "selftest",
+      "status": "passed",
+      "count": 26,
+      "countUnit": "cases",
+      "report": "/tmp/hm-appearance-selftest-final/self-test.json",
+      "sha256": "92b9f4d0e661021f9bea02a8fe217d097b0abb2258dfaf5e8da8ebdc0d3962b5",
+      "builtArtifactMatched": false,
+      "screenshots": 0
+    },
+    {
+      "suite": "navigation",
+      "status": "passed",
+      "count": 2,
+      "countUnit": "journeys",
+      "report": "/tmp/hm-appearance-navigation-final/report.json",
+      "sha256": "518a2c416140f76545a2ab7ca4258928b7bff014c7a64bd99367257cc2787529",
+      "builtArtifactMatched": true,
+      "screenshots": 1
+    }
+  ],
+  "receipt": {
+    "path": "/home/iqbal/workspace/.worktrees/hermes-mobile/chats-read-filters/docs/production/evidence/appearance-scale.json",
+    "sha256": "03902cc80c950db7f994a67523d56a0adbc926c6bd22c6b6a6a22122a3151c11",
+    "bytes": 8843
+  },
+  "historicalHMUX06": {
+    "path": "/tmp/hm-chats-read-frozen-source.json",
+    "sha256": "069ce7280e9549b9377039710bc03603fccc70add32de68df8f0e14e442b48a4",
+    "bytes": 5116
+  },
+  "historicalStagedTree": "7d2fbdab4cb4770edb58b76d9a046c8544b601a4",
+  "patches": [
+    {
+      "path": "/tmp/hm-appearance-hmux06-staged.patch",
+      "sha256": "c689a122806cedf06a4330b73a7bf871a5d634d69ad0395296d7e0912cd606f4",
+      "bytes": 85177
+    },
+    {
+      "path": "/tmp/hm-appearance-hmux07-only.patch",
+      "sha256": "a4f66ca4515519af361bd4dd8aed6489311cda5c53760bc7005df9f77b4cd3f1",
+      "bytes": 161453
+    },
+    {
+      "path": "/tmp/hm-appearance-combined-staged.patch",
+      "sha256": "3619fce10de2d3b7b46e0e5c8390a86f14304714236d5c7384706ad68fd26983",
+      "bytes": 239338
+    }
+  ],
+  "freezeRebuildLog": {
+    "path": "/tmp/hm-appearance-freeze-rebuild.log",
+    "sha256": "51e0d696f197067b8a2a3444d3e19db6b3939d7f75a7f7d5ed6bac3171694a32",
+    "bytes": 884
+  },
+  "verification": {
+    "cachedWhitespace": "passed",
+    "baselineWhitespace": "passed",
+    "historicalCandidateWhitespace": "passed",
+    "noUnstagedOrUntrackedFiles": true,
+    "indexEqualsWorkingFiles": true,
+    "rebuiltArtifactEqualsTestedBytes": true,
+    "historical16FileCandidateVerified": true
+  },
+  "limitations": [
+    "Fictional browser fixtures, not authenticated/live gateway proof",
+    "No physical iOS/Android keyboard, safe-area or accessibility-zoom acceptance",
+    "Default independent review and all delivery/publication remain gated",
+    "No commits, pushes, installs, model escalation, live gateway/config/identity mutations or new exposed services",
+    "No other profiles skills or memory modified"
+  ]
+}
