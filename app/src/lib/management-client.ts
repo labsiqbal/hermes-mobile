@@ -1,4 +1,4 @@
-/** Narrow management adapter. Contracts: docs/production/management-contracts.md.
+/** Narrow management adapter; validated by scripts/check-management.mjs.
  * No config/env endpoint, implicit profile, login, secret extraction or retries.
  */
 import type { HermesConnection, SessionSummary } from './hermes-client';

@@ -33,7 +33,7 @@ function readLastConnId(): string {
 }
 
 /** Device glyph heuristic: rack-like machines get the server glyph, everything
- *  else the monitor glyph (design/index.html layar 01). */
+ *  else the monitor glyph. */
 function DeviceGlyph({ label }: { label: string }) {
   const Icon = /nuc|server|vps|raspi|\bpi\b/i.test(label) ? ServerIcon : MonitorIcon;
   return (

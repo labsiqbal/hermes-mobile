@@ -1,5 +1,5 @@
 /**
- * Bots.tsx — Bot Mode roster screen (design/index.html layar 04).
+ * Bots.tsx — Bot Mode roster screen.
  *
  * Membaca seluruh roster profil melalui `profiles.list`, sama seperti Desktop,
  * lalu merender nama, @handle, preview terbaru, dan status tiap bot.

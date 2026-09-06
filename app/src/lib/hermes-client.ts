@@ -21,7 +21,7 @@
  * Credential storage note: ConnectionStore persists username+password in
  * `localStorage` (or an injected StorageLike). This is a deliberate v1
  * trade-off — the app is only meant to be reached over a private tailnet.
- * Encrypted secure storage is backlog (see PRODUCT.md).
+ * Encrypted secure storage is not implemented; use a trusted private device.
  */
 
 import { GROUPS_META_KEY, type GroupRegistry } from "./group-store";

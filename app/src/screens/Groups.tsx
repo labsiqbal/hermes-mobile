@@ -1,6 +1,5 @@
 /**
- * Groups.tsx — daftar + pembuatan group chat Hermes (design/index.html
- * layar 07-08, dialog "New Group Chat" Desktop).
+ * Groups.tsx — daftar + pembuatan group chat Hermes (dialog "New Group Chat" Desktop).
  *
  * Group chat Hermes 100% client-orchestrated: registry room = envelope v3 di
  * ui_meta['hermes-bots-groups'] pada profile `default`, membership per bot di

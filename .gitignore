@@ -8,3 +8,14 @@ venv/
 __pycache__/
 *.pyc
 .DS_Store
+
+# Local planning, design experiments, and agent state are not public app files.
+/.hermes/
+/.impeccable/
+/.agents/
+/docs/
+/design/
+/backlog.md
+/PRODUCT.md
+/DESIGN.md
+/app/production-browser-evidence/
