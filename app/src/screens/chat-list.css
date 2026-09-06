@@ -17,11 +17,19 @@
 .project-heading .project-group-head { flex: 1; min-width: 0; }
 .project-group-name small { display: block; color: var(--fg-faint); font-weight: 400; font-size: var(--text-11); }
 .project-pin { flex: none; }
-.project-pin[aria-pressed="true"] { color: var(--accent); background: var(--elevated); }
+.project-pin[aria-pressed="true"] { color: var(--accent); }
 .chat-session-row { display: flex; align-items: center; border-bottom: 1px solid var(--line-soft); min-height: max(44px, var(--space-64)); flex: none; }
-.chat-session-row > .rowcard { flex: 1; min-width: 0; border: 0; border-radius: 0; background: transparent; padding: var(--space-10) 0; }
-.chat-session-row .rowcard-title, .chat-session-row .rowcard-sub { display: block; }
-.chat-session-row .rowcard-title .chip { margin-left: var(--space-5); }
+.chatlist .chat-session-row > .rowcard { flex: 1; min-width: 0; border: 0; border-radius: 0; background: transparent; padding: var(--space-10) var(--space-8) var(--space-10) 0; }
+/* Reserve only one action target; initials and timestamps must not squeeze titles. */
+.chat-session-row .rowcard-title { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; white-space: normal; overflow-wrap: anywhere; line-height: 1.35; }
+.chat-session-row .rowcard-sub { display: block; }
+.chatlist .chat-session-row .rowcard-meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-6); margin: var(--space-5) 0 0; text-align: left; font: var(--text-12)/1.4 var(--font-sans); white-space: normal; letter-spacing: 0; overflow: visible; }
+.chat-session-row .rowcard-meta > span { min-width: 0; overflow-wrap: anywhere; }
+.chat-session-row .rowcard-meta > span + span::before { content: '·'; margin-right: var(--space-6); color: var(--fg-faint); }
+.chat-session-row .rowcard-meta > .chip::before { content: none; }
+.chatlist .chat-delete, .chatlist .project-pin { width: 44px; height: 44px; min-width: 44px; min-height: 44px; padding: 0; border: 0; background: transparent; }
+.chatlist .chat-delete:hover:not(:disabled), .chatlist .project-pin:hover { background: var(--elevated); }
+.collection-link.chats-groups-link { min-height: max(44px, var(--space-48)); padding: var(--space-4) var(--space-20); }
 .chat-delete { flex: none; color: var(--fg-dim); }
 .chat-delete:disabled { opacity: .3; }
 .chat-delete-dialog { width: min(420px,calc(100% - var(--space-32))); box-sizing: border-box; max-height: calc(100dvh - var(--space-32)); overflow-y: auto; padding: var(--space-20); border: 1px solid var(--line-soft); border-radius: var(--space-20); background: var(--card); color: var(--fg); }

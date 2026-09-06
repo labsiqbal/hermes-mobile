@@ -4,7 +4,6 @@ import type { HermesConnection, ProjectTreeItem, SavedConnection, SessionSummary
 import { ChatSource, chatReadFailure, type ChatReadFailure } from '../lib/chat-source';
 import { chatKey, uniqueChats, orderedProjects, preferenceKey, readIds, type BrowserChat } from '../lib/chat-browser';
 import { formatSessionTime } from './chat-list-utils';
-import { botTint } from './bots-utils';
 import { isActive } from '../lib/active-sessions';
 import { ChevronDownIcon, ChevronRightIcon } from '../components/icons';
 import './chat-list.css';
@@ -94,12 +93,13 @@ export default function ChatList({conn,client,onOpenChat}: Props) {
   });
   const available = (row:BrowserChat) => !loading && !loadError && !data?.failedProfiles.includes(row.profile || '') && !row.bot && row.profile===data?.profile && client.connectionState==='open' && !isActive(conn.id,row.id,row.resolved_id);
   function renderRow(row:BrowserChat) {
-    const tint=botTint(row.title || '?');
     return <div className="chat-session-row" key={chatKey(row)} data-session-id={row.id} data-profile={row.profile}>
       <button className="rowcard" onClick={()=>onOpenChat(row)}>
-        <span className="sess-avatar" style={{background:tint.bg,color:tint.fg}}>{(row.title || '?').trim().charAt(0)}</span>
-        <span className="rowcard-main"><span className="rowcard-title">{row.title || 'Untitled'}{row.bot && <span className="chip">bot</span>}{isActive(conn.id,row.id,row.resolved_id) && <span className="chip chip-amber chip-live">active</span>}</span><span className="rowcard-sub">{row.profile} · {row.preview || '—'}</span></span>
-        <span className="rowcard-meta">{formatSessionTime(row,'')}<br />{row.message_count} msg</span>
+        <span className="rowcard-main">
+          <span className="rowcard-title">{row.title || 'Untitled'}</span>
+          <span className="rowcard-sub">{row.preview || '—'}</span>
+          <span className="rowcard-meta"><span>{row.profile}</span><span>{formatSessionTime(row,'')} · {row.message_count} msg</span>{row.bot && <span className="chip">bot</span>}{isActive(conn.id,row.id,row.resolved_id) && <span className="chip chip-amber chip-live">active</span>}</span>
+        </span>
       </button>
       <button className="iconbtn chat-delete" aria-label={`Delete session ${row.title || 'Untitled'}`} disabled={!available(row)} title={row.bot ? 'Canonical bot chats cannot be deleted here' : !available(row) ? 'Only inactive sessions in the verified running profile can be deleted' : 'Delete this session and its history'} onClick={()=>{setStatus('');setPendingDelete({...row});}}><Trash2 size={17} aria-hidden="true" /></button>
     </div>;

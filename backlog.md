@@ -1,5 +1,11 @@
 # Hermes Mobile backlog
 
+## HM-UX-08 — Chats row readability [builder verified; independent parent review pending]
+- Owner: targeted real-phone correction, not a root/composer redesign. Titles get the main width and up to two lines; preview and profile/time/count/status below; quiet unframed 44px delete/pin targets; compact Groups link. Canonical labels, exact ownership, protected deletion, Project + Profile only and local display-only pins remain unchanged.
+- Gate/truth: screenshot + verified PR7/source-equivalent baseline -> builder isolated source/artifact and identical RED/GREEN real-App runner -> parent independent visual/quality review -> existing CI/release pipeline. Exclusive `fix/chats-row-readability` worktree; no new application state/dependencies, no model escalation, one-shot, at most two correction rounds. Scoped diff is the pre-release rollback, never a runtime reset.
+- Verified: 31 varied fictional rows; 75/100/125 at 320/390/430, expanded sections, Recent, non-row-aligned scrolling and bottom reachability. Identical runner: baseline 27 failures / 47 checks, candidate 47/47; native17/features17/review6/appearance466 pass. Lint has the same seven existing warnings; build/unit pass. Groups edge is normal clipping at the scroll boundary, not an overlay defect. Receipt: `docs/production/chats-row-readability.md`.
+- Authority: initial local-only task was superseded by Owner “livein”; subsequent commit/push, green PR CI, merge/ff-only and guarded existing :8451 static publication are authorized only after parent independent approval. Builder has not committed, pushed or published. No gateway/auth/transport/cache/config/cron/service changes, live session deletes or credential reads. Prior PR7/8 release evidence remains untouched.
+
 ## HM-UX-07 — Global appearance and unified composer [builder verified; default review pending]
 - Owner-approved 75% Compact / 100% Standard default / 125% Large applies globally, including transcript, overlays, icons and spacing, with bounded type and >=44px targets. Reference composer controls inside card; project/profile above chat; navigation unchanged.
 - Proportional stages, public test seams, two-cycle bound, local storage truth, isolated rollback, no new dependencies/model escalation/pipeline and no live/commit/push/publication boundary: `docs/production/appearance-scale.md`.
