@@ -4,7 +4,7 @@ A mobile-first PWA client for a self-hosted [Hermes Agent](https://github.com/No
 
 Hermes Mobile is a screen onto your own machines. Agent execution lives on the gateway; the browser owns navigation, local connection/group metadata and transient drafts. Chat streams live, tool activity stays compact, and command approvals remain explicit.
 
-> Shell A interface: **Home / Chats / Bots / Cronjobs / Manage**, with contextual Workspace tools. This is not a claim of complete Desktop parity or production certification. Secure credential storage, native integrations and physical-device signoff remain open. See the [original release receipt](docs/production/release-receipt.md), [Chats/Cronjobs refinement](docs/production/chat-cron-refinement.md) and [quality gate](docs/production/quality-gate.md).
+> Shell A interface: **Home / Chats / Bots / Cronjobs / Manage**, with contextual Workspace tools. This is not a claim of complete Desktop parity or production certification. Secure credential storage, native integrations and physical-device signoff remain open. See the [current Chats/Cronjobs release receipt](docs/production/chat-cron-release.md), [original Shell A receipt](docs/production/release-receipt.md), [refinement scope](docs/production/chat-cron-refinement.md) and [quality gate](docs/production/quality-gate.md).
 
 ## Shell A surfaces
 

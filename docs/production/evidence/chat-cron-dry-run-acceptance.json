@@ -1,0 +1,18 @@
+{
+  "task": "HM-UX-04",
+  "authority": "Owner gas live; parent delegates acceptance and publication",
+  "accepted": true,
+  "dry_run_receipt": "/tmp/hm-ux04-release-86_66nsg/publisher-dry-run.json",
+  "dry_run_sha256": "82297e869b62163c02583165dc2302525d45664df60cc950b46fa80175febc5b",
+  "source_head": "17faabc56f70d8ff4af3707ab2f8b084d1ac38c3",
+  "source_merge": "bb9d003f24d95840bf05e9db5feed7f0cf5e8eee",
+  "main_ci": {
+    "conclusion": "success",
+    "event": "push",
+    "headSha": "bb9d003f24d95840bf05e9db5feed7f0cf5e8eee",
+    "status": "completed",
+    "url": "https://github.com/labsiqbal/hermes-mobile/actions/runs/34005927700"
+  },
+  "command": "python3 -B deploy/publish-static.py --artifact /tmp/hm-ux04-release-86_66nsg/source/app/dist --manifest /tmp/hm-ux04-release-86_66nsg/artifact.json --manifest-sha256 8b5dbc9f13c56d9b5b88593a182748d2a4536826336dfcb4349dc8dacaf25960 --expected-entry-sha256 9783bf21c838108f53e837f1dcf307631f7100a09096ccfebe0048ea5b4c9fd0 --expected-route-sha256 5759f3513fa7dd18a01d1eefc840816737f9089387fbc30ea06b166c3aa6a1a5",
+  "publication_change": "append exact --publish only"
+}

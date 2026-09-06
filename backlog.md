@@ -2,7 +2,7 @@
 
 Canonical local task queue (workspace workflow default; no external issue tracker configured).
 
-## HM-UX-04 — Chats and Cronjobs refinement [authorized whitespace correction verified; PR/CI/live delivery pending]
+## HM-UX-04 — Chats and Cronjobs refinement [complete: source merged, static published and anonymously verified]
 - Owner approved implementation: compact model pill top-right above composer; multiple pinned projects; Project/Profile/Bot chats filters; confirmed session deletion; Activity renamed Cronjobs with schedule list and preserved Runs access. Deletion is limited to the verified running profile, with canonical Bot Chat and other profiles protected. NO moving sessions, removing project membership, or changing cwd/profile through browsing.
 - Goal/success: all named controls work in real React with scoped source-backed transport; regression assertions cover placement, multi-pin persistence, combined filters, cancel/confirm deletion and refresh, Cronjobs/Run navigation, no cross-profile confusion or project moves.
 - Stages: approved scope + existing sources -> implementation/tests/docs (builder); built bundle -> deterministic unit/browser and independent review evidence (builder reviewer); evidence -> final source delivery (default). Every stage stops on failed validation; no mocked success claims for live gateway compatibility.
@@ -12,6 +12,7 @@ Canonical local task queue (workspace workflow default; no external issue tracke
 - Authority: implementation and local fixture tests approved. Owner conditionally approved commit/push, CI-gated merge and static publication after final tests/review and exact validated-artifact gate; parent owns these actions, builder performed none. No service/routes/auth changes or actual session deletion by agents.
 - Model/cost/cadence: one builder, LAB source scout, INFRA read-only preflight and two independent review axes; parent deterministic gates. Inherited model, two bounded correction rounds, no escalation or new paid services, one-shot, no scheduled work. Deterministic scripts own repeated checks; token cost not measured.
 - Evidence: docs/production/chat-cron-refinement.md and evidence/chat-cron-builder-final.json record new candidate-only evidence: full unit/lint/build, chat/cron browser 17 checks, review regressions 6, production 15 journeys, selftest 26 cases, navigation 2 journeys, management/reveal and publisher 31 tests passed. Lint retains 7 existing warnings. Model and Cronjobs geometry verified at 360/390/430. Parent frozen gates and visual review passed; release delivery is tracked in docs/production/chat-cron-release.md. Previous Shell A tests/releases remain historical only.
+- Delivery: PR #3 merged corrected head `17faabc` as `bb9d003`; exact PR and main CI passed. Existing guarded publisher added 8 immutable assets, replaced the entry last, retained 13 old non-entry files; all 13 approved artifact files and the full 22-file live tree passed independent HTTPS hashes. Fresh anonymous browser boot passed. Receipt: docs/production/chat-cron-release.md; authenticated operations and physical-device signoff remain unverified.
 
 ## HM-UX-01 — Official Desktop parity inventory [complete: structural/source evidence]
 - Shape: ship (local documentation + validator artifact, not publication).
