@@ -12,30 +12,28 @@ Connect to your own Hermes gateway (`hermes serve`) over a Tailscale tailnet or 
 
 | Chat and composer | Chats | Appearance |
 | --- | --- | --- |
-| [<img src="docs/images/chat.png" width="260" alt="Hermes Mobile chat showing a fictional reading plan and an unsent draft, with attachment and model controls in the composer">](docs/images/chat.png) | [<img src="docs/images/chats.png" width="260" alt="Hermes Mobile Chats screen with project and profile filters, a Reading notes project, and fictional recent conversations">](docs/images/chats.png) | [<img src="docs/images/appearance.png" width="260" alt="Hermes Mobile Appearance screen showing 100% Standard UI scale and local scratch accent controls">](docs/images/appearance.png) |
+| [<img src="screenshots/chat.png" width="260" alt="Hermes Mobile chat showing a fictional reading plan and an unsent draft, with attachment and model controls in the composer">](screenshots/chat.png) | [<img src="screenshots/chats.png" width="260" alt="Hermes Mobile Chats screen with project and profile filters, a Reading notes project, and fictional recent conversations">](screenshots/chats.png) | [<img src="screenshots/appearance.png" width="260" alt="Hermes Mobile Appearance screen showing 100% Standard UI scale and local scratch accent controls">](screenshots/appearance.png) |
 | Resume a conversation and draft a reply. | Browse sessions by project and profile. | Adjust the interface on this device. |
 
-Tap a screenshot for the full-size image. [Capture source and boundaries](docs/images/README.md).
+Tap a screenshot for the full-size image. Captured at 390 × 844 with 100% Standard UI scale; no real credentials, gateway addresses or private conversations are shown.
 
 ## What you can do
 
 - Resume chats, read streaming replies and tool activity, attach files, and respond to explicit command approvals. Model and reasoning controls sit inside the composer's bottom row.
-- Browse Chats with combined Project/Profile filters and local project pins. Groups live under Chats; canonical Bot Chats are also accessible. Pins change display order, not session membership. Deletion is limited to inactive sessions in the verified running profile. [Chat browsing boundaries](docs/production/chats-read-filters.md).
-- Open Bots, inspect Cronjobs and tracked Runs, and use Manage for profile/capability inspection, a reviewed profile-description update, bounded memory/schedule/messaging reads and shared Kanban boards. Manage is not a universal configuration editor. [Supported management operations](docs/production/management-contracts.md).
-- Read conversation-scoped files and Git status/diffs in Workspace. External previews require explicit trust review; terminal execution and in-app annotation are unavailable. [Workspace boundaries](docs/production/workspace-contracts.md).
-- Set **Settings → Appearance → UI scale** to 75% Compact, 100% Standard (default), or 125% Large. Appearance stays local to this browser; it does not change the Desktop Accent plugin or gateway/profile defaults. [Appearance contract](docs/production/appearance-scale.md).
+- Browse Chats with combined Project/Profile filters and local project pins. Groups live under Chats; canonical Bot Chats are also accessible. Pins change display order, not session membership. Deletion is limited to inactive sessions in the verified running profile.
+- Open Bots, inspect Cronjobs and tracked Runs, and use Manage for profile/capability inspection, a reviewed profile-description update, bounded memory/schedule/messaging reads and shared Kanban boards. Manage is not a universal configuration editor.
+- Read conversation-scoped files and Git status/diffs in Workspace. External previews require explicit trust review; terminal execution and in-app annotation are unavailable.
+- Set **Settings → Appearance → UI scale** to 75% Compact, 100% Standard (default), or 125% Large. Appearance stays local to this browser; it does not change the Desktop Accent plugin or gateway/profile defaults.
 
 ## Status and limitations
 
 The app has **Home / Chats / Bots / Cronjobs / Manage**, with contextual Workspace tools. It does not have complete Hermes Desktop feature parity or production certification. Gateway support varies by operation; unsupported routes fail visibly.
 
-Credentials currently live in plaintext browser `localStorage`. Use a trusted private device. Secure credential storage, native integrations and physical-device signoff remain open; see [security notes](#security-notes-v1) and the [quality gate](docs/production/quality-gate.md).
-
-Implementation details and evidence: [Chats/Cronjobs release receipt](docs/production/chat-cron-release.md), [original Shell A receipt](docs/production/release-receipt.md), [refinement scope](docs/production/chat-cron-refinement.md) and [`DESIGN.md`](DESIGN.md). The [Shell A reference](https://github.com/labsiqbal/hermes-mobile/blob/ux/mobile-parity-review/design/parity-shell/index.html) is a simulated design artifact, not the application; [`design/index.html`](design/index.html) is historical.
+Credentials currently live in plaintext browser `localStorage`. Use a trusted private device. Secure credential storage, native integrations and physical-device signoff remain open; see [security notes](#security-notes-v1).
 
 ## Requirements
 
-- An authenticated Hermes gateway reachable by the same-origin proxy, with a basic username/password provider. Management/Workspace contracts are pinned in their linked documents; an exhaustive compatibility-certified minimum gateway version has not been established. Unsupported routes fail visibly.
+- An authenticated Hermes gateway reachable by the same-origin proxy, with a basic username/password provider. An exhaustive compatibility-certified minimum gateway version has not been established. Unsupported routes fail visibly.
 - Reachability from your phone: a **Tailscale tailnet** (recommended) or plain LAN.
 - A Node version supported by `app/package.json` and the locked Vite dependencies, plus npm. Use the same Node major as the repository CI for reproducible builds.
 
@@ -72,7 +70,42 @@ npm run smoke   # explicit operator approval required: reads local auth and send
 
 ## Updating an existing deployment
 
-Use the reviewed static publication procedure in [`docs/production/static-publication.md`](docs/production/static-publication.md). Build and test in an isolated output directory; do not run Vite against a currently served `app/dist`, because its cleanup can remove assets still needed by open clients. Commit/push alone does not update an existing Tailscale filesystem mount.
+Build and test in an isolated worktree/output directory; never run Vite against a currently served `app/dist`, because its cleanup can remove assets still needed by open clients. Commit/push alone does not update an existing Tailscale filesystem mount. Keep old hashed assets available for open clients.
+
+[`deploy/publish-static.py`](deploy/publish-static.py) is the existing installation-specific publisher, **not a portable deployment command**: its `ROOT` and `ORIGIN` are fixed to the maintainer's mount. It defaults to a read-only dry-run and does not build, change routes, restart services, prune files or roll back. Do not invoke it against a different installation or change its guards merely to make a release pass.
+
+For that installation, an operator first reviews the source and isolated build, freezes a JSON object mapping every artifact-relative path to its SHA-256, and records the manifest digest plus independently reviewed live-entry and complete Serve-route digests. Keep the artifact and manifest outside the live tree and the manifest outside the artifact. Manifest keys are relative POSIX paths; digests are lowercase SHA-256. The route digest uses UTF-8 `json.dumps(route, sort_keys=True, separators=(",", ":")).encode()` over the complete Serve JSON object. Keep raw routing data and release receipts private.
+
+```bash
+# From the reviewed checkout; requires approved, absolute artifact/manifest paths.
+python3 -B deploy/publish-static.py \
+  --artifact "$APPROVED_ARTIFACT" \
+  --manifest "$FROZEN_MANIFEST" \
+  --manifest-sha256 "$APPROVED_MANIFEST_SHA256" \
+  --expected-entry-sha256 "$EXPECTED_ENTRY_SHA256" \
+  --expected-route-sha256 "$EXPECTED_ROUTE_SHA256"
+```
+
+Require exit 0 and `status=dry_run`, then separate operator approval before appending the exact `--publish` flag with the same arguments. The publisher retains existing files, refuses changed stable support files and unequal collisions, verifies new hashed assets over HTTPS, and switches entry HTML last. Only exit 0 with `status=published` and `stage=complete` confirms its publication checks. Failure can leave added assets or an already-switched entry; stop and inspect rather than assuming rollback or retrying. Arrange exclusive release access; never bypass refusal with `deploy/serve.sh` or a build in the live directory. Authenticated app operations and physical-device behavior still need separate verification.
+
+## Local checks
+
+The application CI runs lint, unit/transport contracts, typecheck/build, isolated publisher tests and fictional browser fixtures. It does not contact a gateway or deploy the app. Run these from an isolated checkout, not a live serving tree:
+
+```bash
+cd app
+npm ci --include=dev --ignore-scripts --no-audit --no-fund
+npm run lint
+npm run test:unit
+npm run build
+# Requires /usr/bin/google-chrome; uses fictional transport and a disposable profile.
+npm run check:production-browser:self-test -- --output /tmp/hermes-mobile-browser
+npm run check:production-browser -- --output /tmp/hermes-mobile-browser
+cd ..
+python3 -B -m unittest discover -s deploy -p 'test_*.py'
+```
+
+Additional app regressions remain in [`app/scripts/`](app/scripts/) and the [CI workflow](.github/workflows/check.yml).
 
 ## First-time deployment (operator setup)
 
@@ -118,7 +151,7 @@ Bot Mode (agent-to-agent delegation across gateways) normally relies on the Herm
 
 ## Security notes (v1)
 
-- Connection credentials are stored in plaintext `localStorage` in the browser profile. A private tailnet does **not** protect that storage from XSS, browser extensions, or another person using the same browser profile. Use only a trusted private browser/device; secure credential handling remains a production-hardening gap (see PRODUCT.md).
+- Connection credentials are stored in plaintext `localStorage` in the browser profile. A private tailnet does **not** protect that storage from XSS, browser extensions, or another person using the same browser profile. Use only a trusted private browser/device; secure credential handling remains a production-hardening gap.
 - Agent/API traffic targets configured gateways. Separately, explicit external-preview actions can open a user-reviewed URL in an isolated tab; normal browser cookie rules still apply.
 
 ## License

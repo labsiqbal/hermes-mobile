@@ -98,8 +98,7 @@ export function botInitials(handle: string): string {
   return (clean.slice(0, 2) || "?").toLowerCase();
 }
 
-/** Avatar tint per bot (design/index.html layar 04 uses a different signal
- *  tint per bot). Deterministic by handle so every client paints the same
+/** Avatar tint per bot. Deterministic by handle so every client paints the same
  *  bot the same color. Only the four Signal-Tint-Rule trios — no new colors. */
 export function botTint(handle: string): { bg: string; fg: string } {
   const TINTS = [
