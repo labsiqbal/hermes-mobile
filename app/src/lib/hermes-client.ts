@@ -1020,7 +1020,7 @@ export class HermesConnection {
     return result.project ?? null;
   }
 
-  async createSession(options: { title?: string; cwd?: string; model?: string } = {}): Promise<CreateResult> {
+  async createSession(options: { title?: string; cwd?: string; model?: string; profile?: string } = {}): Promise<CreateResult> {
     return await this.rpc<CreateResult>("session.create", { ...options });
   }
 

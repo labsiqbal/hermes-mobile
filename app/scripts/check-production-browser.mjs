@@ -192,7 +192,7 @@ export async function checkNavigationRegressions(j, browser, fixture, trace) {
         await j.text('QA CREATED SETTLED REPLY');
         assert.equal(await browser.evaluate('document.querySelector("textarea").value'), 'QA CREATED UNSENT DRAFT', list + ' canonical re-entry preserves draft');
       }
-      assert.equal((await trace()).filter(t=>t.method==='session.create').length, 1, 'Identity recording never recreates the mounted conversation');
+      assert.equal((await trace()).filter(t=>t.method==='session.create' && t.params.profile !== 'qa-bot').length, 1, 'Identity recording never recreates the mounted conversation');
       assert.ok((await trace()).filter(t=>t.method==='session.resume'&&t.params.session_id==='qa-created-session').every(t=>t.params.omit_messages===true));
       await j.shot('created-session-restored'); await j.tap('Back');
     });
@@ -303,29 +303,37 @@ async function checkProduction(options) {
     });
     await j.run('bot-profile-draft', async () => {
       if (await browser.evaluate('!!document.querySelector("textarea")')) await j.tap('Back');
+      await fixture("f.permits['session.create']=1;");
       await j.root('Bots'); await j.tap('QA Fixture Bot', 'body', false);
-      await j.text('QA restored answer qa-bot-session');
+      await browser.waitFor('!!document.querySelector("textarea")');
+      await j.shot('bot-private-selected');
       assert.notEqual(await browser.evaluate('document.querySelector("textarea").value'), 'QA PROJECT UNSENT DRAFT');
       assert.match(await browser.evaluate('document.querySelector(".model-pill").innerText'), /fixture-model/);
       await j.type('textarea', 'QA BOT UNSENT DRAFT');
-      await j.tap('Workspace', 'body', false); await j.text('qa-bot'); await j.text('qa-bot-session');
+      await j.tap('Workspace', 'body', false); await j.text('qa-bot'); await j.text('qa-bot-private-session');
       await j.back(); assert.equal(await browser.evaluate('document.querySelector("textarea").value'), 'QA BOT UNSENT DRAFT');
       await j.tap('Back'); await j.root('Chats');
       await j.tap('QA Project conversation', 'body', false); await j.text('QA restored answer qa-project-session');
       assert.equal(await browser.evaluate('document.querySelector("textarea").value'), 'QA PROJECT UNSENT DRAFT');
       assert.match(await browser.evaluate('document.querySelector(".model-pill").innerText'), /fixture-alternative/);
-      await j.tap('Back'); await j.root('Bots');
-      await j.tap('QA Fixture Bot', 'body', false); await j.text('QA restored answer qa-bot-session');
-      assert.equal(await browser.evaluate('document.querySelector("textarea").value'), 'QA BOT UNSENT DRAFT');
-      await j.back(); await j.text('QA Fixture Bot');
-      await j.back(1); await j.text('QA restored answer qa-bot-session');
-      assert.equal(await browser.evaluate('document.querySelector("textarea").value'), 'QA BOT UNSENT DRAFT');
-      assert.match(await browser.evaluate('document.querySelector(".model-pill").innerText'), /fixture-model/);
       await j.tap('Back');
       const wire = await trace();
-      assert.ok(wire.some(t => t.method === 'session.resume' && t.params.session_id === 'qa-bot-session' && t.params.profile === 'qa-bot'));
-      assert.ok(wire.some(t => t.route === 'GET /api/sessions/qa-bot-session/messages' && t.query.includes('profile=qa-bot')));
-      assert.ok(!wire.some(t => t.method === 'session.create'), 'Opening existing bots must never create sessions');
+      const privateCreates = wire.filter(t => t.method === 'session.create' && t.params.profile === 'qa-bot');
+      assert.equal(privateCreates.length, 1, 'Selected bot opens one private session');
+      assert.ok(privateCreates.every(t => !('title' in t.params) && !('cwd' in t.params) && !t.params.hidden), 'Private bot sessions must not activate Bot Mode or invent a project cwd');
+      assert.ok(wire.some(t => t.method === 'session.resume' && t.params.session_id === 'qa-bot-private-session' && t.params.profile === 'qa-bot'));
+      assert.ok(!wire.some(t => t.method === 'session.resume' && t.params.session_id === 'qa-bot-session'), 'Canonical Bot Chat stays untouched by private opens');
+      await j.root('Bots');
+      const beforeRejectedOpen = (await trace()).length;
+      await fixture("f.privateCreateResponse={session_id:'',stored_session_id:'',info:{profile_name:'default'}};f.permits['session.create']=1;");
+      await j.tap('QA Fixture Bot', 'body', false); await j.text('Private chat creation returned no session ID.');
+      const rejectedOpen = (await trace()).slice(beforeRejectedOpen);
+      assert.ok(!rejectedOpen.some(t => t.method === 'session.resume'), 'Invalid private create response must not resume another profile session');
+      await fixture("f.privateCreateResponse={session_id:'qa-bot-private-session',stored_session_id:'qa-bot-private-session',info:{profile_name:'default'}};f.permits['session.create']=1;");
+      await j.tap('QA Fixture Bot', 'body', false); await j.text('Private chat creation returned a different profile.');
+      const mismatchedOpen = (await trace()).slice(beforeRejectedOpen + rejectedOpen.length);
+      assert.ok(!mismatchedOpen.some(t => t.method === 'session.resume'), 'Mismatched private profile must not resume another profile session');
+      await fixture('delete f.privateCreateResponse;');
     });
     await j.run('groups', async () => {
       await j.root('Chats'); await j.tap('Groups', 'body', false); await j.text('QA Fixture group');
@@ -502,7 +510,7 @@ async function checkProduction(options) {
     await j.run('transport-audit', async () => {
       await browser.settle(); report.fixture = await fixture('return {trace:f.trace,violations:f.violations}');
       assert.deepEqual(report.fixture.violations, []);
-      assert.equal(report.fixture.trace.filter(t=>t.method==='session.create').length, 1, 'Exactly the permitted fictional creation');
+      assert.equal(report.fixture.trace.filter(t=>t.method==='session.create').length, 4, 'Exactly the permitted normal, private, and rejected fictional creations');
       assert.ok(!report.fixture.trace.some(t => ['prompt.submit','session.steer','session.interrupt'].includes(t.method)), 'No prompt/execution mutations');
       assert.deepEqual(browser.diagnostics, []);
       assert.deepEqual(host.rejected, []);
