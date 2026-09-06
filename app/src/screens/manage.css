@@ -1,5 +1,6 @@
-/* Management owns presentation only; the shared Header/body/TabBar own layout. */
-.manage { width: 100%; min-width: 0; color: var(--fg); padding: 8px 0 24px; line-height: 1.5; }
+/* Manage owns its content gutters and scroll area within the shared shell. */
+.manage { width: 100%; min-width: 0; color: var(--fg); padding: 8px max(16px, env(safe-area-inset-right)) 24px max(16px, env(safe-area-inset-left)); line-height: 1.5; }
+.shell-body > .manage { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
 .manage > * { flex-shrink: 0; }
 .manage h2, .manage h3, .manage p { margin: 0; }
 .manage h2 { font-size: 30px; font-weight: 600; line-height: 1.12; letter-spacing: -.04em; }

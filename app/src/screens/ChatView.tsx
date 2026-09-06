@@ -1528,12 +1528,6 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
         )}
       </div>
 
-      {stuck && !approval && (
-        <button type="button" className="jump-btn" aria-label="Scroll to bottom" onClick={jumpToBottom}>
-          ↓
-        </button>
-      )}
-
       {mentionSuggestions.length > 0 && (
         <div className="mentionbar" role="listbox" aria-label="Mention a bot">
           {mentionSuggestions.map((suggestion) => {
@@ -1567,6 +1561,11 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
       )}
 
       <div className="composer-wrap">
+        {stuck && !approval && (
+          <button type="button" className="jump-btn" aria-label="Scroll to bottom" onClick={jumpToBottom}>
+            ↓
+          </button>
+        )}
         {initializing && state === "open" && <div className="composer-status" role="status">Restoring conversation…</div>}
         {state !== 'open' && <div className="composer-status" role="status">{state === 'connecting' ? 'Reconnecting…' : 'Gateway unavailable.'} Your draft stays here; sending is disabled.</div>}
         {onWorkspace && <nav className="conversation-tools" aria-label="Conversation tools"><button onClick={onWorkspace} disabled={!liveSid || initializing}><FileIcon size={18} />Workspace · files &amp; Git</button></nav>}

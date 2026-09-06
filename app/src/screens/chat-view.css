@@ -12,10 +12,6 @@
   --chat-font-size: 15px;
 }
 
-.chat-view {
-  position: relative; /* anchor for the scroll-to-bottom FAB */
-}
-
 /* ── timeline ───────────────────────────────────────────────────────────── */
 .chat-view .body {
   overflow-x: hidden;
@@ -283,7 +279,9 @@
   font-size: .88em;
 }
 .chat-view .md-codeblock {
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
   margin: 10px 0;
   overflow: hidden;
   border: 1px solid var(--line-soft);
@@ -291,6 +289,7 @@
   background: #101012;
 }
 .chat-view .md-codeblock pre {
+  min-width: 0;
   margin: 0;
   padding: 12px;
   overflow-x: auto;
@@ -300,9 +299,9 @@
   white-space: pre;
 }
 .chat-view .md-copy {
-  position: absolute;
-  top: 6px;
-  right: 6px;
+  align-self: flex-end;
+  flex: none;
+  margin: 6px 6px 0;
   padding: 3px 6px;
   border: 1px solid var(--line-soft);
   border-radius: 5px;
@@ -327,13 +326,14 @@
 }
 .chat-view .md th { background: var(--elevated); }
 
-/* ── scroll-to-bottom FAB ───────────────────────────────────────────────── */
+/* Anchor to the entire composer, not a guessed one-line height. */
 .chat-view .jump-btn {
   position: absolute;
-  right: 16px;
-  bottom: calc(78px + env(safe-area-inset-bottom));
-  width: 36px;
-  height: 36px;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   border: 1px solid var(--line);
   background: var(--elevated);
@@ -500,13 +500,30 @@
 .chat-view .model-sheet-search {
   position: sticky;
   top: 0;
-  background: var(--bg);
-  padding-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  margin-bottom: 8px;
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  background: var(--card);
   z-index: 1;
 }
 
+.chat-view .model-sheet-search .search-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: var(--fg-dim);
+}
+
 .chat-view .model-sheet-search .field {
-  font-size: 14px;
+  min-width: 0;
+  padding: 12px 0;
+  border: 0;
+  background: transparent;
+  font-size: 16px;
 }
 
 .chat-view .model-row-btn {

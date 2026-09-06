@@ -1,0 +1,175 @@
+{
+  "task": "HM-UX-05",
+  "state": "frozen-builder-candidate-independent-review-pending",
+  "worktree": "/home/iqbal/workspace/.worktrees/hermes-mobile/layout-overlap",
+  "baseline": "7606cf293be4074f82c8ab8ac4270c0e733028f5",
+  "branch": "fix/mobile-layout-overlap",
+  "source": [
+    {
+      "path": ".github/workflows/check.yml",
+      "sha256": "ac56875d643dcf828152295e38f80e1559bfe31c869d06c1f88d4e760d9b5437"
+    },
+    {
+      "path": "app/package.json",
+      "sha256": "86144cce4c6ce630bf45719207f270a23846114017f3ee84f8a819e59b1bc1dd"
+    },
+    {
+      "path": "app/scripts/check-layout-overlap-browser.mjs",
+      "sha256": "33ca9b9700f62e6da5d993d919b50179ff72b9ad5fbeacaf9dc6b19ce97ee8ae"
+    },
+    {
+      "path": "app/scripts/production-browser-fixtures.mjs",
+      "sha256": "251c3ac47ed176bbdf631bbd531ed9b42dd71c9cd801b48100920fcea673fec9"
+    },
+    {
+      "path": "app/src/screens/ChatView.tsx",
+      "sha256": "267fa20847d4e1ee5c444e82d3bceb2129c349d8d2177861095f62a81cca8340"
+    },
+    {
+      "path": "app/src/screens/chat-view.css",
+      "sha256": "abf9aa641bc7c72c0dddd8a037b40da94349d9f5a3f09377c4ef94de53f61afe"
+    },
+    {
+      "path": "app/src/screens/manage.css",
+      "sha256": "819949394b1cf539302c005e6ead5f98a2419ca9c8ab605888e69ca650d71455"
+    },
+    {
+      "path": "backlog.md",
+      "sha256": "0278f84c64194aa452c7a38e582d7e865062197a304dee07bff94e3bede86410"
+    },
+    {
+      "path": "docs/production/layout-overlap-fix.md",
+      "sha256": "043549ba19d6e186c06782d395fc54ddb1c634e2bb4a2369f9f713e8dd8b9095"
+    }
+  ],
+  "staged_diff_sha256": "b3fed0368e2059c715a27b06dc054601934c810e4019a9e7e4aacb462aeff061",
+  "receipts": [
+    {
+      "path": "/tmp/hm-layout-overlap-red-verified/report.json",
+      "sha256": "0c00eebecaabe049d3ff7d0ba92401507a4da31771748753e01c445a10ad9f7f"
+    },
+    {
+      "path": "/tmp/hm-layout-overlap-green-verified/report.json",
+      "sha256": "4e702822625217972a6719ace77227f2cc5c950be80e328d7d3515a141360b1c"
+    },
+    {
+      "path": "/tmp/hm-layout-overlap-features/report.json",
+      "sha256": "e53c46ac3f395d6edd927b5595de9a16a23913fd5a83b250bf7a1c53883ce687"
+    },
+    {
+      "path": "/tmp/hm-layout-overlap-review/report.json",
+      "sha256": "fd340e5e60912d92c0130fa0f894155a65dd070562f8101920317489f5bb375a"
+    },
+    {
+      "path": "/tmp/hm-layout-overlap-production/report.json",
+      "sha256": "7a264f17ca12b3efb846c1c006fc5432524f6fd739d8c43d9d00cd334f96ba3c"
+    },
+    {
+      "path": "/tmp/hm-layout-overlap-selftest/self-test.json",
+      "sha256": "a0441441858448229b4a736d1102e20cae26a00982570d2bfa9246b4080365fa"
+    },
+    {
+      "path": "/tmp/hm-layout-overlap-navigation/report.json",
+      "sha256": "488ddf7ff1c91236a2c90123b36d8d199c0ec9a76ce70b4d085a09a905dd0d45"
+    },
+    {
+      "path": "/tmp/hm-chat-reveal-QqTZZ6/report.json",
+      "sha256": "4f946560a93226b2e4c4e36e2165eb1e8d5103abe7013efd1381e9fe96922f18"
+    }
+  ],
+  "artifact": [
+    {
+      "path": "/assets/Bots-CcGWyTcC.js",
+      "sha256": "179b17e729911b1d6d9ced5dc0b344c8a1690791d6c9331ca7c4ea6ec0ab3ece",
+      "bytes": 3319
+    },
+    {
+      "path": "/assets/Cronjobs-D0DfhI56.js",
+      "sha256": "6e089332555e0429816b49312cab3c62e86207535c84c1e9b1304f89c45a757e",
+      "bytes": 14167
+    },
+    {
+      "path": "/assets/Cronjobs-DNztx_Id.css",
+      "sha256": "59b790af5d289b4efe5e715dbe1d5853ee32d6c96bb215ac758d16d0364cd834",
+      "bytes": 229
+    },
+    {
+      "path": "/assets/Manage-Ck88OAEA.js",
+      "sha256": "91299b487f1c821d9c82f65e71df102574358d8462e3dbb1181d52075bbde593",
+      "bytes": 23149
+    },
+    {
+      "path": "/assets/Manage-DBsJbE_g.css",
+      "sha256": "71834a93b22036777dd21f0bb77436ff18e5bf39ca18515e2a7f7356f1083a62",
+      "bytes": 5606
+    },
+    {
+      "path": "/assets/Workspace-B4SnqX97.js",
+      "sha256": "caa36115b5d00ea5f4572ac0f41729920085c591db37d20562c832a366527716",
+      "bytes": 22103
+    },
+    {
+      "path": "/assets/Workspace-CqGyTPxR.css",
+      "sha256": "870dc60a117e7a1e7747343198455da2ba6d4875ef78133aa0581ef7ed410072",
+      "bytes": 3486
+    },
+    {
+      "path": "/assets/index-Ctp2bSUM.js",
+      "sha256": "16624b9de83fe05cd2b63ba5db73f68072872e9f605189b1577a80ef1af0ca1b",
+      "bytes": 474689
+    },
+    {
+      "path": "/assets/index-DChF171o.css",
+      "sha256": "23cd0d17c71caf3cd8962c047b363220ff323c8c8b04957500c523fc2cd53d52",
+      "bytes": 32402
+    },
+    {
+      "path": "/assets/refresh-cw-BC9CLE5y.js",
+      "sha256": "ac31d29b334e905e91b3ddf67da5362f9cb2ec5e2fa061d3e9da812af1293ff8",
+      "bytes": 310
+    },
+    {
+      "path": "/index.html",
+      "sha256": "1fa8bc2fd6d267f6dd58be5cf0c813ff7f739b1ad2b5391f14dfd179b19dfb91",
+      "bytes": 805
+    },
+    {
+      "path": "/logo.png",
+      "sha256": "2eaff911b9da9b1f1fcc81adb02f4992bb9ea6b781f4dd048cd79349927ddb7a",
+      "bytes": 1319989
+    },
+    {
+      "path": "/manifest.webmanifest",
+      "sha256": "3d22b80afea0926ace467d10607775eb49be77abe8d78b3dfcfff10a8d44db95",
+      "bytes": 444
+    }
+  ],
+  "verification": {
+    "cached_whitespace": "passed",
+    "baseline_whitespace": "passed",
+    "unstaged_diff": "empty",
+    "built_artifact_readback": "all file hashes match green browser receipt",
+    "unit": "passed",
+    "lint": "passed with exactly 7 unchanged baseline warnings",
+    "build": "passed",
+    "layout": "62 passed; identical baseline runner 48 failed 14 passed",
+    "feature_checks": 17,
+    "review_checks": 6,
+    "production_journeys": 15,
+    "selftest_cases": 26,
+    "navigation_journeys": 2,
+    "reveal_checks": 11,
+    "management_browser_widths": [
+      360,
+      390,
+      430
+    ]
+  },
+  "authority": {
+    "commit": false,
+    "push": false,
+    "publication": false,
+    "live_mutation": false,
+    "canonical_repo_mutation": false
+  }
+}

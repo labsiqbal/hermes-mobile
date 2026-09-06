@@ -1,5 +1,14 @@
 # Hermes Mobile backlog
 
+## HM-UX-05 — Four mobile layout overlaps [review passed; approved live release in progress]
+- Shape: ship, isolated source/test artifact only. Goal: separate jump-bottom/model/Workspace hit regions with multiline and short viewport; aligned themed model search; scrollable code never under Copy; consistent 16px Manage root/detail gutters without double Cronjobs padding or duplicated shell. No redesign, dependencies or transport/ownership semantics changes.
+- Approved seams: actual built React DOM geometry, native browser input/scroll and fictional fetch/WebSocket/clipboard boundaries. Sources plus four Owner screenshots -> deterministic RED evidence (builder); scoped patch -> GREEN isolated built artifact (builder); frozen source/tests/screenshots -> independent review (default). Dry run is the baseline RED browser receipt, required before source fixes.
+- Truth: this queue, repository docs and exclusive layout-overlap worktree at baseline `7606cf293be4074f82c8ab8ac4270c0e733028f5`; fixture receipts/screenshots under `/tmp/hm-layout-overlap-*`. Source/publication status is tracked in `docs/production/layout-overlap-release.md`; canonical builds and live runtime mutations remain forbidden.
+- Validation: 320/360/390/430 widths and keyboard-height approximation; long transcript scroll-away, multiline composer, search, long code, Manage root/detail and Cronjobs coupling; unit/lint/build, 17 features + 6 review, 15 production + 26 self-test, navigation/reveal/management.
+- Failure/rollback: two correction rounds maximum then stop; isolated source rollback, no live change or automatic runtime rollback.
+- Evidence: `docs/production/layout-overlap-fix.md`; final identical built-App gate is RED on baseline (48 failures / 62 checks) and GREEN on candidate (62/62), with 60 screenshots per run. All requested coupling gates passed; lint keeps exactly the 7 baseline warnings. Frozen source receipt `/tmp/hm-layout-overlap-frozen-source.json`; parent independently reviewed four fixes visually and reran 62/62 checks. Release executor verified an isolated clean rebuild with the identical 13-file artifact and 62/62 checks.
+- Authority/cost/cadence: Owner approved “Ya, lanjut sampai live” for HM-UX-05; release executor may deliver reviewed source and use the existing guarded publisher, retaining assets and switching entry last. No model escalation, paid services, scheduled work or runtime mutation. Stage explicit scoped files and fail closed on cached/baseline whitespace before commit. Preserve known canonical untracked `.hermes/` and `design/reviews/` material; require clean tracked files and no incoming collisions before ff-only.
+
 Canonical local task queue (workspace workflow default; no external issue tracker configured).
 
 ## HM-UX-04 — Chats and Cronjobs refinement [complete: source merged, static published and anonymously verified]
