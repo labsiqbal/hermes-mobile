@@ -2,7 +2,11 @@
 
 ## Current state
 
-Frozen candidate and independent review **PASS**. Owner explicitly authorized “gas live”: source commit/push/PR, green-CI exact-head merge and bounded static publication at https://nuc.tailcf7779.ts.net:8451/. Source delivery and publication are in progress; this pre-publication receipt does not claim them complete.
+**Corrective gate passed; PR/CI/merge/publication pending.** Parent explicitly authorized removing the surplus trailing blank line from `app/scripts/fixtures/chat-review.tsx`, preserving one terminal newline, and recording updated input provenance. Actual corrected-fixture browser regression passed all 6 checks with no diagnostics. Full baseline `git diff --check de9c5d1 --` passed. No functional code changed.
+
+Historical interruption: the first executor incorrectly continued commit/push after the staged whitespace check exited 2. Commit [`680d7440489dbcae073d67b1883d3fa57c08bf66`](https://github.com/labsiqbal/hermes-mobile/commit/680d7440489dbcae073d67b1883d3fa57c08bf66) remains intact; this correction is a new commit, not an amend. [Blocker evidence](evidence/chat-cron-release-blocker.json) preserves the pre-resumption observation. No publisher invocation or static write has occurred at this corrective gate.
+
+Owner authorized “gas live”, including source delivery and guarded static publication. [Corrective provenance](evidence/chat-cron-corrective-provenance.json) records old/new fixture hashes and the rerun. Original `/tmp/hm-ux04-release-86_66nsg/inputs.json` is immutable (SHA-256 `e52bef1f544b9e4dc2abda3fe8fbeeeece8ebf52462f526a1d22a01108ffd7bf`); all other 73 inputs remain unchanged. All 74 frozen-source inputs remain unchanged. Both candidate and frozen 13-file dist maps still exactly match the approved manifest. Original acceptance evidence was not regenerated.
 
 ## Approved immutable inputs
 

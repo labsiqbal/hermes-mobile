@@ -24,4 +24,3 @@ const control={calls,state(state:string){client.connectionState=state;handlers.f
 const root=createRoot(document.getElementById('root')!);
 function render(){root.render(<ChatList key={client.url} conn={{id:'fictional-device',url:client.url,label:'Fictional device'} as any} client={client} onOpenChat={()=>{}} onDisconnect={()=>{}}/>);}
 render();
-

@@ -2,7 +2,7 @@
 
 Canonical local task queue (workspace workflow default; no external issue tracker configured).
 
-## HM-UX-04 — Chats and Cronjobs refinement [review and frozen gates passed; source/live delivery in progress]
+## HM-UX-04 — Chats and Cronjobs refinement [authorized whitespace correction verified; PR/CI/live delivery pending]
 - Owner approved implementation: compact model pill top-right above composer; multiple pinned projects; Project/Profile/Bot chats filters; confirmed session deletion; Activity renamed Cronjobs with schedule list and preserved Runs access. Deletion is limited to the verified running profile, with canonical Bot Chat and other profiles protected. NO moving sessions, removing project membership, or changing cwd/profile through browsing.
 - Goal/success: all named controls work in real React with scoped source-backed transport; regression assertions cover placement, multi-pin persistence, combined filters, cancel/confirm deletion and refresh, Cronjobs/Run navigation, no cross-profile confusion or project moves.
 - Stages: approved scope + existing sources -> implementation/tests/docs (builder); built bundle -> deterministic unit/browser and independent review evidence (builder reviewer); evidence -> final source delivery (default). Every stage stops on failed validation; no mocked success claims for live gateway compatibility.
