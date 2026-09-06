@@ -1,24 +1,37 @@
 # hermes-mobile
 
-Device-local **Settings → Appearance → UI scale**: 75% Compact / 100% Standard (default) / 125% Large across the app. The unified composer keeps attach and model/reasoning controls inside its bottom row; context remains above the transcript. [HM-UX-07 contract and evidence](docs/production/appearance-scale.md).
+**UNOFFICIAL community client for [Hermes Agent](https://github.com/NousResearch/hermes-agent).** Hermes Mobile is a mobile-first progressive web app (PWA) for chatting with your self-hosted AI agent from a phone browser.
 
-A mobile-first PWA client for a self-hosted [Hermes Agent](https://github.com/NousResearch/hermes-agent) backend (`hermes serve`), reached over your Tailscale tailnet or LAN.
+> Independently developed; not affiliated with or endorsed by Nous Research. This is not an official Hermes app.
 
-Hermes Mobile is a screen onto your own machines. Agent execution lives on the gateway; the browser owns navigation, local connection/group metadata and transient drafts. Chat streams live, tool activity stays compact, and command approvals remain explicit.
-
-> Shell A interface: **Home / Chats / Bots / Cronjobs / Manage**, with contextual Workspace tools. This is not a claim of complete Desktop parity or production certification. Secure credential storage, native integrations and physical-device signoff remain open. See the [current Chats/Cronjobs release receipt](docs/production/chat-cron-release.md), [original Shell A receipt](docs/production/release-receipt.md), [refinement scope](docs/production/chat-cron-refinement.md) and [quality gate](docs/production/quality-gate.md).
-
-## Shell A surfaces
-
-- Existing chat/resume, scoped model selection, attachments, approvals, Bot Chats, Groups and tracked Runs remain accessible. Groups live under Chats; Runs opens from Cronjobs. The compact model pill sits above the composer at the right edge.
-- Chats supports combined Project/Profile filters and canonical Bot chats, plus multiple local project pins. There is no separate Type/Bot dropdown. Native browser reads and partial-history recovery are covered by the [HM-UX-06 correction](docs/production/chats-read-filters.md); failed reads show Retry and optional sanitized details. Pins only change display order: session membership, profile and cwd cannot be moved here. Confirmed deletion is limited to inactive sessions in the verified running profile; other profiles and canonical Bot Chat are protected.
-- Manage provides profile/capability inspection, a reviewed profile-description update, bounded memory/schedule/messaging reads and shared Kanban board inspection. [Scope and unsupported operations](docs/production/management-contracts.md) are explicit; this is not a universal configuration editor.
-- Workspace provides bounded read-only Files and Git status/diff tied to a conversation's gateway/profile/cwd. External previews require explicit trust review; terminal execution and in-app annotation remain unavailable. See [Workspace boundaries](docs/production/workspace-contracts.md).
-- Appearance is local to this browser, not an update to the Desktop Accent plugin or profile defaults.
+Connect to your own Hermes gateway (`hermes serve`) over a Tailscale tailnet or LAN. The gateway runs the agent; this repository provides the browser client, not a standalone AI backend or a public hosted demo.
 
 ## Screenshots
 
-The current visual contract lives in [`DESIGN.md`](DESIGN.md). The approved [Shell A reference](https://github.com/labsiqbal/hermes-mobile/blob/ux/mobile-parity-review/design/parity-shell/index.html) is an explicitly simulated design artifact, not the application. [`design/index.html`](design/index.html) is historical.
+**Actual app UI shown with demo data.** These captures use the current built React app with fictional conversations and simulated gateway responses, not a design mockup or an authenticated production session. The on-screen “Connected” status belongs to that simulation.
+
+| Chat and composer | Chats | Appearance |
+| --- | --- | --- |
+| [<img src="docs/images/chat.png" width="260" alt="Hermes Mobile chat showing a fictional reading plan and an unsent draft, with attachment and model controls in the composer">](docs/images/chat.png) | [<img src="docs/images/chats.png" width="260" alt="Hermes Mobile Chats screen with project and profile filters, a Reading notes project, and fictional recent conversations">](docs/images/chats.png) | [<img src="docs/images/appearance.png" width="260" alt="Hermes Mobile Appearance screen showing 100% Standard UI scale and local scratch accent controls">](docs/images/appearance.png) |
+| Resume a conversation and draft a reply. | Browse sessions by project and profile. | Adjust the interface on this device. |
+
+Tap a screenshot for the full-size image. [Capture source and boundaries](docs/images/README.md).
+
+## What you can do
+
+- Resume chats, read streaming replies and tool activity, attach files, and respond to explicit command approvals. Model and reasoning controls sit inside the composer's bottom row.
+- Browse Chats with combined Project/Profile filters and local project pins. Groups live under Chats; canonical Bot Chats are also accessible. Pins change display order, not session membership. Deletion is limited to inactive sessions in the verified running profile. [Chat browsing boundaries](docs/production/chats-read-filters.md).
+- Open Bots, inspect Cronjobs and tracked Runs, and use Manage for profile/capability inspection, a reviewed profile-description update, bounded memory/schedule/messaging reads and shared Kanban boards. Manage is not a universal configuration editor. [Supported management operations](docs/production/management-contracts.md).
+- Read conversation-scoped files and Git status/diffs in Workspace. External previews require explicit trust review; terminal execution and in-app annotation are unavailable. [Workspace boundaries](docs/production/workspace-contracts.md).
+- Set **Settings → Appearance → UI scale** to 75% Compact, 100% Standard (default), or 125% Large. Appearance stays local to this browser; it does not change the Desktop Accent plugin or gateway/profile defaults. [Appearance contract](docs/production/appearance-scale.md).
+
+## Status and limitations
+
+The app has **Home / Chats / Bots / Cronjobs / Manage**, with contextual Workspace tools. It does not have complete Hermes Desktop feature parity or production certification. Gateway support varies by operation; unsupported routes fail visibly.
+
+Credentials currently live in plaintext browser `localStorage`. Use a trusted private device. Secure credential storage, native integrations and physical-device signoff remain open; see [security notes](#security-notes-v1) and the [quality gate](docs/production/quality-gate.md).
+
+Implementation details and evidence: [Chats/Cronjobs release receipt](docs/production/chat-cron-release.md), [original Shell A receipt](docs/production/release-receipt.md), [refinement scope](docs/production/chat-cron-refinement.md) and [`DESIGN.md`](DESIGN.md). The [Shell A reference](https://github.com/labsiqbal/hermes-mobile/blob/ux/mobile-parity-review/design/parity-shell/index.html) is a simulated design artifact, not the application; [`design/index.html`](design/index.html) is historical.
 
 ## Requirements
 
@@ -45,11 +58,11 @@ phone browser ──HTTPS (tailscale serve)──► one origin on the tailnet
 ```bash
 cd app
 npm ci --include=dev
-# point the dev proxy at your gateway:
-HERMES_BACKEND=http://nuc.tailcf7779.ts.net:9119 npm run dev -- --host 127.0.0.1
+# replace your-gateway-host with the hostname or IP of your own gateway:
+HERMES_BACKEND=http://your-gateway-host:9119 npm run dev -- --host 127.0.0.1
 ```
 
-Open the printed `localhost` URL. This example explicitly binds development to loopback. The Vite dev server proxies `/api` + `/auth` (including the WebSocket upgrade) to the backend, so dev is same-origin. Use the existing Tailnet HTTPS app for phone access; a new LAN listener or proxy route is a separate deployment decision.
+Open the printed `localhost` URL. This example explicitly binds development to loopback. The Vite dev server proxies `/api` + `/auth` (including the WebSocket upgrade) to the backend, so dev is same-origin. For phone access, deploy your own same-origin HTTPS endpoint using the operator setup below; the loopback development server is not a hosted demo.
 
 The optional live smoke test authenticates, creates a real session and sends a real prompt, which may incur provider cost. It reads local gateway credentials and is not part of the offline/CI release gate. Run it only with explicit operator approval:
 
