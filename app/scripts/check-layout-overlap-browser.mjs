@@ -113,8 +113,11 @@ try {
       await check(`copy-and-horizontal-scroll-${size}`, async () => {
         for (let n = 0; n < 2; n++) {
           const selector = `.md-codeblock:nth-of-type(${n + 1})`;
-          const label = await browser.evaluate(`document.querySelectorAll('.md-copy')[${n}].innerText`);
-          await j.tap(label, selector);
+          // The previous viewport's transient Copied label can expire mid-tap.
+          await browser.waitFor(`document.querySelectorAll('.md-copy')[${n}].innerText === 'Copy'`);
+          const copiedBefore = await browser.evaluate('window.__copied.length');
+          await j.tap('Copy', selector);
+          assert.equal(await browser.evaluate('window.__copied.length'), copiedBefore + 1);
           assert.equal(await browser.evaluate('window.__copied.at(-1)'), (n ? longCode : shortCode) + '\n');
         }
         const movement = await browser.evaluate("(()=>{const p=document.querySelectorAll('.md-codeblock pre')[1];p.scrollLeft=p.scrollWidth;return p.scrollLeft;})()");
@@ -150,13 +153,19 @@ try {
       const size = `${width}x${height}`;
       await resize(width, height);
       await browser.evaluate("document.querySelector('.manage').scrollIntoView({block:'start'})");
-      await shell(`manage-root-${size}`, ['.manage-hero', '.manage-scope', '.manage-row']);
+      assert.equal(await browser.evaluate("!!document.querySelector('.manage-scope')"), false, 'Hub has no irrelevant profile selector');
+      await shell(`manage-root-${size}`, ['.manage-hero', '.manage-section-label', '.manage-row']);
       await j.shot(`manage-root-${size}`);
       await j.tap('Profiles', '.manage', false);
       await j.text('Profiles on this gateway');
-      await shell(`manage-detail-${size}`, ['.manage-page-title', '.manage-scope', '.manage-row']);
+      assert.equal(await browser.evaluate("!!document.querySelector('.manage-scope')"), false, 'Profiles uses roster identity instead of a redundant selector');
+      await shell(`manage-detail-${size}`, ['.manage-page-title', '.manage-section-heading', '.manage-row']);
       await browser.evaluate("document.querySelector('.manage').scrollTop=0");
       await j.shot(`manage-detail-${size}`);
+      await j.tap('Back to Manage');
+      await j.tap('Capabilities', '.manage', false);
+      await shell(`manage-profile-scope-${size}`, ['.manage-page-title', '.manage-scope']);
+      assert.equal(await browser.evaluate("document.querySelector('[aria-label=\"Management profile\"]').value"), '', 'No implicit profile selection');
       await j.tap('Back to Manage');
     }
   }
