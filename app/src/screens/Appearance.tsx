@@ -33,7 +33,7 @@ export function Appearance() {
         <div className="card scratch-accent">
           <div className="rowcard-title">Scratch accent</div>
           <p className="hint">A temporary accent for tab indicators and decorative edges. Text and status colors stay readable. This does not change your gateway or profile; reloading restores the authored defaults.</p>
-          <label className="accent-control"><input type="checkbox" checked={accentEnabled} onChange={event => scratchAccent(accent, event.target.checked)} />Enable scratch accent</label>
+          <label className="accent-control"><input type="checkbox" aria-label="Enable scratch accent" checked={accentEnabled} onChange={event => scratchAccent(accent, event.target.checked)} />Enable scratch accent</label>
           <label className="accent-control">Accent color<input type="color" aria-label="Scratch accent color" value={accent} onChange={event => scratchAccent(event.target.value, true)} /></label>
           <button className="btn btn-ghost" onClick={() => scratchAccent('#99baff', false)}>Restore authored defaults</button>
         </div>

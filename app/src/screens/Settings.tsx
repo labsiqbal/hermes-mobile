@@ -119,6 +119,8 @@ export function Settings({
             rel="noreferrer"
             style={{
               display: "block",
+              minHeight: 44,
+              lineHeight: "44px",
               fontSize: "var(--text-11_5)",
               color: "var(--blue)",
               marginTop: "var(--space-8)",
