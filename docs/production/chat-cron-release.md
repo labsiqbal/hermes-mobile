@@ -2,11 +2,20 @@
 
 ## Current state
 
-**Corrective gate passed; PR/CI/merge/publication pending.** Parent explicitly authorized removing the surplus trailing blank line from `app/scripts/fixtures/chat-review.tsx`, preserving one terminal newline, and recording updated input provenance. Actual corrected-fixture browser regression passed all 6 checks with no diagnostics. Full baseline `git diff --check de9c5d1 --` passed. No functional code changed.
+**Published and independently verified on 2026-09-06.** Source [PR #3](https://github.com/labsiqbal/hermes-mobile/pull/3) merged exact corrected head `17faabc56f70d8ff4af3707ab2f8b084d1ac38c3` as `bb9d003f24d95840bf05e9db5feed7f0cf5e8eee`. [PR CI](https://github.com/labsiqbal/hermes-mobile/actions/runs/34005835731) and [merged-main CI](https://github.com/labsiqbal/hermes-mobile/actions/runs/34005927700) both completed successfully before publication. Canonical main was fast-forwarded only; no build ran in canonical dist.
 
-Historical interruption: the first executor incorrectly continued commit/push after the staged whitespace check exited 2. Commit [`680d7440489dbcae073d67b1883d3fa57c08bf66`](https://github.com/labsiqbal/hermes-mobile/commit/680d7440489dbcae073d67b1883d3fa57c08bf66) remains intact; this correction is a new commit, not an amend. [Blocker evidence](evidence/chat-cron-release-blocker.json) preserves the pre-resumption observation. No publisher invocation or static write has occurred at this corrective gate.
+Historical interruption: the first executor incorrectly continued commit/push after the staged whitespace check exited 2. Commit [`680d7440489dbcae073d67b1883d3fa57c08bf66`](https://github.com/labsiqbal/hermes-mobile/commit/680d7440489dbcae073d67b1883d3fa57c08bf66) remains intact. Parent authorized a new corrective commit removing exactly one surplus trailing LF from `app/scripts/fixtures/chat-review.tsx`, preserving one terminal newline. [Blocker evidence](evidence/chat-cron-release-blocker.json) preserves the pre-resumption observation; [corrective provenance](evidence/chat-cron-corrective-provenance.json) records the actual 6-check browser rerun. Full baseline and staged whitespace checks passed before commit. No functional code changed during release execution.
 
-Owner authorized “gas live”, including source delivery and guarded static publication. [Corrective provenance](evidence/chat-cron-corrective-provenance.json) records old/new fixture hashes and the rerun. Original `/tmp/hm-ux04-release-86_66nsg/inputs.json` is immutable (SHA-256 `e52bef1f544b9e4dc2abda3fe8fbeeeece8ebf52462f526a1d22a01108ffd7bf`); all other 73 inputs remain unchanged. All 74 frozen-source inputs remain unchanged. Both candidate and frozen 13-file dist maps still exactly match the approved manifest. Original acceptance evidence was not regenerated.
+Owner authorized “gas live”, including source delivery and guarded static publication. Original `/tmp/hm-ux04-release-86_66nsg/inputs.json` is immutable (SHA-256 `e52bef1f544b9e4dc2abda3fe8fbeeeece8ebf52462f526a1d22a01108ffd7bf`); all other 73 inputs remain unchanged. All 74 frozen-source inputs remain unchanged. Candidate and frozen 13-file dist maps exactly matched the approved manifest before publication. Original acceptance evidence was not regenerated.
+
+## Publication and live readback
+
+- Live origin: **https://nuc.tailcf7779.ts.net:8451/**. Published entry SHA-256: `5cbef665628f4794df76437fd80c3145b95e729784d3348a68bf6e94649687c7`.
+- Existing publisher passed the guarded [dry-run](evidence/chat-cron-dry-run.json); delegated release executor [accepted it under Owner authority](evidence/chat-cron-dry-run-acceptance.json). Identical arguments plus only `--publish` returned `status=published`, `stage=complete`, no error.
+- Actual stdout receipt: `/tmp/hm-ux04-release-86_66nsg/publication.json`; durable byte-identical copy: [chat-cron-publication.json](evidence/chat-cron-publication.json). Eight immutable assets added, entry replaced last, all 13 pre-existing non-entry files retained. Approved artifact: 13 files; final live tree: 22 files (shared paths are counted once).
+- Publisher verified every approved and retained file, plain and cache-busted. A separate [HTTPS verifier](evidence/chat-cron-served-verification.json) independently matched all 22 live files using 44 anonymous GETs, including all 13 approved artifact files. No redirects, proxies, cookies or authorization headers were used.
+- A [fresh real Chrome boot](evidence/chat-cron-browser-verification.json) rendered the actual connection registry at 390×844, empty device list/form/storage/cookies and the credential warning, with no diagnostics. Browser response hashes matched the frozen entry, JS, CSS and fetched support files; no fixtures, API calls, WebSockets, login or live prompts. [Screenshot](evidence/chat-cron-served-entry.png) visually reviewed.
+- The first temporary live-browser verifier incorrectly required a fragment-free URL. [Failure](evidence/chat-cron-browser-initial-failure.json) and [diagnostic rerun](evidence/chat-cron-browser-diagnostic.json) are retained: the mounted app correctly initialized `#home` via `ShellNavigation`. Only the temporary verifier's exact URL expectation changed to `/#home`; the timeout and all byte/DOM/credential gates remained intact. No application change or republication was needed. [Source delivery evidence](evidence/chat-cron-source-delivery.json) pins the verifier hashes and source/CI readbacks.
 
 ## Approved immutable inputs
 
@@ -16,7 +25,7 @@ Owner authorized “gas live”, including source delivery and guarded static pu
 - Approved entry SHA-256: `5cbef665628f4794df76437fd80c3145b95e729784d3348a68bf6e94649687c7`.
 - Expected OLD live entry: `9783bf21c838108f53e837f1dcf307631f7100a09096ccfebe0048ea5b4c9fd0`.
 - Expected full route digest: `5759f3513fa7dd18a01d1eefc840816737f9089387fbc30ea06b166c3aa6a1a5`.
-- Release executor independently verified exact 74-file source/input map and 13-file artifact map against both candidate and frozen build. `.env*` files were excluded without reading.
+- Before the authorized correction, the release executor independently verified the exact 74-file source/input map and 13-file artifact map against candidate and frozen build. The separate corrective provenance accounts for the sole fixture difference. `.env*` files were excluded without reading.
 
 ## Quality and review
 
@@ -26,6 +35,6 @@ Durable evidence: [frozen gates/input map](evidence/chat-cron-frozen-gates.json)
 
 ## Scope and limitations
 
-Only existing `deploy/publish-static.py` may write the approved canonical static root, after guarded dry-run. Same manifest and old-entry/route guards are required for publication. Retain old chunks and publish entry last; no build in live root, service/restart/routes/config/credentials, live authentication, prompts, deletions, cron mutation, backup or automatic rollback. Stop on drift rather than substituting guards.
+Only existing `deploy/publish-static.py` wrote the approved canonical static root, after guarded dry-run with the same manifest and old-entry/route guards. Old chunks were retained and entry published last. No build in live root, service/restart/routes/config/credential changes, live authentication, prompts, session deletion, cron mutation, backup or automatic rollback occurred. Future rollback or asset pruning requires separate approval; do not reuse the historical old-entry guard for another release.
 
-Post-publication verification must independently hash HTTPS files and boot actual served code in a fresh credential-free browser. That proves anonymous entry/asset delivery only, not authenticated UI compatibility. Physical iOS/Android, complete accessibility/security review and full Desktop parity remain unverified. Running-profile-only deletion, canonical protection and documented upstream concurrency limits remain in force.
+Post-publication HTTPS hashing and fresh credential-free browser boot prove anonymous entry/asset delivery only, not authenticated UI compatibility. Physical iOS/Android, complete accessibility/security review and full Desktop parity remain unverified. Running-profile-only deletion, canonical protection and documented upstream concurrency limits remain in force. Final external readback remains parent-owned.
