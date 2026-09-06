@@ -1,0 +1,41 @@
+{
+  "status": "source-merged-ci-green",
+  "source_head": "07ce2c9f72a5a4a475a0862522b36e86a3cfc433",
+  "source_merge": "4e736b9676bb168aba46df0ab26fd2b78163d447",
+  "source_pr": {
+    "headRefOid": "07ce2c9f72a5a4a475a0862522b36e86a3cfc433",
+    "mergeCommit": {
+      "oid": "4e736b9676bb168aba46df0ab26fd2b78163d447"
+    },
+    "mergedAt": "2026-09-06T06:45:11Z",
+    "number": 9,
+    "state": "MERGED",
+    "url": "https://github.com/labsiqbal/hermes-mobile/pull/9"
+  },
+  "pr_checks": [
+    {
+      "link": "https://github.com/labsiqbal/hermes-mobile/actions/runs/34017097879/job/101442682490",
+      "name": "React Shell A / fixture gate",
+      "state": "SUCCESS"
+    }
+  ],
+  "pr_ci": {
+    "attempt": 1,
+    "conclusion": "success",
+    "databaseId": 34017097879,
+    "event": "pull_request",
+    "headSha": "07ce2c9f72a5a4a475a0862522b36e86a3cfc433",
+    "status": "completed",
+    "url": "https://github.com/labsiqbal/hermes-mobile/actions/runs/34017097879"
+  },
+  "main_ci": {
+    "attempt": 1,
+    "conclusion": "success",
+    "databaseId": 34017317439,
+    "event": "push",
+    "headSha": "4e736b9676bb168aba46df0ab26fd2b78163d447",
+    "status": "completed",
+    "url": "https://github.com/labsiqbal/hermes-mobile/actions/runs/34017317439"
+  },
+  "canonical_ff_receipt": "/tmp/hmux08-release-xgk7hczc/ff-4e736b9676bb168aba46df0ab26fd2b78163d447.json"
+}

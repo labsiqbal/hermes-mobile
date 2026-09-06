@@ -1,0 +1,31 @@
+{
+  "status": "accepted",
+  "authority": "Owner livein; delegated HMUX08 release executor; parent approved frozen candidate",
+  "dry_run_sha256": "26b63dfc0a94e82a3d32c22000c6a08db3273513b1f5e2b00d7c21c6f37a3a79",
+  "arguments": [
+    "python3",
+    "-B",
+    "deploy/publish-static.py",
+    "--artifact",
+    "/tmp/hmux08-release-xgk7hczc/source/app/dist",
+    "--manifest",
+    "/tmp/hmux08-release-xgk7hczc/artifact.json",
+    "--manifest-sha256",
+    "4ad73d4128aae58217e6aa5a7ef7a4aa0c7bf47194a97e80f18a41085d9b8ca9",
+    "--expected-entry-sha256",
+    "4cdfb4b705c173e12ab07a703af937140a113c3bd7b5826685facc2e2417434d",
+    "--expected-route-sha256",
+    "b8f93e33860152933c5314075d09f5995437755d59b621f7a258a64d141450c6"
+  ],
+  "scope": "Existing fixed static root only, index-last retained chunks. Identical publish invocation appends --publish only. Only publisher existing anonymous status/route guards, no authenticated/backend application calls, route/service/config changes.",
+  "source_merge": "4e736b9676bb168aba46df0ab26fd2b78163d447",
+  "main_ci": {
+    "attempt": 1,
+    "conclusion": "success",
+    "databaseId": 34017317439,
+    "event": "push",
+    "headSha": "4e736b9676bb168aba46df0ab26fd2b78163d447",
+    "status": "completed",
+    "url": "https://github.com/labsiqbal/hermes-mobile/actions/runs/34017317439"
+  }
+}
