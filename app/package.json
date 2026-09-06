@@ -19,6 +19,7 @@
     "check:chat-browser": "node scripts/check-chat-browser.mjs && node scripts/check-chat-source.mjs",
     "check:layout-overlap:browser": "node scripts/check-layout-overlap-browser.mjs",
     "check:chats-read:browser": "node scripts/check-chats-read-browser.mjs",
+    "check:chats-readability:browser": "node scripts/check-chats-readability-browser.mjs",
     "check:chat-cron:browser": "node scripts/check-chat-cron-browser.mjs && node scripts/check-chat-review-browser.mjs",
     "check:appearance": "node scripts/check-appearance.mjs",
     "check:appearance:browser": "node scripts/check-appearance-browser.mjs",

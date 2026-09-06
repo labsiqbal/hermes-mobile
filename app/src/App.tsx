@@ -215,7 +215,7 @@ export default function App() {
         {connState !== 'open' && <div className="connection-notice" role="status">{connState === 'connecting' ? 'Reconnecting…' : 'Gateway unavailable.'} Lists may be out of date. Unsent drafts stay in this tab.</div>}
         <ScreenBoundary key={JSON.stringify([screen, gatewayId, gatewayUrl])} title={TITLES[screen]}>
           {screen === 'home' && <Home key={activeConn!.id} store={store} conn={activeConn!} client={client!} state={connState} onConnect={handleConnect} onOpenSession={openSessionFromHome} onManageDevices={() => destination('settings')} />}
-          {screen === 'chats' && <><button className="collection-link" onClick={() => destination('groups')}><UsersIcon size={20} /><span>Groups <small>Shared bot conversations</small></span><span aria-hidden="true">→</span></button><ChatList key={JSON.stringify([activeConn!.id,activeConn!.url])} conn={activeConn!} client={client!} onOpenChat={session => openChat(session)} onDisconnect={disconnect} /></>}
+          {screen === 'chats' && <><button className="collection-link chats-groups-link" aria-label="Groups — shared bot conversations" onClick={() => destination('groups')}><UsersIcon size={20} /><span>Groups</span><span aria-hidden="true">→</span></button><ChatList key={JSON.stringify([activeConn!.id,activeConn!.url])} conn={activeConn!} client={client!} onOpenChat={session => openChat(session)} onDisconnect={disconnect} /></>}
           {screen === 'bots' && <BotsScreen onOpenChat={openChatById} client={client!} conn={activeConn!} />}
           {screen === 'groups' && <Groups client={client!} conn={activeConn!} onOpenGroup={openGroup} />}
           {screen === 'activity' && <Cronjobs client={client!} conn={activeConn!} />}

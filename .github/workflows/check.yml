@@ -89,9 +89,15 @@ jobs:
         run: npm run check:chats-read:browser -- "$RUNNER_TEMP/production-browser/chats-read"
 
       - name: Global appearance and unified composer (built App, fixtures only)
+        # Includes unrelated roots/details as a coupling regression for Chats changes.
         id: appearance
         timeout-minutes: 6
         run: npm run check:appearance:browser -- "$RUNNER_TEMP/production-browser/appearance"
+
+      - name: Chats row readability (built App, long fictional history)
+        id: chats_readability
+        timeout-minutes: 3
+        run: npm run check:chats-readability:browser -- "$RUNNER_TEMP/production-browser/chats-readability"
 
       - name: Browser harness self-test
         id: browser_self_test

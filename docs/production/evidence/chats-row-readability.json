@@ -1,0 +1,325 @@
+{
+  "task": "HM-UX-08",
+  "status": "builder verified; parent independent review pending",
+  "baselineSource": "c7d5483bbe9bf2213c6bd849ba2640c6064f6367",
+  "sourceEquivalentTo": "67359166ede295d3ffb8e48e6513ef2cda3bebd7",
+  "mainAtHandoff": "cf713474303b343e5b38db320f0f895bcb811b79 (docs-only delta from baseline)",
+  "runnerSha256": "4b4b95db69d44a57f5a756c33539b4921eaad9506a6d2746ead777906ae5f042",
+  "reports": {
+    "baseline": {
+      "status": "failed",
+      "checks": 47,
+      "failed": 27,
+      "path": "/tmp/hmux08-baseline/report.json",
+      "sha256": "681611dbf9bb894af76f6db97965b60f2f50210537f9fcee9a2aa924235c0d2b"
+    },
+    "candidate": {
+      "status": "passed",
+      "checks": 47,
+      "failed": 0,
+      "path": "/tmp/hmux08-candidate-final/report.json",
+      "sha256": "93b4d8e78ecc6d78debee96e95787cc535d7c684069a739bd99a1c5b42a0cd7d"
+    },
+    "native": {
+      "status": "passed",
+      "checks": 17,
+      "failed": 0,
+      "path": "/tmp/hmux08-native/report.json",
+      "sha256": "9e6b2cb4d4baf41ab3521914893591a95692e3d00e31d0fdc81d630d312ab234"
+    },
+    "features": {
+      "status": "passed",
+      "checks": 17,
+      "failed": 0,
+      "path": "/tmp/hmux08-features/report.json",
+      "sha256": "6d025e9687022757b73d3d9d38f14b1b730e06631abff46801123099a2e8dfe9"
+    },
+    "review": {
+      "status": "passed",
+      "checks": 6,
+      "failed": 0,
+      "path": "/tmp/hmux08-review/report.json",
+      "sha256": "6bbfa9ae3d3dd84cdbfb086018e5713b45ae710987d6de3296362c7466422749"
+    },
+    "appearance": {
+      "status": "passed",
+      "checks": 466,
+      "failed": 0,
+      "path": "/tmp/hmux08-appearance/report.json",
+      "sha256": "317f26f6bcf3b4c5278e29ecc2ee12114219a145f5eaae3081401f2bb4889ab9"
+    },
+    "layout": {
+      "status": "passed",
+      "checks": 62,
+      "failed": 0,
+      "path": "/tmp/hmux08-layout/report.json",
+      "sha256": "d3dc2b34c79cf586d563de3c3b7fe36217f886496534a504af5abf4eeb52d764"
+    },
+    "production": {
+      "status": "passed",
+      "checks": 15,
+      "failed": 0,
+      "path": "/tmp/hmux08-production/report.json",
+      "sha256": "1bed3fd12a0efdc37a7d657f14c0257b392a5ac68837b9964bc2c5e9f0686788"
+    },
+    "selftest": {
+      "status": "passed",
+      "checks": 26,
+      "failed": 0,
+      "path": "/tmp/hmux08-selftest/self-test.json",
+      "sha256": "1b1faec28d7bfd95551793209ee6f4dfbe468ba77db765a53277cbbb1c589ac2"
+    }
+  },
+  "metrics": [
+    {
+      "case": "100-390-top",
+      "beforeTitleWidth": 151.34375,
+      "afterTitleWidth": 298,
+      "beforeGroupsHeight": 71.5,
+      "afterGroupsHeight": 48
+    },
+    {
+      "case": "125-320-top",
+      "beforeTitleWidth": 65.4375,
+      "afterTitleWidth": 226,
+      "beforeGroupsHeight": 89.125,
+      "afterGroupsHeight": 60
+    }
+  ],
+  "artifact": [
+    {
+      "path": "/assets/Bots-C1cNWa7u.js",
+      "sha256": "ba6df63a9dc7aa6ba003403128454fc31aa86dad93dde8b5dae2d1a11ea48dec",
+      "bytes": 3353
+    },
+    {
+      "path": "/assets/Cronjobs-0XIoz1gU.css",
+      "sha256": "a03ef37a134c63d77c94c3ebeff06cb4136c02ac9e7cab46512d6d8be3136396",
+      "bytes": 272
+    },
+    {
+      "path": "/assets/Cronjobs-CMAPqAby.js",
+      "sha256": "d2ad28f0fe4b8f34c883f7d8161cadcf93722add55831d5fefd647dd366e5b4a",
+      "bytes": 14269
+    },
+    {
+      "path": "/assets/Manage-BwUJOoTw.js",
+      "sha256": "070eaf123b0211af61dac06e6fa2522d78a071f5c76ad1bffd167e52872ee780",
+      "bytes": 23111
+    },
+    {
+      "path": "/assets/Manage-C6leMz4z.css",
+      "sha256": "6dea8f398bbf0be34f70f7d4aeeef70768f18cd76e155772d6521f39608cfb32",
+      "bytes": 6572
+    },
+    {
+      "path": "/assets/Workspace-DWGQ5qB-.css",
+      "sha256": "de93e2d0b3689e97bcdd87e82cbc54fffab69c77e53c4041991b4ebe6dc52891",
+      "bytes": 4038
+    },
+    {
+      "path": "/assets/Workspace-uzcQbRWP.js",
+      "sha256": "e0ba2ee45f0d71e92afa9ef81959dadc5faabf3a9764dd23af3360222098c336",
+      "bytes": 22065
+    },
+    {
+      "path": "/assets/index-5CEt1Opi.css",
+      "sha256": "ac5dccd3b164701d50d43d09f8e40cc3163514efd534fd4c124870b199ce9eec",
+      "bytes": 42781
+    },
+    {
+      "path": "/assets/index-D1Av95lB.js",
+      "sha256": "849bb76208540037af5bb88681457a897b6acc94938cc2f0d6e03d830f61240d",
+      "bytes": 480588
+    },
+    {
+      "path": "/index.html",
+      "sha256": "6f91f1f0c7f7f9cfa7fc207806d1ee78d2ffdc68f1664fe3f4406ae57ac1598f",
+      "bytes": 805
+    },
+    {
+      "path": "/logo.png",
+      "sha256": "2eaff911b9da9b1f1fcc81adb02f4992bb9ea6b781f4dd048cd79349927ddb7a",
+      "bytes": 1319989
+    },
+    {
+      "path": "/manifest.webmanifest",
+      "sha256": "3d22b80afea0926ace467d10607775eb49be77abe8d78b3dfcfff10a8d44db95",
+      "bytes": 444
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "/tmp/hmux08-candidate-final/75-320-top.png",
+      "bytes": 59674,
+      "width": 320,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hmux08-candidate-final/75-320-recent.png",
+      "bytes": 69375,
+      "width": 320,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hmux08-candidate-final/75-320-scrolled.png",
+      "bytes": 71852,
+      "width": 320,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hmux08-candidate-final/75-390-top.png",
+      "bytes": 65118,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hmux08-candidate-final/75-390-recent.png",
+      "bytes": 75162,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hmux08-candidate-final/75-390-scrolled.png",
+      "bytes": 82298,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hmux08-candidate-final/75-430-top.png",
+      "bytes": 65156,
+      "width": 430,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hmux08-candidate-final/75-430-recent.png",
+      "bytes": 75231,
+      "width": 430,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hmux08-candidate-final/75-430-scrolled.png",
+      "bytes": 82433,
+      "width": 430,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hmux08-candidate-final/100-320-top.png",
+      "bytes": 57676,
+      "width": 320,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hmux08-candidate-final/100-320-recent.png",
+      "bytes": 65535,
+      "width": 320,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hmux08-candidate-final/100-320-scrolled.png",
+      "bytes": 69947,
+      "width": 320,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hmux08-candidate-final/100-390-top.png",
+      "bytes": 58888,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hmux08-candidate-final/100-390-recent.png",
+      "bytes": 67211,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hmux08-candidate-final/100-390-scrolled.png",
+      "bytes": 73080,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hmux08-candidate-final/100-430-top.png",
+      "bytes": 60585,
+      "width": 430,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hmux08-candidate-final/100-430-recent.png",
+      "bytes": 74902,
+      "width": 430,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hmux08-candidate-final/100-430-scrolled.png",
+      "bytes": 81182,
+      "width": 430,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hmux08-candidate-final/125-320-top.png",
+      "bytes": 54499,
+      "width": 320,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hmux08-candidate-final/125-320-recent.png",
+      "bytes": 62952,
+      "width": 320,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hmux08-candidate-final/125-320-scrolled.png",
+      "bytes": 66424,
+      "width": 320,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hmux08-candidate-final/125-390-top.png",
+      "bytes": 59992,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hmux08-candidate-final/125-390-recent.png",
+      "bytes": 67376,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hmux08-candidate-final/125-390-scrolled.png",
+      "bytes": 74114,
+      "width": 390,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hmux08-candidate-final/125-430-top.png",
+      "bytes": 60886,
+      "width": 430,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hmux08-candidate-final/125-430-recent.png",
+      "bytes": 68644,
+      "width": 430,
+      "height": 844
+    },
+    {
+      "file": "/tmp/hmux08-candidate-final/125-430-scrolled.png",
+      "bytes": 76257,
+      "width": 430,
+      "height": 844
+    }
+  ],
+  "localLog": "/tmp/hmux08-build-unit-lint.log",
+  "lintWarnings": 7,
+  "finalRebuildMatchesBrowserArtifact": true,
+  "limits": [
+    "Fictional data in real built App, not authenticated gateway or physical-phone proof",
+    "Parent visual/quality gate precedes Owner-authorized source delivery and guarded publication",
+    "No commits/push/publication performed by builder",
+    "Legacy review6 uses real component fixture and does not emit a built artifact manifest"
+  ],
+  "freeze": "/tmp/hmux08-frozen-source.json"
+}
