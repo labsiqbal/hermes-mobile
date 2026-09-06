@@ -29,7 +29,9 @@ export function installProductionFixtures(fixture) {
   };
   Object.defineProperty(window, '__productionFixture', { value: control });
   // This key exists only in ChromePipe's fresh disposable browser profile.
+  const preferences=f.preservePreferences ? Object.entries(localStorage).filter(([key])=>key.startsWith('hermes-mobile.chat-project-pins:')) : [];
   localStorage.clear();
+  preferences.forEach(([key,value])=>localStorage.setItem(key,value));
   localStorage.setItem('hermes-mobile.connections.v1', JSON.stringify([f.gateway]));
   localStorage.setItem('hermes-mobile.api-server-key', 'FICTIONAL-RUNS-KEY');
   localStorage.setItem('hermes-mobile.tracked-runs.v1', JSON.stringify([{ id: 'qa-run', label: 'QA tracked run', added_at: 1700000000 }]));
@@ -42,6 +44,13 @@ export function installProductionFixtures(fixture) {
   const info = profile => ({ model: 'fixture-model', provider: 'fixture', profile_name: profile || 'default', cwd: profile === 'qa-bot' ? '/fictional/qa-bot' : '/fictional/qa-project', reasoning_effort: 'medium' });
   const sessionInfos = {};
   const project = { id: 'qa-project', label: 'QA Project', sessionCount: 1, previewSessions: [f.sessions[0]], repos: [{ id: 'qa-repo', label: 'QA Repo', groups: [{ id: 'qa-lane', label: 'fixture-branch', sessions: [f.sessions[0]] }] }] };
+  const projectCatalog = f.projects || [{...project,profile:'default'}];
+  const projectRows = profile => projectCatalog.filter(p=>p.profile===profile).map(p=>{
+    const alive = row => [...f.sessions,f.bot].some(s=>s.id===row.id && s.profile===profile);
+    const repos=p.repos.map(repo=>({...repo,groups:repo.groups.map(group=>({...group,sessions:group.sessions.filter(alive)}))}));
+    const sessions=repos.flatMap(repo=>repo.groups.flatMap(group=>group.sessions));
+    return {...p,repos,sessionCount:sessions.length,previewSessions:sessions.slice(0,3)};
+  });
   const run = { object: 'hermes.run', run_id: 'qa-run', status: 'completed', session_id: 'qa-recent-session', created_at: 1700000000, model: 'fixture-model', output: 'QA fixture run output' };
   const fail = message => { violations.push(message); throw new Error(message); };
   const wait = method => !control.hold.includes(method) ? Promise.resolve() : new Promise(resolve => held.set(method, [...(held.get(method) || []), resolve]));
@@ -58,14 +67,29 @@ export function installProductionFixtures(fixture) {
     if (control.unsupported.includes(route)) return json({ error: 'QA fixture unsupported endpoint' }, 404);
     if (control.errors[route]) return json({ error: { message: control.errors[route] } }, 503);
     if (route === 'GET /api/status') return json({ status: 'ok', version: 'fixture-only' });
+    if (route === 'GET /api/sessions') {
+      const profile=url.searchParams.get('profile'), offset=Number(url.searchParams.get('offset'));
+      if(!profiles.some(p=>p.name===profile)) return fail('Unknown REST session profile');
+      const expected=new URLSearchParams({profile,limit:'100',offset:String(offset),order:'recent',archived:'exclude',full:'false'});
+      if(url.searchParams.toString()!==expected.toString() || !Number.isSafeInteger(offset) || offset<0) return fail('Unexpected session browser query');
+      const rows=f.sessions.filter(s=>s.profile===profile);
+      return json({sessions:rows.slice(offset,offset+100),total:rows.length,limit:100,offset});
+    }
+    if (method==='GET' && /^\/api\/sessions\/[^/]+$/.test(url.pathname)) {
+      const profile=url.searchParams.get('profile'), id=decodeURIComponent(url.pathname.split('/')[3]);
+      if(!profiles.some(p=>p.name===profile) || url.searchParams.toString()!==new URLSearchParams({profile}).toString()) return fail('Unknown detail profile/query');
+      const row=[...f.sessions,f.bot].find(s=>s.id===id && s.profile===profile);
+      return row ? json({...row,system_prompt:'QA_DETAIL_NOT_FOR_PRESENTATION'}) : json({detail:'Session not found'},404);
+    }
     if (route === 'POST /api/auth/ws-ticket') return control.authenticated ? json({ ticket: 'FICTIONAL-ONE-USE-TICKET' }) : json({ error: 'fixture login required' }, 401);
     if (route === 'POST /auth/password-login') {
       const body = JSON.parse(init.body);
       if (body.username !== f.gateway.username || body.password !== f.gateway.password || body.provider !== 'basic') return fail('Unexpected fictional login payload');
       control.authenticated = true; return json({ ok: true });
     }
-    if (method === 'GET' && /^\/api\/sessions\/(qa-project-session|qa-recent-session|qa-bot-session|qa-created-session)\/messages$/.test(url.pathname)) {
+    if (method === 'GET' && /^\/api\/sessions\/[^/]+\/messages$/.test(url.pathname)) {
       const sid = url.pathname.split('/')[3];
+      if(![...f.sessions,f.bot].some(s=>s.id===sid && s.profile===url.searchParams.get('profile'))) return fail('History lost exact session/profile');
       if (sid === 'qa-created-session' && !control.createdHistory.length) return json({error:'Session not found'}, 404);
       if (sid === f.bot.id && url.searchParams.get('profile') !== 'qa-bot') return fail('Bot REST history lost profile scope');
       return json({ session_id: sid, messages: history(sid), pagination: { limit: 100, offset: 0, order: 'latest', returned: history(sid).length } });
@@ -85,13 +109,14 @@ export function installProductionFixtures(fixture) {
       return json({ current, active: 'qa-bot' });
     }
     if (['GET /api/learning/graph','GET /api/learning/node','GET /api/cron/jobs','GET /api/messaging/platforms'].includes(route)) {
-      const expected = route === 'GET /api/learning/node' ? { id: 'memory:memory:0', profile: 'default' } : { profile: 'default' };
+      const expected = route === 'GET /api/learning/node' ? { id: 'memory:memory:0', profile: 'default' } : { profile: route==='GET /api/cron/jobs' ? url.searchParams.get('profile') : 'default' };
+      if(route==='GET /api/cron/jobs' && !profiles.some(p=>p.name===expected.profile)) return fail('Unknown cron profile');
       if (url.searchParams.toString() !== new URLSearchParams(expected).toString()) return fail(`Unexpected management scope/query: ${route}${url.search}`);
       if (init.credentials !== 'include' || init.redirect !== 'error' || init.cache !== 'no-store') return fail('Management read lost cookie/redirect/cache contract');
       if (route !== 'GET /api/cron/jobs' && !trace.some(t => t.route === 'GET /api/profiles/active' && t.responseCurrent === 'default')) return fail('Management read before running-profile identity');
       if (route === 'GET /api/learning/graph') return json({ nodes: [{ id: 'memory:memory:0', kind: 'memory', label: 'QA Fixture Memory', memorySource: 'memory' }, { id: 'qa-skill', kind: 'skill' }] });
       if (route === 'GET /api/learning/node') return json({ ok: true, kind: 'memory', id: 'memory:memory:0', content: 'QA fictional private memory detail.' });
-      if (route === 'GET /api/cron/jobs') return json([{ id: 'qa-job', profile: control.cronOwner, name: 'QA Fixture Schedule', state: 'paused', enabled: false, schedule_display: 'every 7d' }]);
+      if (route === 'GET /api/cron/jobs') return json(control.empty.includes(route) ? [] : [{ id: 'qa-job', profile: control.cronOwner, name: 'QA Fixture Schedule', state: 'paused', enabled: false, schedule_display: 'every 7d',next_run_at:'2030-01-07T08:00:00Z',last_run_at:'2030-01-01T08:00:00Z' }]);
       return json({ platforms: [{ id: 'telegram', name: 'QA Fixture Messaging', state: 'disabled', enabled: false, configured: false, gateway_running: false, env_vars: [{ key: 'QA_DO_NOT_RENDER', redacted_value: 'QA_PRIVATE_ENV' }], error_message: 'QA_PRIVATE_DIAGNOSTIC', home_channel: 'QA_PRIVATE_DESTINATION' }] });
     }
     if (route === 'GET /api/plugins/kanban/boards') return json({ boards: [{ slug: 'qa-board', name: 'QA Fixture Board' }] });
@@ -126,9 +151,16 @@ export function installProductionFixtures(fixture) {
         f.sessions.push(session);
         return { session_id: session.id, stored_session_id: session.id, info: info('default') };
       }
-      case 'session.list': return { sessions: params.title === 'Bot Chat' ? [f.bot] : f.sessions };
-      case 'projects.tree': return { projects: [project], scoped_session_ids: [f.sessions[0].id] };
-      case 'projects.project_sessions': if (params.project_id !== project.id) return fail('Unknown project scope'); return { project };
+      case 'session.list': return { sessions: params.title === 'Bot Chat' ? (params.profile===f.bot.profile ? [f.bot] : []) : f.sessions.filter(s=>s.profile===(params.profile || 'default')) };
+      case 'projects.tree': {
+        const rows=projectRows(params.profile || 'default');
+        const visible=rows.map(p=>({...p,repos:p.repos.map(r=>({...r,groups:r.groups.map(g=>({...g,sessions:g.sessions.filter(s=>!(f.overviewOmitIds || []).includes(s.id))}))}))}));
+        return {projects:visible,scoped_session_ids:visible.flatMap(p=>p.repos.flatMap(r=>r.groups.flatMap(g=>g.sessions.map(s=>s.id))))};
+      }
+      case 'projects.project_sessions': {
+        const selected=projectRows(params.profile || 'default').find(p=>p.id===params.project_id);
+        if(!selected) return fail('Unknown project/profile scope'); return {project:selected};
+      }
       case 'profiles.list': return { profiles: control.empty.includes('profiles.list') ? [] : profiles };
       case 'profiles.describe': {
         const profile = profiles.find(p => p.name === params.name);
@@ -136,7 +168,7 @@ export function installProductionFixtures(fixture) {
         return { name: profile.name, description: profile.description || 'QA fictional description', soul: 'QA fictional role instructions', model: { default: profile.model, provider: profile.provider }, skills: control.empty.includes('profiles.describe') ? [] : [{ name: 'qa-skill', enabled: true, label: 'QA Fixture Skill', description: 'Fictional capability' }], toolsets: [], mcp_servers: [] };
       }
       case 'session.resume': {
-        const session = [...f.sessions, f.bot].find(s => s.id === params.session_id);
+        const session = [...f.sessions, f.bot].find(s => s.id === params.session_id && s.profile === (params.profile || 'default'));
         if (!session) return fail(`Unknown resume session: ${params.session_id}`);
         if (session.profile === 'qa-bot' && params.profile !== 'qa-bot') return fail('Bot resume lost profile scope');
         return { session_id: session.id, stored_session_id: session.id, messages: params.omit_messages === true ? [] : history(session.id), info: sessionInfos[session.id] || info(session.profile), running: false, status: 'idle', message_count: history(session.id).length };
@@ -151,7 +183,12 @@ export function installProductionFixtures(fixture) {
         if (!(control.permits[method] > 0)) return fail(`Mutation without harness confirmation permit: ${method}`);
         control.permits[method]--;
         if (method === 'approval.respond') { control.approval = false; return { ok: true }; }
-        if (method === 'session.delete') return { deleted: params.session_id };
+        if (method === 'session.delete') {
+          if(params.profile!=='default') return fail('Deletion outside approved running profile');
+          const index=f.sessions.findIndex(s=>s.id===params.session_id && s.profile===params.profile);
+          if(index<0) return fail('Deletion of unknown exact session');
+          f.sessions.splice(index,1);return {deleted:params.session_id};
+        }
         if (method === 'config.set') {
           const session = [...f.sessions, f.bot].find(s => s.id === params.session_id);
           if (!session) return fail('Model change requires known session');

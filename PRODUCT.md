@@ -16,7 +16,7 @@ Owner (Iqbal) — power user Hermes yang punya beberapa mesin (T14, NUC `linc-nu
 
 ## Product Purpose
 
-Mobile client untuk Hermes Agent yang berjalan di mesin sendiri, dijangkau lewat Tailnet HTTPS. Target produk: seluruh fitur resmi Hermes Desktop dapat diakses dari HP, termasuk bundled Bot Mode, Kanban, dan Accent. Desain A — Shell dipilih Owner; implementasi browser yang tersedia, aksi yang belum diimplementasikan, dan batas native dibedakan secara eksplisit. Kontrak penerimaan: `docs/production/shell-a-spec.md`.
+Mobile client untuk Hermes Agent yang berjalan di mesin sendiri, dijangkau lewat Tailnet HTTPS. Target produk: seluruh fitur resmi Hermes Desktop dapat diakses dari HP, termasuk bundled Bot Mode, Kanban, dan Accent. Desain A — Shell dipilih Owner; implementasi browser yang tersedia, aksi yang belum diimplementasikan, dan batas native dibedakan secara eksplisit. Kontrak penerimaan: `docs/production/shell-a-spec.md`, dilanjutkan refinement Chats/Cronjobs di `docs/production/chat-cron-acceptance.md`. Pin project hanya mengatur tampilan lokal; session tidak dapat dipindahkan antar-project dari browser ini.
 
 ## Positioning
 

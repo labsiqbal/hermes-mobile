@@ -14,7 +14,7 @@ const TABS: { id: NavId; label: string; icon: ComponentType<IconProps> }[] = [
   { id: "home", label: "Home", icon: BoardIcon },
   { id: "chats", label: "Chats", icon: ChatIcon },
   { id: "bots", label: "Bots", icon: BotIcon },
-  { id: "activity", label: "Activity", icon: RunsIcon },
+  { id: "activity", label: "Cronjobs", icon: RunsIcon },
   { id: "manage", label: "Manage", icon: SettingsIcon },
 ];
 

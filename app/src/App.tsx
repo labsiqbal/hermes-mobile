@@ -6,7 +6,7 @@ import Home from './screens/Home';
 import Connections from './screens/Connections';
 import ChatList from './screens/ChatList';
 import ChatView from './screens/ChatView';
-import { Runs } from './screens/Runs';
+
 import { Groups } from './screens/Groups';
 import { Settings } from './screens/Settings';
 import Header from './components/Header';
@@ -16,9 +16,10 @@ import { PlusIcon, SearchIcon, UsersIcon } from './components/icons';
 
 const BotsScreen = lazy(() => import('./screens/Bots').then(module => ({ default: module.BotsScreen })));
 const Manage = lazy(() => import('./screens/Manage'));
+const Cronjobs = lazy(() => import('./screens/Cronjobs'));
 const Workspace = lazy(() => import('./screens/Workspace'));
 
-const TITLES: Record<ShellScreen, string> = { home:'Hermes', chats:'Chats', bots:'Bots', activity:'Activity', manage:'Manage', groups:'Groups', settings:'Settings', workspace:'Workspace', chat:'Chat' };
+const TITLES: Record<ShellScreen, string> = { home:'Hermes', chats:'Chats', bots:'Bots', activity:'Cronjobs', manage:'Manage', groups:'Groups', settings:'Settings', workspace:'Workspace', chat:'Chat' };
 const ROOTS: ShellScreen[] = ['home', 'chats', 'bots', 'activity', 'manage'];
 
 /** Contain chunk/render failures in the body, never the shared navigation or chat.
@@ -214,10 +215,10 @@ export default function App() {
         {connState !== 'open' && <div className="connection-notice" role="status">{connState === 'connecting' ? 'Reconnecting…' : 'Gateway unavailable.'} Lists may be out of date. Unsent drafts stay in this tab.</div>}
         <ScreenBoundary key={JSON.stringify([screen, gatewayId, gatewayUrl])} title={TITLES[screen]}>
           {screen === 'home' && <Home key={activeConn!.id} store={store} conn={activeConn!} client={client!} state={connState} onConnect={handleConnect} onOpenSession={openSessionFromHome} onManageDevices={() => destination('settings')} />}
-          {screen === 'chats' && <><button className="collection-link" onClick={() => destination('groups')}><UsersIcon size={20} /><span>Groups <small>Shared bot conversations</small></span><span aria-hidden="true">→</span></button><ChatList key={activeConn!.id} conn={activeConn!} client={client!} onOpenChat={session => openChat(session)} onDisconnect={disconnect} /></>}
+          {screen === 'chats' && <><button className="collection-link" onClick={() => destination('groups')}><UsersIcon size={20} /><span>Groups <small>Shared bot conversations</small></span><span aria-hidden="true">→</span></button><ChatList key={JSON.stringify([activeConn!.id,activeConn!.url])} conn={activeConn!} client={client!} onOpenChat={session => openChat(session)} onDisconnect={disconnect} /></>}
           {screen === 'bots' && <BotsScreen onOpenChat={openChatById} client={client!} conn={activeConn!} />}
           {screen === 'groups' && <Groups client={client!} conn={activeConn!} onOpenGroup={openGroup} />}
-          {screen === 'activity' && <Runs client={client!} conn={activeConn!} />}
+          {screen === 'activity' && <Cronjobs client={client!} conn={activeConn!} />}
           {screen === 'manage' && <Manage conn={activeConn!} client={client!} navigationViews={manageViews} onSettings={() => destination('settings')} onBots={() => destination('bots')} onWorkspace={() => destination('workspace')} />}
           {screen === 'settings' && <Settings conn={activeConn!} store={store} state={connState} onConnect={handleConnect} onDisconnect={disconnect} />}
         </ScreenBoundary>

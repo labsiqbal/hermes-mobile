@@ -997,24 +997,25 @@ export class HermesConnection {
 
   // ── Convenience RPC wrappers ─────────────────────────────────────────────
 
-  async listSessions(options: { limit?: number; title?: string } = {}): Promise<SessionSummary[]> {
+  async listSessions(options: { limit?: number; title?: string; profile?: string } = {}): Promise<SessionSummary[]> {
     const result = await this.rpc<{ sessions?: SessionSummary[] }>("session.list", {
       ...(options.limit ? { limit: options.limit } : {}),
       ...(options.title ? { title: options.title } : {}),
+      ...(options.profile ? { profile: options.profile } : {}),
     });
     return result.sessions ?? [];
   }
 
   /** Same authoritative project overview consumed by Hermes Desktop. */
-  async projectTree(previewLimit = 3): Promise<ProjectTreeResult> {
-    return await this.rpc<ProjectTreeResult>("projects.tree", { preview_limit: previewLimit });
+  async projectTree(previewLimit = 3, profile?: string): Promise<ProjectTreeResult> {
+    return await this.rpc<ProjectTreeResult>("projects.tree", { preview_limit: previewLimit, ...(profile ? {profile} : {}) });
   }
 
   /** Hydrated project lanes/sessions, fetched only when a project expands. */
-  async projectSessions(projectId: string): Promise<ProjectTreeItem | null> {
+  async projectSessions(projectId: string, profile?: string): Promise<ProjectTreeItem | null> {
     const result = await this.rpc<{ project?: ProjectTreeItem | null }>(
       "projects.project_sessions",
-      { project_id: projectId },
+      { project_id: projectId, ...(profile ? {profile} : {}) },
     );
     return result.project ?? null;
   }
@@ -1051,7 +1052,7 @@ export class HermesConnection {
       order: options.order ?? "latest",
       include_compacted: String(options.includeCompacted ?? true),
     });
-    if (options.profile && options.profile !== "default") query.set("profile", options.profile);
+    if (options.profile) query.set("profile", options.profile);
     const path = `/api/sessions/${encodeURIComponent(sessionId)}/messages?${query}`;
     const resp = await fetch(`${this.url}${path}`, {
       method: "GET",
@@ -1142,9 +1143,10 @@ export class HermesConnection {
    * chains that is the projected tip — deleting it orphans the chain root,
    * matching the TUI picker's semantics).
    */
-  async sessionDelete(sessionId: string): Promise<{ deleted?: string }> {
+  async sessionDelete(sessionId: string, profile?: string): Promise<{ deleted?: string }> {
     return await this.rpc<{ deleted?: string }>("session.delete", {
       session_id: sessionId,
+      ...(profile ? { profile } : {}),
     });
   }
 

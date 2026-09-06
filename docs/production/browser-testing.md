@@ -48,12 +48,12 @@ Fixtures do not supply UI state functions. `window.__productionFixture` controls
 | Journey | Observable gate | Acceptance |
 |---|---|---|
 | login-connect | Saved fictional device opens; ticket 401 → basic password login → ticket → gateway.ready; live client fetches sessions | PA-02/03 |
-| root-navigation | Exactly Home, Chats, Bots, Activity, Manage in order; real controls activate the named destination | PA-01/02 |
+| root-navigation | Exactly Home, Chats, Bots, Cronjobs, Manage in order; real controls activate the named destination | PA-01/02, CC-09 |
 | project-resume | Project expansion calls `projects.project_sessions`; existing session resumes through RPC and REST transcript | PA-02/03 |
 | workspace-history-draft | Long transcript scroll and unsent draft survive Files/Git/Terminal and preview trust review/cancel plus native Back/Forward; explicit gateway/profile/session context; no credential/draft objects in History | PA-04/05/06/08/11 |
 | bot-profile-draft | Canonical Bot Chat reuses its ID/profile; REST carries profile; project/bot drafts and selected models remain isolated, including browser history | PA-02/03/04 |
 | groups | Groups entered through Chats; shared registry room opens with restored log; long-press deletion shows confirmation, cancel does not write | PA-02/09 |
-| activity-runs | Existing tracked-run fallback and SSE details remain reachable under Activity | PA-02 |
+| activity-runs | Existing tracked-run fallback and SSE details remain reachable from Cronjobs; internal journey/route identifier stays compatible | PA-02, CC-09 |
 | manage-sections | Devices, Profiles, Capabilities (Skills/Toolsets/MCP), successful default-profile Memory/Schedules/Messaging reads, blocked noncurrent Memory/Messaging, post-read ownership changes and cron owner-echo rejection, Webhooks boundary, Kanban, Appearance/native boundaries, Workspace and Bots routes; profile-description review/cancel/confirmed write/readback; loading/empty/error/unsupported resource states | PA-07/08/09 |
 | chat-controls-approval | Attachment menu and model search; real client streamed events update transcript/stop state; approval cannot auto-respond and explicit Deny targets the request | PA-03/09 |
 | transport-states | Held roster response shows loading; explicit error, unsupported, empty and offline states; reconnect restores roster | PA-07 |

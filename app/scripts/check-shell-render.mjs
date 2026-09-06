@@ -40,8 +40,8 @@ for (const mode of ['login', 'home', 'chat']) {
   const markup = execFileSync(process.execPath, [bundle, mode], {encoding:'utf8'});
   assert.ok(markup.includes('Disconnected'), 'offline status is derived from actual ConnectionState'); assertions++;
   if (mode === 'home') {
-    const labels = [...markup.matchAll(/<span>(Home|Chats|Bots|Activity|Manage)<\/span>/g)].map(m => m[1]);
-    assert.deepEqual(labels, ['Home','Chats','Bots','Activity','Manage']); assertions++;
+    const labels = [...markup.matchAll(/<span>(Home|Chats|Bots|Cronjobs|Manage)<\/span>/g)].map(m => m[1]);
+    assert.deepEqual(labels, ['Home','Chats','Bots','Cronjobs','Manage']); assertions++;
   }
   const html = join(out, mode + '.html');
   writeFileSync(html, `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'"><style>${css}</style></head><body><div id="root">${markup}</div><script>

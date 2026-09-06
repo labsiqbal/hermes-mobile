@@ -94,7 +94,9 @@ components:
 
 Owner selected **A — Shell** for the production migration on 2026-09-06. Its acceptance contract is `docs/production/shell-a-spec.md`; the frozen reference is the `design/parity-shell/` artifact at review commit `46c10ad4c206fd04c5b13ed593deeb1c11e9aecc`. The earlier board in `design/index.html` is historical, not the current root-navigation contract.
 
-Five root destinations: **Home / Chats / Bots / Activity / Manage**. Groups belongs within Chats; Files, Git, Terminal boundaries and Preview belong to contextual Workspace tools, not extra permanent tabs. Management details preserve the selected gateway/profile. Browser Back restores the actual context, not just a route name; the conversation keeps its draft and scroll when returning from tools. A screen with an unsupported backend remains explicitly unavailable rather than populated with demonstration data.
+Five root destinations: **Home / Chats / Bots / Cronjobs / Manage**. HM-UX-04 replaces Activity's visible label and makes schedules the main surface; Runs remains reachable inside Cronjobs. Groups belongs within Chats; Files, Git, Terminal boundaries and Preview belong to contextual Workspace tools, not extra permanent tabs. Management details preserve the selected gateway/profile. Browser Back restores the actual context, not just a route name; the conversation keeps its draft and scroll when returning from tools. A screen with an unsupported backend remains explicitly unavailable rather than populated with demonstration data.
+
+The [HM-UX-04 contract](docs/production/chat-cron-acceptance.md) adds combined Project/Profile/Bot filters and local multi-project pins without membership or context changes. Session deletion is confirmed and scope-restricted. The compact model pill belongs above the composer, right-aligned, with a 44px touch target.
 
 ## Overview
 

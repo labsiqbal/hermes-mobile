@@ -180,7 +180,7 @@ function MemoryDetail({ manager, profile, id, label, source }: { manager: Manage
   const load = useCallback((signal: AbortSignal) => manager.memoryDetail(profile, id, signal), [manager, profile, id]);
   return <details className="manage-detail" onToggle={e => setOpen(e.currentTarget.open)}><summary><span>{label || id}</span><small>{source === 'profile' ? 'USER.md' : source === 'memory' ? 'MEMORY.md' : source}</small></summary>{open && <Resource load={load} label="Memory content">{content => <pre>{content}</pre>}</Resource>}</details>;
 }
-function SchedulesPanel({ manager, profile }: { manager: ManagementClient; profile: string }) {
+export function SchedulesPanel({ manager, profile }: { manager: ManagementClient; profile: string }) {
   const load = useCallback((signal: AbortSignal) => manager.schedules(profile, signal), [manager, profile]);
   return <><Resource load={load} label="Scheduled jobs">{jobs => jobs.length ? jobs.map(job => <details className="manage-detail" key={job.id}><summary><span>{job.name || job.id}</span><small>{display(job.state)}</small></summary><Values values={[["Job ID", job.id], ['Profile', job.profile], ['Schedule', display(job.schedule)], ['Enabled', yesNo(job.enabled)], ['Next run · server value', display(job.nextRun)], ['Last run · server value', display(job.lastRun)]]} /></details>) : <p>No scheduled jobs returned for this profile.</p>}</Resource><Notice>Times are shown exactly as reported by the gateway, not converted to the phone’s timezone. Create, edit, pause, resume, trigger, delete and delivery changes are unavailable in this release. No job is run by opening this view.</Notice></>;
 }
