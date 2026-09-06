@@ -3,8 +3,7 @@
  *
  * Membaca seluruh roster profil melalui `profiles.list`, sama seperti Desktop,
  * lalu merender nama, @handle, preview terbaru, dan status tiap bot.
- * Tapping a bot opens its canonical "Bot Chat" — the existing registry row
- * when one exists (fail-closed lookup), otherwise a freshly created one.
+ * Tapping a bot opens a normal private session owned by that profile.
  */
 
 import { useCallback, useEffect, useState } from "react";
@@ -49,7 +48,7 @@ export function BotsScreen({
   const client = clientProp ?? getActiveConnection();
   const [profiles, setProfiles] = useState<ProfileSummary[] | null>(null);
   const [error, setError] = useState("");
-  const /** profile name whose Bot Chat is being resolved/opened */
+  const /** profile name whose private session is being opened */
     [opening, setOpening] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
 
@@ -85,23 +84,21 @@ export function BotsScreen({
     setOpening(profile.name);
     setError("");
     try {
-      // Prefer the server-resolved canonical row from the roster payload;
-      // fall back to the exact-title registry lookup for older gateways
-      // without canonical_session. The lookup FAILS CLOSED (throws), so a
-      // transient blip can never mint a duplicate forever-chat.
-      let sessionId =
-        profile.canonical_session?.resolved_id || profile.canonical_session?.id || "";
-      let unpersisted = false;
-      if (!sessionId) {
-        const existing = await client.sessionFindBotChat(profile.name);
-        sessionId = existing?.resolved_id || existing?.id || "";
+      // No title: "Bot Chat" activates the server-side Bot Mode protocol.
+      // No cwd: gateway keeps its normal profile/default cwd contract.
+      const created = await client.createSession({ profile: profile.name });
+      const sessionId = created.stored_session_id || created.session_key || created.session_id;
+      if (typeof sessionId !== "string" || !sessionId.trim()) {
+        throw new Error("Private chat creation returned no session ID.");
       }
-      if (!sessionId) {
-        const created = await client.sessionCreateBotChat(profile.name);
-        sessionId = created.stored_session_id || created.session_key || created.session_id;
-        unpersisted = true;
+      if (created.info?.profile_name && created.info.profile_name !== profile.name) {
+        throw new Error("Private chat creation returned a different profile.");
       }
-      onOpenChat(sessionId, profile.name, unpersisted);
+      onOpenChat(
+        sessionId,
+        profile.name,
+        true,
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -219,7 +216,7 @@ function BotRow({
       <div className="rowcard-main">
         <div className="rowcard-title">{title}</div>
         <div className="rowcard-sub">
-          {opening ? "Opening Bot Chat…" : `@${handle}${preview ? ` · ${preview}` : ""}`}
+          {opening ? "Opening private chat…" : `@${handle}${preview ? ` · ${preview}` : ""}`}
         </div>
       </div>
       <span className="chevron">

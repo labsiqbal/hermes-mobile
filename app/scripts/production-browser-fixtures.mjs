@@ -6,6 +6,7 @@ export const FIXTURE = {
     { id: 'qa-recent-session', title: 'QA Recent conversation', preview: 'Fictional recent history', started_at: 1700000001, message_count: 2, source: 'cli', profile: 'default', cwd: '/fictional/qa-recent' },
   ],
   bot: { id: 'qa-bot-session', title: 'Bot Chat', preview: 'Fictional bot history', started_at: 1700000002, message_count: 2, source: 'bots', profile: 'qa-bot', cwd: '/fictional/qa-bot' },
+  privateBot: { id: 'qa-bot-private-session', title: 'Private chat', preview: '', started_at: 1700000003, message_count: 0, source: 'mobile', profile: 'qa-bot', cwd: '/fictional/qa-bot', unpersisted: true },
 };
 
 export function installProductionFixtures(fixture) {
@@ -40,7 +41,7 @@ export function installProductionFixtures(fixture) {
     { name: 'default', is_default: true, model: 'fixture-model', provider: 'fixture', skill_count: 1, ui_meta_revisions: { 'hermes-bots-groups': 1 }, ui_meta: { 'hermes-bots-groups': { version: 3, updatedAt: 1700000000000, rooms: { 'id:qa-room': room }, deleted: {} } } },
     { name: 'qa-bot', display_name: 'QA Fixture Bot', description: 'Fictional profile', model: 'fixture-model', provider: 'fixture', canonical_session: f.bot, ui_meta_revisions: {}, ui_meta: { 'hermes-bots': { displayName: 'QA Fixture Bot', handle: 'qa-bot' } } },
   ];
-  const history = sid => f.historyBySession?.[sid] ?? (sid === 'qa-created-session' ? control.createdHistory : [{ role: 'user', content: `QA restored question ${sid}` }, { role: 'assistant', content: (sid === 'qa-project-session' ? Array.from({length: 24}, (_, n) => `Fictional history paragraph ${n + 1}. This long transcript exercises real scroll restoration, without sending a prompt.`).join('\n\n') + '\n\n' : '') + `QA restored answer ${sid}` }]);
+  const history = sid => f.historyBySession?.[sid] ?? (sid === 'qa-created-session' ? control.createdHistory : sid === f.privateBot.id ? [] : [{ role: 'user', content: `QA restored question ${sid}` }, { role: 'assistant', content: (sid === 'qa-project-session' ? Array.from({length: 24}, (_, n) => `Fictional history paragraph ${n + 1}. This long transcript exercises real scroll restoration, without sending a prompt.`).join('\n\n') + '\n\n' : '') + `QA restored answer ${sid}` }]);
   const info = profile => ({ model: 'fixture-model', provider: 'fixture', profile_name: profile || 'default', cwd: profile === 'qa-bot' ? '/fictional/qa-bot' : '/fictional/qa-project', reasoning_effort: 'medium' });
   const sessionInfos = {};
   const project = { id: 'qa-project', label: 'QA Project', sessionCount: 1, previewSessions: [f.sessions[0]], repos: [{ id: 'qa-repo', label: 'QA Repo', groups: [{ id: 'qa-lane', label: 'fixture-branch', sessions: [f.sessions[0]] }] }] };
@@ -147,6 +148,10 @@ export function installProductionFixtures(fixture) {
       case 'session.create': {
         if (!(control.permits[method] > 0)) return fail('Creation without harness confirmation permit');
         control.permits[method]--;
+        if (params.profile === 'qa-bot') {
+          if ('title' in params || 'cwd' in params || params.hidden) return fail('Private bot chat must not request Bot Chat title, cwd, or hidden state');
+          return control.privateCreateResponse || { session_id: f.privateBot.id, stored_session_id: f.privateBot.id, info: info('qa-bot') };
+        }
         if (f.sessions.some(s => s.id === 'qa-created-session')) return fail('Duplicate session creation');
         const session = { ...f.sessions[1], id: 'qa-created-session', title: 'QA Created conversation', message_count: 0, unpersisted: true };
         f.sessions.push(session);
@@ -169,7 +174,7 @@ export function installProductionFixtures(fixture) {
         return { name: profile.name, description: profile.description || 'QA fictional description', soul: 'QA fictional role instructions', model: { default: profile.model, provider: profile.provider }, skills: control.empty.includes('profiles.describe') ? [] : [{ name: 'qa-skill', enabled: true, label: 'QA Fixture Skill', description: 'Fictional capability' }], toolsets: [], mcp_servers: [] };
       }
       case 'session.resume': {
-        const session = [...f.sessions, f.bot].find(s => s.id === params.session_id && s.profile === (params.profile || 'default'));
+        const session = [...f.sessions, f.bot, f.privateBot].find(s => s.id === params.session_id && s.profile === (params.profile || 'default'));
         if (!session) return fail(`Unknown resume session: ${params.session_id}`);
         if (session.profile === 'qa-bot' && params.profile !== 'qa-bot') return fail('Bot resume lost profile scope');
         return { session_id: session.id, stored_session_id: session.id, messages: params.omit_messages === true ? [] : history(session.id), info: sessionInfos[session.id] || info(session.profile), running: false, status: 'idle', message_count: history(session.id).length };

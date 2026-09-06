@@ -1,5 +1,5 @@
 import { Component, lazy, Suspense, useCallback, useEffect, useMemo, useState, useSyncExternalStore, type ComponentProps, type ReactNode } from 'react';
-import { BOT_CHAT_TITLE, ConnectionStore, HermesConnection, type SavedConnection, type SessionSummary } from './lib/hermes-client';
+import { ConnectionStore, HermesConnection, type SavedConnection, type SessionSummary } from './lib/hermes-client';
 import { ConversationViews, ManageViews, ShellNavigation, conversationKey, type ShellRoute, type ShellScreen } from './lib/shell-state';
 import { markActive, markInactive, recordSessionEvent } from './lib/active-sessions';
 import Home from './screens/Home';
@@ -160,7 +160,7 @@ export default function App() {
     go({screen:'chat', gateway:{id:conn.id, url:conn.url}, profile:session.profile || 'default', conversation:{id:session.id, session}, returnTo:'home'});
   }
   function openChatById(sessionId: string, profile: string, unpersisted = false) {
-    openChat({id:sessionId, title:BOT_CHAT_TITLE, preview:'', started_at:0, message_count:0, source:'bots', profile, unpersisted}, 'bots');
+    openChat({id:sessionId, title:'', preview:'', started_at:0, message_count:0, source:'mobile', profile, unpersisted}, 'bots');
   }
 
   const isRoot = ROOTS.includes(screen);
