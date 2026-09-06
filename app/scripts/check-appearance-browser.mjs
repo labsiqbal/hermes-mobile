@@ -77,8 +77,9 @@ try {
       for(const [section,expected,detail] of [
         ['Profiles','Profiles on this gateway','QA Fixture Bot'],['Capabilities','QA Fixture Skill'],['Memory','QA Fixture Memory','QA Fixture Memory'],['Schedules & cron','QA Fixture Schedule','QA Fixture Schedule'],['Messaging','QA Fixture Messaging','QA Fixture Messaging'],['Webhooks','No webhook request was sent'],['Kanban','QA Fixture Board','QA Fixture Board'],['Appearance & preferences','Model and reasoning controls'],['Native capabilities','SSH & cloud lifecycle'],
       ]) {
-        await browser.evaluate(`(()=>{const e=document.querySelector('select[aria-label="Management profile"]');e.value='default';e.dispatchEvent(new Event('change',{bubbles:true}));})()`); await browser.settle();
-        await j.tap(section,'.manage',false); await j.text(expected); if(detail) await j.tap(detail,'.manage',false);
+        await j.tap(section,'.manage',false);
+        if(['Capabilities','Memory','Schedules & cron','Messaging'].includes(section)) { await browser.evaluate(`(()=>{const e=document.querySelector('select[aria-label="Management profile"]');e.value='default';e.dispatchEvent(new Event('change',{bubbles:true}));})()`); await browser.settle(); }
+        await j.text(expected); if(detail) await j.tap(detail,'.manage',false);
         await audit(`${tag}-Manage-${section.replaceAll(/[^a-z]+/gi,'-')}`,detailShots);
         if(section==='Profiles') { await j.type('textarea[aria-label="Profile description"]','Fictional unsaved review'); await j.tap('Review description change'); await j.text('Confirm description change'); await audit(`${tag}-profile-review`,detailShots); await j.tap('Cancel','dialog'); }
         await j.tap('Back to Manage');

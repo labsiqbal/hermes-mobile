@@ -442,6 +442,8 @@ body {
   border-radius: var(--r-sheet) var(--r-sheet) 0 0;
   padding: var(--space-10) var(--space-18) var(--space-22);
   z-index: 41;
+  overflow-y: auto;
+  padding-bottom: max(var(--space-22), env(safe-area-inset-bottom));
 }
 
 .sheet-grab {
@@ -465,9 +467,13 @@ body {
 }
 
 .sheet-actions {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-10);
 }
+.group-create-actions { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: var(--space-8); }
+.group-create-actions > button, .sheet-actions > button { min-width: 0; min-height: 44px; overflow-wrap: anywhere; }
+.group-member-remove { display: inline-grid; place-items: center; vertical-align: middle; padding: 0; border: 0; background: transparent; color: inherit; cursor: pointer; width: 44px; height: 44px; }
 
 /* Shell A: in-flow title/context header. Content never hides under chrome. */
 :root { --shell-header-h: var(--space-96); }

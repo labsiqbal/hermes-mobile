@@ -60,7 +60,7 @@ try {
   await browser.open(host.origin+'/');const j=new Journeys(browser,report,output);
   const check=async(name,fn)=>{try {await fn();report.checks.push({name,status:'passed'});}catch(e){report.checks.push({name,status:'failed',error:e.stack});}};
   const loaded=()=>browser.waitFor(`document.querySelector('[aria-label="Refresh Chats"]')?.disabled===false`);
-  const select=async(label,value)=>{await browser.evaluate(`(()=>{const e=document.querySelector('select[aria-label='+${q(JSON.stringify(label))}+']');if(!e || ![...e.options].some(o=>o.value===${q(value)}))throw Error('Missing filter option');e.value=${q(value)};e.dispatchEvent(new Event('change',{bubbles:true}));})()`);await browser.settle();};
+  const select=(label,value)=>j.selectChatFilter(label,value);
   const rows=()=>browser.evaluate(`[...document.querySelectorAll('.chat-session-row')].map(e=>[e.dataset.profile,e.dataset.sessionId])`);
   await j.tap(fixture.gateway.label,'body',false);await j.root('Chats');await loaded();
   await check('native default ManagementClient dispatches real GETs and reaches project tree',async()=>{
@@ -74,23 +74,14 @@ try {
   for(const width of [320,360,390,430]) {
     await browser.viewport(width,844);
     await check(`two compact 44px filters; truthful global failure at ${width}`,async()=>{
+      await j.tap('Filter chats');
       const geometry=await browser.evaluate(`(()=>{const t=document.querySelector('.chat-filters'),r=t.getBoundingClientRect();return {width:innerWidth,height:r.height,selects:[...t.querySelectorAll('select')].map(e=>e.getAttribute('aria-label')),targets:[...t.querySelectorAll('select,button')].map(e=>{const a=e.getBoundingClientRect();return {left:a.left,right:a.right,width:a.width,height:a.height,bottom:a.bottom}})}})()`);
       assert.equal(geometry.width,width);assert.deepEqual(geometry.selects,['Project filter','Profile filter']);
-      // HM-UX-09: narrow controls reflow rather than sacrifice readable labels
-      // to the inset arrow. Preserve the original one-row bound elsewhere.
-      const [project,profile,refresh]=geometry.targets;
-      if(width<=360) {
-        assert.ok(geometry.height<=140,JSON.stringify(geometry));
-        assert.ok(project.bottom<=profile.bottom-profile.height,JSON.stringify(geometry));
-        assert.equal(project.left,profile.left);
-        assert.equal(project.right,refresh.right);
-        assert.equal(profile.bottom,refresh.bottom);
-      } else {
-        assert.ok(geometry.height<=68,JSON.stringify(geometry));
-        assert.equal(project.bottom,profile.bottom);
-        assert.equal(profile.bottom,refresh.bottom);
-      }
+      const [project,profile]=geometry.targets;
+      assert.ok(project.bottom<=profile.bottom-profile.height,JSON.stringify(geometry));
+      assert.equal(project.left,profile.left);assert.equal(project.right,profile.right);
       assert.ok(geometry.targets.every(r=>r.height>=44 && r.width>=44 && r.left>=0 && r.right<=width));
+      await j.tap('Done');
       browser.readMode='failed';await j.tap('Refresh Chats');await loaded();
       assert.equal(await browser.evaluate(`document.querySelectorAll('.chat-read-status[role="status"]').length`),1);
       assert.equal(await browser.evaluate(`document.querySelectorAll('.chatlist [role="alert"]').length`),0);
@@ -148,9 +139,9 @@ try {
   await check('refresh preserves available filters, resets unavailable project instead of hiding retained rows',async()=>{
     await select('Project filter',JSON.stringify(['default','qa-project']));
     browser.readMode='partial';await j.tap('Refresh Chats');await loaded();
-    assert.equal(await browser.evaluate(`document.querySelector('[aria-label="Project filter"]').value`),JSON.stringify(['default','qa-project']));
+    await j.tap('Filter chats');assert.equal(await browser.evaluate(`document.querySelector('[aria-label="Project filter"]').value`),JSON.stringify(['default','qa-project']));await j.tap('Done');
     browser.readMode='failed';await j.tap('Refresh Chats');await loaded();
-    assert.equal(await browser.evaluate(`document.querySelector('[aria-label="Project filter"]').value`),'');
+    await j.tap('Filter chats');assert.equal(await browser.evaluate(`document.querySelector('[aria-label="Project filter"]').value`),'');await j.tap('Done');
     assert.ok((await rows()).some(([,id])=>id==='qa-project-session'));
     browser.readMode='ok';await j.tap('Retry');await loaded();
   });
