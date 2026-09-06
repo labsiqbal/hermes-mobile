@@ -82,7 +82,7 @@ try {
   currentProfile = 'research';
   for (const [http, code] of [[401, 'auth'], [403, 'auth'], [404, 'unsupported'], [500, 'network']]) {
     status = http;
-    await assert.rejects(rest.schedules('research'), error => error.code === code && error.outcome === 'none' && error.message.includes('No state changed.'));
+    await assert.rejects(rest.schedules('research'), error => error.code === code && error.outcome === 'none' && error.status === http && error.operation === 'GET /api/cron/jobs' && !error.message.includes('No state changed.'));
   }
   status = 200;
   responseBody = { platforms: [{ id: 'telegram', name: 'Telegram', enabled: true, configured: true, state: 'connected', gateway_running: true, env_vars: [{ key: 'DO_NOT_RENDER', redacted_value: 'hidden' }], error_message: 'private diagnostic', home_channel: 'private destination' }] };
@@ -251,7 +251,7 @@ async function browserCheck() {
       check(requests.some(r=>r.url.includes('board=work')),'board must be explicit');
       await click('Back to Manage');await click('Devices & gatewaysSaved connections and authentication');await click('Bots & routinesOpen the existing bot workspace');await click('Workspace toolsFiles and review in their conversation context');
       check(settings===1&&bots===1&&workspace===1,'shared-shell callbacks remain functional');
-      failRead=true;await click('Schedules & cronProfile-owned jobs, cadence and next run');check(content().includes('No state changed.'),'401 must show a no-change error');
+      failRead=true;await click('Schedules & cronProfile-owned jobs, cadence and next run');check(content().includes('Authentication is required.') && !content().includes('No state changed.'),'401 read must show authentication guidance, not mutation copy');
       failRead=false;await click('Back to Manage');
       check(document.documentElement.scrollWidth<=innerWidth,'no horizontal overflow');
       check([...document.querySelectorAll('.manage button,.manage select')].every(e=>e.getBoundingClientRect().height>=44),'44px controls');

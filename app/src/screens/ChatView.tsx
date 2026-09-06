@@ -1,3 +1,4 @@
+import { bindTranscriptAppearance, captureTranscriptAnchor, restoreTranscriptScroll } from "../lib/appearance-transcript";
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ChangeEvent, type ReactNode, type SyntheticEvent } from "react";
 import "./chat-view.css";
 import { acceptLiveEvent, allowSmoothAutoScroll, freshHistoryMessages, historyMessageKey, preservedScrollTop, resumeCatchupEvents, shouldFetchSessionHistory } from "./chat-resume-utils";
@@ -347,18 +348,6 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   const sessionReadyRef = useRef(onSessionReady);
   const readySummaryRef = useRef<SessionSummary | null>(null);
   useLayoutEffect(() => { sessionReadyRef.current = onSessionReady; }, [onSessionReady]);
-  // Apply saved font size on mount
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("hermes-mobile.font-size");
-      if (saved) {
-        document.documentElement.style.setProperty("--chat-font-size", `${saved}px`);
-      }
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
   const isGroup = Boolean(group?.roomId);
   const [liveSid, setLiveSid] = useState("");
   const [info, setInfo] = useState<SessionInfo | undefined>();
@@ -873,7 +862,8 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
     const el = bodyRef.current;
     if (!el) return;
     const saved = savedView.scroll;
-    el.scrollTop = saved && !saved.atBottom ? saved.top : el.scrollHeight;
+    if (saved) restoreTranscriptScroll(el, saved);
+    else el.scrollTop = el.scrollHeight;
     stickRef.current = saved?.atBottom ?? true;
     lastCountRef.current = items.length;
     setStuck(!stickRef.current);
@@ -924,10 +914,15 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
     const el = bodyRef.current;
     const saved = views.read(viewKey).scroll;
     if (!el || !saved) return;
-    el.scrollTop = saved.atBottom ? el.scrollHeight : saved.top;
+    restoreTranscriptScroll(el, saved);
     stickRef.current = saved.atBottom;
     setStuck(!saved.atBottom);
   }, [visible, initializing, views, viewKey]);
+
+  useEffect(() => {
+    const body = bodyRef.current, input = inputRef.current;
+    if (body && input) return bindTranscriptAppearance(body, input);
+  }, []);
 
   function handleBodyScroll() {
     const el = bodyRef.current;
@@ -941,7 +936,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
       settleTimerRef.current = null;
     }
     stickRef.current = near;
-    views.update(viewKey, {scroll:{top:el.scrollTop, atBottom:near}});
+    views.update(viewKey, {scroll:{top:el.scrollTop, atBottom:near, anchor:captureTranscriptAnchor(el)}});
     setStuck(!near);
   }
 
@@ -1481,6 +1476,8 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
         </div>
       )}
 
+      {onWorkspace && <nav className="conversation-tools" aria-label="Conversation tools"><button onClick={onWorkspace} disabled={!liveSid || initializing}><FileIcon size={18} />Workspace · files &amp; Git</button></nav>}
+
       <div
         className={`body${transcriptReady ? "" : " transcript-hidden"}`}
         ref={bodyRef}
@@ -1568,12 +1565,11 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
         )}
         {initializing && state === "open" && <div className="composer-status" role="status">Restoring conversation…</div>}
         {state !== 'open' && <div className="composer-status" role="status">{state === 'connecting' ? 'Reconnecting…' : 'Gateway unavailable.'} Your draft stays here; sending is disabled.</div>}
-        {onWorkspace && <nav className="conversation-tools" aria-label="Conversation tools"><button onClick={onWorkspace} disabled={!liveSid || initializing}><FileIcon size={18} />Workspace · files &amp; Git</button></nav>}
         {composerStatus && (
           <div className="composer-status" role="status">{composerStatus}</div>
         )}
         {attachError && (
-          <div className="error-line" style={{ marginBottom: 6 }}>{attachError}</div>
+          <div className="error-line" style={{ marginBottom: "var(--space-6)" }}>{attachError}</div>
         )}
         {attachments && attachments.length > 0 && (
           <div className="attach-chips">
@@ -1619,32 +1615,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
             </button>
           </div>
         )}
-        {!isGroup && liveSid && (
-          <div className="model-row">
-            <button type="button" className="model-pill" disabled={state !== "open"} onClick={() => void openModelSheet()}>
-              <span className="model-pill-name">
-                {(info?.model || catalog?.model || "model").split("/").pop()}
-                {info?.reasoning_effort && info.reasoning_effort !== "none"
-                  ? ` · ${info.reasoning_effort.slice(0, 1).toUpperCase()}${info.reasoning_effort.slice(1, 3)}`
-                  : ""}
-              </span>
-              <ChevronDownIcon size={13} />
-            </button>
-          </div>
-        )}
         <div className="composer-pill">
-          {!isGroup && (
-            <button
-              type="button"
-              className="composer-plus"
-              disabled={state !== "open" || !liveSid || attachBusy}
-              onClick={() => setAttachMenuOpen((v) => !v)}
-              aria-label="Attach"
-              title="Attach"
-            >
-              {attachBusy ? "…" : <PlusIcon size={18} />}
-            </button>
-          )}
           <textarea
             ref={inputRef}
             className="composer-input"
@@ -1676,39 +1647,68 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
             }}
             onFocus={() => setAttachMenuOpen(false)}
           />
-          {streaming && !isGroup && input.trim() && (
-            <button
-              className="composer-action composer-send"
-              disabled={state !== "open" || runActionBusy}
-              title="Steer"
-              aria-label="Steer active run"
-              onClick={() => void steer()}
-            >
-              <ArrowUpIcon size={18} />
-            </button>
-          )}
-          {streaming && !isGroup ? (
-            <button
-              className="composer-action composer-stop"
-              disabled={state !== "open" || runActionBusy}
-              title="Stop"
-              aria-label="Stop active run"
-              onClick={() => void stop()}
-            >
-              <StopIcon size={16} />
-            </button>
-          ) : (
-            <button
-              className="composer-action composer-send"
-              aria-label="Send message"
-              disabled={
-                state !== "open" || (isGroup ? !groupRoom || groupBusy || !input.trim() : !liveSid || !input.trim())
-              }
-              onClick={() => void send()}
-            >
-              <ArrowUpIcon size={18} />
-            </button>
-          )}
+          <div className="composer-controls">
+            {!isGroup && (
+              <button
+                type="button"
+                className="composer-plus"
+                disabled={state !== "open" || !liveSid || attachBusy}
+                onClick={() => setAttachMenuOpen((v) => !v)}
+                aria-label="Attach"
+                title="Attach"
+              >
+                {attachBusy ? "…" : <PlusIcon size={18} />}
+              </button>
+            )}
+            {!isGroup && liveSid && (
+              <div className="model-row">
+                <button type="button" className="model-pill" disabled={state !== "open"} onClick={() => void openModelSheet()}>
+                  <span className="model-pill-name">
+                    {(info?.model || catalog?.model || "model").split("/").pop()}
+                    {info?.reasoning_effort && info.reasoning_effort !== "none"
+                      ? ` · ${info.reasoning_effort.slice(0, 1).toUpperCase()}${info.reasoning_effort.slice(1, 3)}`
+                      : ""}
+                  </span>
+                  <ChevronDownIcon size={13} />
+                </button>
+              </div>
+            )}
+            <div className="composer-actions">
+            {streaming && !isGroup && input.trim() && (
+              <button
+                className="composer-action composer-send"
+                disabled={state !== "open" || runActionBusy}
+                title="Steer"
+                aria-label="Steer active run"
+                onClick={() => void steer()}
+              >
+                <ArrowUpIcon size={18} />
+              </button>
+            )}
+            {streaming && !isGroup ? (
+              <button
+                className="composer-action composer-stop"
+                disabled={state !== "open" || runActionBusy}
+                title="Stop"
+                aria-label="Stop active run"
+                onClick={() => void stop()}
+              >
+                <StopIcon size={16} />
+              </button>
+            ) : (
+              <button
+                className="composer-action composer-send"
+                aria-label="Send message"
+                disabled={
+                  state !== "open" || (isGroup ? !groupRoom || groupBusy || !input.trim() : !liveSid || !input.trim())
+                }
+                onClick={() => void send()}
+              >
+                <ArrowUpIcon size={18} />
+              </button>
+            )}
+            </div>
+          </div>
         </div>
         <input
           ref={imageInputRef}
@@ -1810,7 +1810,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
             )}
             <button
               className="btn btn-ghost"
-              style={{ marginTop: 12 }}
+              style={{ marginTop: "var(--space-12)" }}
               onClick={() => setModelSheetOpen(false)}
             >
               Close
@@ -1827,11 +1827,11 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
           />
           <div className={`sheet sheet-anim${sheetClosing ? " sheet-out" : ""}`}>
             <div className="sheet-grab" />
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "var(--space-8)" }}>
               <span style={{ color: "var(--amber)", fontWeight: 700 }}>!</span>
-              <div style={{ fontSize: 14, fontWeight: 700 }}>Approval needed</div>
+              <div style={{ fontSize: "var(--text-14)", fontWeight: 700 }}>Approval needed</div>
             </div>
-            <div className="rowcard-sub" style={{ marginTop: 4 }}>
+            <div className="rowcard-sub" style={{ marginTop: "var(--space-4)" }}>
               on <strong>{conn.label}</strong>
               {shownApproval.description ? ` — ${shownApproval.description}` : ""}
             </div>

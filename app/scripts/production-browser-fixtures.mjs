@@ -55,7 +55,8 @@ export function installProductionFixtures(fixture) {
   const fail = message => { violations.push(message); throw new Error(message); };
   const wait = method => !control.hold.includes(method) ? Promise.resolve() : new Promise(resolve => held.set(method, [...(held.get(method) || []), resolve]));
   const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
-  window.fetch = async (input, init = {}) => {
+  // Native transport regression uses CDP interception below fetch instead.
+  if (!f.nativeFetch) window.fetch = async (input, init = {}) => {
     const url = new URL(typeof input === 'string' ? input : input.url, location.href);
     const method = (init.method || input.method || 'GET').toUpperCase();
     const route = `${method} ${url.pathname}`;
@@ -215,7 +216,7 @@ export function installProductionFixtures(fixture) {
     readyState = 0; bufferedAmount = 0; extensions = ''; protocol = ''; binaryType = 'blob';
     constructor(url) {
       super(); this.url = String(url);
-      const expected = f.gateway.url.replace('https:', 'wss:') + '/api/ws?ticket=FICTIONAL-ONE-USE-TICKET';
+      const expected = f.gateway.url.replace(/^http/, 'ws') + '/api/ws?ticket=FICTIONAL-ONE-USE-TICKET';
       if (this.url !== expected) fail('Unexpected WebSocket target');
       trace.push({ transport: 'websocket', event: 'constructed', url: this.url }); sockets.push(this);
       setTimeout(() => { if (this.readyState !== 0) return; this.readyState = 1; this.dispatchEvent(new Event('open')); this.frame({ method: 'event', params: { type: 'gateway.ready', session_id: '', payload: { replay_epoch: 'qa-epoch' } } }); }, 0);

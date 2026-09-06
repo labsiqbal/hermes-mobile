@@ -1,3 +1,4 @@
+import type { TranscriptAnchor } from "./appearance-transcript";
 import type { ConnectionState, SavedConnection, SessionSummary } from './hermes-client';
 
 export const ROOT_DESTINATIONS = [
@@ -109,7 +110,7 @@ export class ManageViews {
 
 export interface ConversationView {
   draft: string;
-  scroll?: { top: number; atBottom: boolean };
+  scroll?: { top: number; atBottom: boolean; anchor?: TranscriptAnchor };
   attachments?: { kind: 'image' | 'file'; name: string; path: string }[];
 }
 /** In-memory only: drafts never leak into browser history or durable credential storage. */

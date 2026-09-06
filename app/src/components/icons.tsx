@@ -36,7 +36,8 @@ export interface IconProps {
 
 function wrap(Icon: LucideIcon, size = 18) {
   return function AppIcon(props: IconProps) {
-    return <Icon size={props.size ?? size} strokeWidth={1.8} aria-hidden="true" />;
+    const dimension = `max(12px, calc(${props.size ?? size}px * var(--ui-scale, 1)))`;
+    return <Icon size={props.size ?? size} style={{ width: dimension, height: dimension, flexShrink: 0 }} strokeWidth={1.8} aria-hidden="true" />;
   };
 }
 

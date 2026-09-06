@@ -10,10 +10,18 @@ export class ManagementError extends Error {
   readonly code: ManagementErrorCode;
   readonly outcome: 'none' | 'unknown';
   readonly status?: number;
-  constructor(code: ManagementErrorCode, message: string, outcome: 'none' | 'unknown' = 'none', status?: number) {
-    super(`${message} ${outcome === 'none' ? 'No state changed.' : 'The write outcome is unknown. Refresh before trying again.'}`);
+  readonly operation?: string;
+  constructor(code: ManagementErrorCode, message: string, outcome: 'none' | 'unknown' = 'none', status?: number, operation?: string) {
+    super(operation ? message : `${message} ${outcome === 'none' ? 'No state changed.' : 'The write outcome is unknown. Refresh before trying again.'}`);
     this.name = 'ManagementError';
-    this.code = code; this.outcome = outcome; this.status = status;
+    this.code = code; this.outcome = outcome; this.status = status; this.operation = operation;
+  }
+}
+export class SessionReadError extends ManagementError {
+  readonly sessions: SessionSummary[];
+  constructor(error: ManagementError, sessions: SessionSummary[]) {
+    super(error.code,error.message.replace(/ No state changed\.$/, ''),'none',error.status,error.operation || 'GET /api/sessions');
+    this.sessions = sessions; // Already projected, owner-validated complete pages only.
   }
 }
 export interface ManagedProfile {
@@ -95,7 +103,8 @@ export class ManagementClient {
   private readonly gateway: Gateway;
   private readonly fetcher: typeof fetch;
   private readonly timeoutMs: number;
-  constructor(gateway: Gateway, fetcher: typeof fetch = globalThis.fetch, timeoutMs = 15_000) {
+  // Browser fetch requires the Window receiver; injected transports keep their contract.
+  constructor(gateway: Gateway, fetcher: typeof fetch = globalThis.fetch.bind(globalThis), timeoutMs = 15_000) {
     this.gateway = gateway; this.fetcher = fetcher; this.timeoutMs = timeoutMs;
     let url: URL;
     try { url = new URL(gateway.url); } catch { throw new ManagementError('scope', 'Invalid gateway address.'); }
@@ -173,12 +182,14 @@ export class ManagementClient {
     if (signal?.aborted) throw new ManagementError('aborted', 'Request cancelled.');
     signal?.addEventListener('abort', abort, { once: true });
     const timer = setTimeout(abort, this.timeoutMs);
+    let responseStatus: number | undefined;
     try {
       return await this.bounded(async () => {
         const response = await this.fetcher(`${this.base}${path}`, {
           method: 'GET', credentials: 'include', headers: { Accept: 'application/json' },
           signal: controller.signal, cache: 'no-store', redirect: 'error',
         });
+        responseStatus = response.status;
         if (!response.ok) {
           const code = response.status === 401 || response.status === 403 ? 'auth' : response.status === 404 ? 'unsupported' : 'network';
           throw new ManagementError(code, code === 'auth' ? 'Authentication is required. Reconnect through Settings.' : code === 'unsupported' ? 'This endpoint or profile is unavailable on this gateway.' : 'The gateway refused this read.', 'none', response.status);
@@ -186,8 +197,11 @@ export class ManagementClient {
         return readJson(response, controller.signal);
       }, signal);
     } catch (e) {
-      if (controller.signal.aborted && !signal?.aborted) throw new ManagementError('timeout', 'The gateway did not respond in time.');
-      throw errorFor(e);
+      const mapped = controller.signal.aborted && !signal?.aborted
+        ? new ManagementError('timeout', 'The gateway did not respond in time.') : errorFor(e);
+      // Fixed route identity only: no query, origin, session ID, raw exception or body.
+      const operation = `GET ${path.split('?')[0].replace(/^(\/api\/sessions)\/[^/]+$/, '$1/:id')}`;
+      throw new ManagementError(mapped.code, mapped.message.replace(/ No state changed\.$/, ''), 'none', mapped.status ?? responseStatus, operation);
     } finally { clearTimeout(timer); signal?.removeEventListener('abort', abort); controller.abort(); }
   }
   private async scopedGet(route: string, profile: string, params: Record<string, string> = {}, signal?: AbortSignal): Promise<unknown> {
@@ -226,26 +240,30 @@ export class ManagementClient {
     const rows: SessionSummary[] = [];
     let total: number | null = null;
     const seen = new Set<string>();
-    for (let offset=0; offset<5000; offset+=100) {
-      const query=new URLSearchParams({profile,limit:'100',offset:String(offset),order:'recent',archived:'exclude',full:'false'});
-      const page=object(await this.get(`/api/sessions?${query}`,signal));
-      if (count(page.total)===null || page.limit!==100 || page.offset!==offset || (total!==null && page.total!==total)) throw new ManagementError('invalid','The session list changed or pagination was invalid. Refresh Chats.');
-      total=page.total as number;
-      const batch=list(page.sessions);
-      if (batch.filter(item=>object(item).pinned!==true).length>100) throw new ManagementError('invalid','The session page exceeded its unpinned row limit.');
-      for (const item of batch) {
-        const row=object(item), id=required(row.id);
-        if(row.profile!==profile) throw new ManagementError('scope','Session ownership did not match. Results were not displayed.');
-        if(seen.has(id)) {
-          if(row.pinned===true) continue;
-          throw new ManagementError('invalid','An unpinned session repeated across pages. Refresh Chats.');
+    try {
+      for (let offset=0; offset<5000; offset+=100) {
+        const query=new URLSearchParams({profile,limit:'100',offset:String(offset),order:'recent',archived:'exclude',full:'false'});
+        const page=object(await this.get(`/api/sessions?${query}`,signal));
+        if (count(page.total)===null || page.limit!==100 || page.offset!==offset || (total!==null && page.total!==total)) throw new ManagementError('invalid','The session list changed or pagination was invalid. Refresh Chats.');
+        total=page.total as number;
+        const batch=list(page.sessions);
+        if (batch.filter(item=>object(item).pinned!==true).length>100) throw new ManagementError('invalid','The session page exceeded its unpinned row limit.');
+        const pageRows: SessionSummary[] = [];
+        for (const item of batch) {
+          const row=object(item), id=required(row.id);
+          if(row.profile!==profile) throw new ManagementError('scope','Session ownership did not match. The unverified page was not displayed.');
+          if(seen.has(id)) {
+            if(row.pinned===true) continue;
+            throw new ManagementError('invalid','An unpinned session repeated across pages. Refresh Chats.');
+          }
+          seen.add(id);
+          pageRows.push({id,profile,title:text(row.title),preview:text(row.preview),source:text(row.source),started_at:typeof row.started_at==='number' ? row.started_at : 0,message_count:count(row.message_count) || 0,resolved_id:text(row.resolved_id) || undefined,cwd:text(row.cwd) || null,git_repo_root:text(row.git_repo_root) || null,git_branch:text(row.git_branch) || null});
         }
-        seen.add(id);
-        rows.push({id,profile,title:text(row.title),preview:text(row.preview),source:text(row.source),started_at:typeof row.started_at==='number' ? row.started_at : 0,message_count:count(row.message_count) || 0,resolved_id:text(row.resolved_id) || undefined,cwd:text(row.cwd) || null,git_repo_root:text(row.git_repo_root) || null,git_branch:text(row.git_branch) || null});
+        rows.push(...pageRows);
+        if(offset+100>=total) return rows;
       }
-      if(offset+100>=total) return rows;
-    }
-    throw new ManagementError('unsupported','This profile exceeds the 5,000-session mobile read limit. Results were not displayed.');
+      throw new ManagementError('unsupported','This profile exceeds the 5,000-session mobile read limit. Only verified pages are available.');
+    } catch(error) { throw new SessionReadError(errorFor(error),rows); }
   }
   /** Project the full detail response immediately; never expose config or system prompts. */
   async sessionIdentity(profile:string,id:string,signal?:AbortSignal): Promise<{id:string;profile:string}> {

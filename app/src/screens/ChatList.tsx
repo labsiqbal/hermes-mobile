@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Pin, Trash2 } from 'lucide-react';
+import { Pin, Trash2, RefreshCw } from 'lucide-react';
 import type { HermesConnection, ProjectTreeItem, SavedConnection, SessionSummary } from '../lib/hermes-client';
-import { ChatSource } from '../lib/chat-source';
+import { ChatSource, chatReadFailure, type ChatReadFailure } from '../lib/chat-source';
 import { chatKey, uniqueChats, orderedProjects, preferenceKey, readIds, type BrowserChat } from '../lib/chat-browser';
 import { formatSessionTime } from './chat-list-utils';
 import { botTint } from './bots-utils';
@@ -22,6 +22,7 @@ export default function ChatList({conn,client,onOpenChat}: Props) {
   const [data,setData] = useState<Snapshot>();
   const [loading,setLoading] = useState(true);
   const [error,setError] = useState('');
+  const [loadError,setLoadError] = useState<ChatReadFailure | null>(null);
   const [status,setStatus] = useState('');
   const [hydrated,setHydrated] = useState<Record<string,ProjectTreeItem>>({});
   const [projectErrors,setProjectErrors] = useState<Record<string,string>>({});
@@ -34,14 +35,20 @@ export default function ChatList({conn,client,onOpenChat}: Props) {
   const [recentExpanded,setRecentExpanded] = useState(true);
   const [projectFilter,setProjectFilter] = useState('');
   const [profileFilter,setProfileFilter] = useState('');
-  const [typeFilter,setTypeFilter] = useState('');
   const [pendingDelete,setPendingDelete] = useState<BrowserChat | null>(null);
 
   const load = useCallback(async () => {
     const version = ++generation.current;
-    requests.current.clear(); setPendingDelete(null); setLoading(true); setHydrated({}); setProjectErrors({}); setError('');
-    try { const next = await source.load(); if (version===generation.current) setData(next); }
-    catch (err) { if (version===generation.current) { setData(undefined); setError(err instanceof Error ? err.message : 'Chats could not be loaded.'); } }
+    requests.current.clear(); setPendingDelete(null); setLoading(true); setProjectErrors({}); setError(''); setLoadError(null);
+    try {
+      const next = await source.load();
+      if (version===generation.current) {
+        setHydrated({});setData(next);
+        setProjectFilter(selected=>!selected || selected==='recent' || next.projects.some(project=>!project.isNoProject && project.id===selected) ? selected : '');
+        setProfileFilter(selected=>!selected || next.profiles.some(profile=>profile.name===selected) ? selected : '');
+      }
+    }
+    catch (err) { if (version===generation.current) setLoadError(chatReadFailure(err,'Gateway','RPC profiles.list')); }
     finally { if (version===generation.current) setLoading(false); }
   },[source]);
   useEffect(()=>{
@@ -57,7 +64,7 @@ export default function ChatList({conn,client,onOpenChat}: Props) {
   const [,tick]=useState(0);
   useEffect(()=>{const timer=setInterval(()=>tick(value=>value+1),2000);return ()=>clearInterval(timer);},[]);
   useEffect(()=>{
-    if (!data || loading) return;
+    if (!data || loading || loadError) return;
     for (const project of data.projects) {
       if (project.isNoProject || !project.sessionCount || !expanded.has(project.id) || hydrated[project.id] || projectErrors[project.id] || requests.current.has(project.id)) continue;
       requests.current.add(project.id);
@@ -67,7 +74,7 @@ export default function ChatList({conn,client,onOpenChat}: Props) {
       },err=>{if(version===generation.current) setProjectErrors(previous=>({...previous,[project.id]:err instanceof Error ? err.message : 'Could not load project sessions.'}));})
         .finally(()=>{if(version===generation.current) requests.current.delete(project.id);});
     }
-  },[data,loading,expanded,hydrated,projectErrors,source]);
+  },[data,loading,loadError,expanded,hydrated,projectErrors,source]);
 
   function persist(key:string,next:Set<string>) { try { localStorage.setItem(key,JSON.stringify([...next])); } catch { setError('This browser could not save project display preferences.'); } }
   function togglePin(id:string) { const next=new Set(pins); if(next.has(id)) next.delete(id); else next.add(id); setPins(next); persist(pinsKey,next); }
@@ -76,7 +83,7 @@ export default function ChatList({conn,client,onOpenChat}: Props) {
     const bot=data?.bots.find(bot=>bot.profile===row.profile && [bot.id,bot.resolved_id].some(id=>id && [row.id,row.resolved_id].includes(id)));
     return bot ? {...row,...bot} : row;
   }));
-  const matches = (row:BrowserChat) => (!profileFilter || row.profile===profileFilter) && (!typeFilter || row.bot===true);
+  const matches = (row:BrowserChat) => (!profileFilter || row.profile===profileFilter);
   const realProjects=data?.projects.filter(project=>!project.isNoProject && project.sessionCount>0) || [];
   const projects=orderedProjects(realProjects,pins).filter(project=>(!projectFilter || projectFilter===project.id) && (!profileFilter || profileFilter===project.profile));
   const hydratedKeys=new Set(Object.values(hydrated).flatMap(project=>projectSessions(project).flatMap(row=>[chatKey(row),...(row.resolved_id ? [chatKey({...row,id:row.resolved_id})] : [])])));
@@ -85,7 +92,7 @@ export default function ChatList({conn,client,onOpenChat}: Props) {
     const claimed=keys.some(key=>data?.scopedIds.has(key) || hydratedKeys.has(key));
     return !claimed && matches(row);
   });
-  const available = (row:BrowserChat) => !row.bot && row.profile===data?.profile && client.connectionState==='open' && !isActive(conn.id,row.id,row.resolved_id);
+  const available = (row:BrowserChat) => !loading && !loadError && !data?.failedProfiles.includes(row.profile || '') && !row.bot && row.profile===data?.profile && client.connectionState==='open' && !isActive(conn.id,row.id,row.resolved_id);
   function renderRow(row:BrowserChat) {
     const tint=botTint(row.title || '?');
     return <div className="chat-session-row" key={chatKey(row)} data-session-id={row.id} data-profile={row.profile}>
@@ -101,11 +108,11 @@ export default function ChatList({conn,client,onOpenChat}: Props) {
     <div className="chat-filters" aria-label="Filter chats">
       <label>Project<select aria-label="Project filter" value={projectFilter} onChange={e=>{setProjectFilter(e.target.value);setPendingDelete(null);}}><option value="">All projects</option><option value="recent">Recent</option>{realProjects.map(project=><option key={project.id} value={project.id}>{project.label} · {project.profile}</option>)}</select></label>
       <label>Profile<select aria-label="Profile filter" value={profileFilter} onChange={e=>{setProfileFilter(e.target.value);setPendingDelete(null);}}><option value="">All profiles</option>{data?.profiles.map(profile=><option key={profile.name} value={profile.name}>{profile.name}</option>)}</select></label>
-      <label>Type<select aria-label="Chat type" value={typeFilter} onChange={e=>setTypeFilter(e.target.value)}><option value="">All chats</option><option value="bot">Bot chats</option></select></label>
-      <button className="btn btn-ghost" disabled={loading} onClick={()=>void load()} aria-label="Refresh Chats">Refresh</button>
+      <button className="iconbtn" disabled={loading} onClick={()=>void load()} aria-label="Refresh Chats" title="Refresh Chats"><RefreshCw size={18} aria-hidden="true" /></button>
     </div>
     {data && <details className="hint chat-scope"><summary>Browsing & deletion limits</summary><p>Profile-owned history and projects from this gateway. Pins only change display order. Delete is available only for inactive sessions in the running profile ({data.profile || 'unverified'}). Other profiles and canonical bot chats are protected. A disabled trash button means deletion is unavailable here.</p></details>}
-    {error && <div className="error-line" role="alert">{error}</div>}{data?.warnings.map(warning=><p className="error-line" role="alert" key={warning}>{warning}</p>)}
+    {error && <div className="error-line" role="alert">{error}</div>}
+    {(loadError || !!data?.readFailures.length) && <ReadStatus failures={loadError ? [loadError] : data!.readFailures} empty={!data?.sessions.length && !data?.projects.length} identityOnly={!loadError && data?.failedProfiles.length===0} loading={loading} onRetry={()=>void load()} />}
     {status && <div className="hint" role="status">{status}</div>}
     {loading ? <div className="hint" role="status">Loading chats…</div> : <>
       {projects.map(project=>{
@@ -118,9 +125,22 @@ export default function ChatList({conn,client,onOpenChat}: Props) {
         </section>;
       })}
       {(!projectFilter || projectFilter==='recent') && recent.length>0 && <section className="project-group"><button className="project-group-head" aria-expanded={recentExpanded} aria-controls="recent-sessions" onClick={()=>setRecentExpanded(open=>!open)}>{recentExpanded ? <ChevronDownIcon size={16} /> : <ChevronRightIcon size={16} />}<span className="project-group-name">Recent</span><span className="project-group-count">{recent.length}</span></button>{recentExpanded && <div className="project-group-rows" id="recent-sessions">{recent.map(renderRow)}</div>}</section>}
-      {!error && projects.length===0 && (projectFilter && projectFilter!=='recent' || recent.length===0) && <p className="hint">No chats match these filters.</p>}
+      {!error && !loadError && !data?.readFailures.length && projects.length===0 && (projectFilter && projectFilter!=='recent' || recent.length===0) && <p className="hint">No chats match these filters.</p>}
     </>}
   </div>{pendingDelete && <DeleteDialog target={pendingDelete} device={conn.label} available={()=>available(pendingDelete)} source={source} onClose={()=>setPendingDelete(null)} onFinished={message=>{setPendingDelete(null);setStatus(message);void load();}} />}</div>;
+}
+
+function ReadStatus({failures,empty,identityOnly,loading,onRetry}:{failures:ChatReadFailure[];empty:boolean;identityOnly:boolean;loading:boolean;onRetry:()=>void}) {
+  const groups=new Map<string,{failure:ChatReadFailure;profiles:string[]}>();
+  for(const failure of failures) {
+    const key=JSON.stringify([failure.operation,failure.code,failure.status,failure.message]);
+    const group=groups.get(key);
+    if(group) group.profiles.push(failure.profile); else groups.set(key,{failure,profiles:[failure.profile]});
+  }
+  return <section className="chat-read-status" role="status" aria-label="Chat history read status">
+    <div className="chat-read-summary"><span>{identityOnly ? 'History loaded; deletion unavailable.' : empty ? 'History could not be loaded.' : 'History is incomplete. Showing available and last verified chats.'}</span><button className="btn btn-ghost" disabled={loading} onClick={onRetry}>Retry</button></div>
+    <details><summary>Read details</summary>{[...groups].map(([key,{failure,profiles}])=><p key={key}><strong>{profiles.join(', ')}</strong><br /><span className="mono">{failure.operation} · {failure.code}{failure.status !== undefined ? ` · HTTP ${failure.status}` : ' · no HTTP status'}</span><br />{failure.message}</p>)}</details>
+  </section>;
 }
 
 function DeleteDialog({target,device,source,available,onClose,onFinished}:{target:BrowserChat;device:string;source:ChatSource;available:()=>boolean;onClose:()=>void;onFinished:(message:string)=>void}) {

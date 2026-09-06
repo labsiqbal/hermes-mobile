@@ -1,5 +1,5 @@
 /* Cronjobs owns its scrollable content inset; Header/TabBar stay shell-owned. */
-.body.manage.cronjobs { padding: 16px; gap: 0; }
+.body.manage.cronjobs { padding: var(--space-16); gap: 0; }
 .cronjobs .manage-field select {
   width: 100%;
   min-width: 0;
@@ -7,7 +7,7 @@
   background: var(--elevated);
   color: var(--fg);
   border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 8px;
-  font-size: 16px;
+  border-radius: var(--space-8);
+  padding: var(--space-8);
+  font-size: var(--text-16);
 }

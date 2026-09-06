@@ -1,5 +1,7 @@
 # hermes-mobile
 
+Device-local **Settings → Appearance → UI scale**: 75% Compact / 100% Standard (default) / 125% Large across the app. The unified composer keeps attach and model/reasoning controls inside its bottom row; context remains above the transcript. [HM-UX-07 contract and evidence](docs/production/appearance-scale.md).
+
 A mobile-first PWA client for a self-hosted [Hermes Agent](https://github.com/NousResearch/hermes-agent) backend (`hermes serve`), reached over your Tailscale tailnet or LAN.
 
 Hermes Mobile is a screen onto your own machines. Agent execution lives on the gateway; the browser owns navigation, local connection/group metadata and transient drafts. Chat streams live, tool activity stays compact, and command approvals remain explicit.
@@ -9,7 +11,7 @@ Hermes Mobile is a screen onto your own machines. Agent execution lives on the g
 ## Shell A surfaces
 
 - Existing chat/resume, scoped model selection, attachments, approvals, Bot Chats, Groups and tracked Runs remain accessible. Groups live under Chats; Runs opens from Cronjobs. The compact model pill sits above the composer at the right edge.
-- Chats supports combined Project/Profile filters and canonical Bot chats, plus multiple local project pins. Pins only change display order: session membership, profile and cwd cannot be moved here. Confirmed deletion is limited to inactive sessions in the verified running profile; other profiles and canonical Bot Chat are protected.
+- Chats supports combined Project/Profile filters and canonical Bot chats, plus multiple local project pins. There is no separate Type/Bot dropdown. Native browser reads and partial-history recovery are covered by the [HM-UX-06 correction](docs/production/chats-read-filters.md); failed reads show Retry and optional sanitized details. Pins only change display order: session membership, profile and cwd cannot be moved here. Confirmed deletion is limited to inactive sessions in the verified running profile; other profiles and canonical Bot Chat are protected.
 - Manage provides profile/capability inspection, a reviewed profile-description update, bounded memory/schedule/messaging reads and shared Kanban board inspection. [Scope and unsupported operations](docs/production/management-contracts.md) are explicit; this is not a universal configuration editor.
 - Workspace provides bounded read-only Files and Git status/diff tied to a conversation's gateway/profile/cwd. External previews require explicit trust review; terminal execution and in-app annotation remain unavailable. See [Workspace boundaries](docs/production/workspace-contracts.md).
 - Appearance is local to this browser, not an update to the Desktop Accent plugin or profile defaults.

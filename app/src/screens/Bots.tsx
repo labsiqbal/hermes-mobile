@@ -160,11 +160,11 @@ export function BotsScreen({
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              gap: 10,
+              gap: "var(--space-10)",
             }}
           >
             <span className="chip chip-warm">bots</span>
-            <div className="appbar-title" style={{ fontSize: 15 }}>
+            <div className="appbar-title" style={{ fontSize: "var(--text-15)" }}>
               Bot Mode
             </div>
             <div className="hint" style={{ textAlign: "center", maxWidth: 260 }}>

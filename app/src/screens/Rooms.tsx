@@ -214,7 +214,7 @@ export function Rooms({
         {error && <div className="error-line">{error}</div>}
 
         {formOpen && (
-          <div className="card" style={{ padding: 16, display: "flex", flexDirection: "column", gap: 10 }}>
+          <div className="card" style={{ padding: "var(--space-16)", display: "flex", flexDirection: "column", gap: "var(--space-10)" }}>
             <div className="rowcard-title">New room</div>
             <input
               className="field"
@@ -243,9 +243,9 @@ export function Rooms({
                   <span
                     className="sess-avatar"
                     style={{
-                      width: 30,
-                      height: 30,
-                      fontSize: 11,
+                      width: "var(--space-30)",
+                      height: "var(--space-30)",
+                      fontSize: "var(--text-11)",
                       background: tint.bg,
                       color: tint.fg,
                     }}
@@ -253,7 +253,7 @@ export function Rooms({
                     <GroupIcon size={15} />
                   </span>
                   <div className="rowcard-main">
-                    <div className="rowcard-title mono" style={{ fontSize: 12 }}>
+                    <div className="rowcard-title mono" style={{ fontSize: "var(--text-12)" }}>
                       @{handle}
                     </div>
                   </div>
@@ -300,7 +300,7 @@ export function Rooms({
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              gap: 10,
+              gap: "var(--space-10)",
             }}
           >
             <span className="chip chip-warm">rooms</span>
@@ -341,9 +341,9 @@ export function Rooms({
                 style={{
                   display: "flex",
                   flexWrap: "wrap",
-                  gap: 4,
+                  gap: "var(--space-4)",
                   whiteSpace: "normal",
-                  marginTop: 6,
+                  marginTop: "var(--space-6)",
                 }}
               >
                 {room.members.map((handle) => {

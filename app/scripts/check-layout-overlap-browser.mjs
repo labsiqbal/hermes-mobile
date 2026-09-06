@@ -81,13 +81,13 @@ try {
       for (const [mode, draft] of [['single', ''], ['multiline', 'Line one\nLine two\nLine three\nLine four\nLine five']]) {
         await j.type('textarea', draft);
         await scrollAway();
-        await measure(`composer-${size}-${mode}`, `(()=>{const l=__layout,els=['.jump-btn','.model-pill','.composer-pill','.conversation-tools button'].map(s=>document.querySelector(s)),rects=els.map(e=>l.rect(e));return {rects,hits:els.slice(0,2).map(e=>l.hit(e)),overlaps:rects.flatMap((a,i)=>rects.slice(i+1).map(b=>l.overlap(a,b))),viewport:[innerWidth,innerHeight],pageWidth:document.documentElement.scrollWidth,scrollTop:document.querySelector('.chat-view .body').scrollTop,textareaHeight:document.querySelector('textarea').getBoundingClientRect().height};})()`, m => {
+        await measure(`composer-${size}-${mode}`, `(()=>{const l=__layout,els=['.jump-btn','.model-pill','.composer-pill','.conversation-tools button'].map(s=>document.querySelector(s)),rects=els.map(e=>l.rect(e));return {rects,hits:els.slice(0,2).map(e=>l.hit(e)),overlaps:rects.flatMap((a,i)=>rects.slice(i+1).map((b,k)=>i===1&&k===0?false:l.overlap(a,b))),viewport:[innerWidth,innerHeight],pageWidth:document.documentElement.scrollWidth,scrollTop:document.querySelector('.chat-view .body').scrollTop,textareaHeight:document.querySelector('textarea').getBoundingClientRect().height};})()`, m => {
           const [jump, model, composer] = m.rects;
           assert.ok(m.scrollTop > 0);
           assert.ok(m.overlaps.every(x => !x), q(m));
           assert.deepEqual(m.hits, [true, true]);
           assert.ok(jump.width >= 44 && jump.height >= 44 && model.width >= 44 && model.height >= 44);
-          assert.ok(model.bottom <= composer.top && Math.abs(model.right - composer.right) <= 1);
+          assert.ok(model.top >= composer.top && model.bottom <= composer.bottom && model.left >= composer.left && model.right <= composer.right);
           assert.ok(m.rects.every(r => r.top >= 0 && r.bottom <= height && r.left >= 0 && r.right <= width));
           assert.equal(m.pageWidth, width);
           if (mode === 'multiline') assert.ok(m.textareaHeight > 90);
