@@ -128,6 +128,13 @@ const latestDelta = getSessionEvents(cacheOwner, "s", 1).at(-1);
 assert.equal(latestDelta, cachedDelta, "coalesced deltas must retain object identity");
 assert.equal(latestDelta.payload.text, "AB");
 
+const noCacheOwner = {};
+assert.deepEqual(
+  getSessionEvents(noCacheOwner, "s", 1),
+  [],
+  "a fresh ChatView mount has no local event cache; server inflight state must drive thinking",
+);
+
 const originalFetch = globalThis.fetch;
 let request;
 globalThis.fetch = async (url, init) => {

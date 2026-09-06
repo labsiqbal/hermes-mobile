@@ -11,12 +11,18 @@ export const FIXTURE = {
 
 export function installProductionFixtures(fixture) {
   const f = structuredClone(fixture);
+  let persistedServer = {};
+  const persistedInflight = localStorage.getItem('hermes-mobile.qa-inflight-resume');
+  if (persistedInflight) {
+    try { persistedServer = JSON.parse(persistedInflight); } catch { /* fixture-only malformed state */ }
+  }
   const trace = [], violations = [], sockets = [], held = new Map();
   const control = {
     trace, violations, mode: 'normal', authenticated: false, approval: false,
     hold: [], errors: {}, unsupported: [], permits: {}, empty: [],
-    currentProfiles: [], cronOwner: 'default',
-    createdHistory: [],
+    currentProfiles: [], cronOwner: 'default', resume: persistedServer.resume || {},
+    historyBySession: persistedServer.historyBySession || {},
+    createdHistory: [], normalCreateCount: 0,
     release(method) { this.hold = this.hold.filter(x => x !== method); for (const finish of held.get(method) || []) finish(); held.delete(method); },
     emit(type, session_id, payload) {
       if (type === 'message.complete' && session_id === 'qa-created-session') {
@@ -41,7 +47,7 @@ export function installProductionFixtures(fixture) {
     { name: 'default', is_default: true, model: 'fixture-model', provider: 'fixture', skill_count: 1, ui_meta_revisions: { 'hermes-bots-groups': 1 }, ui_meta: { 'hermes-bots-groups': { version: 3, updatedAt: 1700000000000, rooms: { 'id:qa-room': room }, deleted: {} } } },
     { name: 'qa-bot', display_name: 'QA Fixture Bot', description: 'Fictional profile', model: 'fixture-model', provider: 'fixture', canonical_session: f.bot, ui_meta_revisions: {}, ui_meta: { 'hermes-bots': { displayName: 'QA Fixture Bot', handle: 'qa-bot' } } },
   ];
-  const history = sid => f.historyBySession?.[sid] ?? (sid === 'qa-created-session' ? control.createdHistory : sid === f.privateBot.id ? [] : [{ role: 'user', content: `QA restored question ${sid}` }, { role: 'assistant', content: (sid === 'qa-project-session' ? Array.from({length: 24}, (_, n) => `Fictional history paragraph ${n + 1}. This long transcript exercises real scroll restoration, without sending a prompt.`).join('\n\n') + '\n\n' : '') + `QA restored answer ${sid}` }]);
+  const history = sid => control.historyBySession[sid] ?? f.historyBySession?.[sid] ?? (sid === 'qa-created-session' ? control.createdHistory : sid === f.privateBot.id ? [] : [{ role: 'user', content: `QA restored question ${sid}` }, { role: 'assistant', content: (sid === 'qa-project-session' ? Array.from({length: 24}, (_, n) => `Fictional history paragraph ${n + 1}. This long transcript exercises real scroll restoration, without sending a prompt.`).join('\n\n') + '\n\n' : '') + `QA restored answer ${sid}` }]);
   const info = profile => ({ model: 'fixture-model', provider: 'fixture', profile_name: profile || 'default', cwd: profile === 'qa-bot' ? '/fictional/qa-bot' : '/fictional/qa-project', reasoning_effort: 'medium' });
   const sessionInfos = {};
   const project = { id: 'qa-project', label: 'QA Project', sessionCount: 1, previewSessions: [f.sessions[0]], repos: [{ id: 'qa-repo', label: 'QA Repo', groups: [{ id: 'qa-lane', label: 'fixture-branch', sessions: [f.sessions[0]] }] }] };
@@ -152,8 +158,10 @@ export function installProductionFixtures(fixture) {
           if ('title' in params || 'cwd' in params || params.hidden) return fail('Private bot chat must not request Bot Chat title, cwd, or hidden state');
           return control.privateCreateResponse || { session_id: f.privateBot.id, stored_session_id: f.privateBot.id, info: info('qa-bot') };
         }
-        if (f.sessions.some(s => s.id === 'qa-created-session')) return fail('Duplicate session creation');
-        const session = { ...f.sessions[1], id: 'qa-created-session', title: 'QA Created conversation', message_count: 0, unpersisted: true };
+        if (params.cwd !== '/fictional/qa-project') return fail('New chat must create directly in selected server folder');
+        if (control.createResponse) return control.createResponse;
+        const initial = control.normalCreateCount++ === 0;
+        const session = { ...f.sessions[1], id: initial ? 'qa-created-initial' : 'qa-created-session', title: initial ? 'QA Initial conversation' : 'QA Created conversation', message_count: 0, unpersisted: true };
         f.sessions.push(session);
         return { session_id: session.id, stored_session_id: session.id, info: info('default') };
       }
@@ -177,7 +185,7 @@ export function installProductionFixtures(fixture) {
         const session = [...f.sessions, f.bot, f.privateBot].find(s => s.id === params.session_id && s.profile === (params.profile || 'default'));
         if (!session) return fail(`Unknown resume session: ${params.session_id}`);
         if (session.profile === 'qa-bot' && params.profile !== 'qa-bot') return fail('Bot resume lost profile scope');
-        return { session_id: session.id, stored_session_id: session.id, messages: params.omit_messages === true ? [] : history(session.id), info: sessionInfos[session.id] || info(session.profile), running: false, status: 'idle', message_count: history(session.id).length };
+        return { session_id: session.id, stored_session_id: session.id, messages: params.omit_messages === true ? [] : history(session.id), info: sessionInfos[session.id] || info(session.profile), running: false, status: 'idle', message_count: history(session.id).length, ...(control.resume[session.id] || {}) };
       }
       case 'session.events.since': return { events: [], latest_seq: 0, truncated: false, epoch: 'qa-epoch' };
       case 'approval.pending': return { approvals: control.approval ? [{ request_id: 'qa-approval', command: 'fixture-only operation (never executed)', description: 'QA explicit approval', choices: ['once', 'deny'] }] : [] };
