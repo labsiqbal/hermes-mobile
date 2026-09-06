@@ -513,6 +513,12 @@
   z-index: 1;
 }
 
+.chat-view .model-sheet-search:focus-within {
+  border-color: var(--focus-field);
+  outline: 2px solid var(--focus-field);
+  outline-offset: -2px;
+}
+
 .chat-view .model-sheet-search .search-icon {
   display: grid;
   place-items: center;
@@ -527,6 +533,8 @@
   background: transparent;
   font-size: var(--text-16);
 }
+
+.chat-view .model-sheet-search .field:focus-visible { outline: 0; }
 
 .chat-view .model-row-btn {
   display: flex;
