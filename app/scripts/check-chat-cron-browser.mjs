@@ -33,7 +33,7 @@ try {
  const j=new Journeys(browser,report,output);
  const f=expression=>browser.evaluate(`(()=>{const f=__productionFixture;${expression}})()`);
  const check=async(name,fn)=>{await fn();report.checks.push({name,status:'passed'});};
- const select=async(label,value)=>{await browser.evaluate(`(()=>{const e=document.querySelector('select[aria-label='+${q(JSON.stringify(label))}+']');if(!e||![...e.options].some(o=>o.value===${q(value)}))throw Error('Missing filter option');e.value=${q(value)};e.dispatchEvent(new Event('change',{bubbles:true}));})()`);await browser.settle();};
+  const select=async(label,value)=>{if(label.endsWith('filter'))return j.selectChatFilter(label,value);await browser.evaluate(`(()=>{const e=document.querySelector('select[aria-label='+${q(JSON.stringify(label))}+']');if(!e||![...e.options].some(o=>o.value===${q(value)}))throw Error('Missing profile option');e.value=${q(value)};e.dispatchEvent(new Event('change',{bubbles:true}));})()`);await browser.settle();};
  const rows=()=>browser.evaluate("[...document.querySelectorAll('.chat-session-row')].map(e=>[e.dataset.profile,e.dataset.sessionId])");
  const projectOrder=()=>browser.evaluate("[...document.querySelectorAll('[data-project-id]')].map(e=>JSON.parse(e.dataset.projectId))");
  const waitLoaded=()=>browser.waitFor("document.querySelector('[aria-label=\"Refresh Chats\"]')?.disabled===false && !!document.querySelector('[data-project-id]')");
@@ -72,8 +72,10 @@ try {
   assert.equal(await browser.evaluate('document.querySelector("textarea").value'),'OTHER PROFILE DRAFT');await j.tap('Back');await waitLoaded();
  });
  await check('Two filters retain canonical identity without title heuristic or duplicate',async()=>{
+  await j.tap('Filter chats');
   assert.equal(await browser.evaluate("document.querySelectorAll('.chat-filters select').length"),2);
   assert.equal(await browser.evaluate("!!document.querySelector('select[aria-label=\"Chat type\"]')"),false);
+  await j.tap('Done');
   await select('Project filter','recent');await select('Profile filter','qa-bot');
   assert.deepEqual(await rows(),[['qa-bot','qa-bot-session']]);
   assert.equal(await browser.evaluate("document.querySelector('.chat-delete').disabled"),true);

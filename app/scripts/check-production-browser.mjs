@@ -140,6 +140,7 @@ export class Journeys {
     assert.equal(await this.b.evaluate(`document.querySelector(${q(selector)}).value`), value);
   }
   async root(label) {
+    if(await this.b.evaluate(`!!document.querySelector('.chat-filter-sheet[open]')`)) await this.tap('Done');
     // Recover through real Back controls after another journey fails; never assign UI state.
     for (let n = 0; n < 4 && !(await this.b.evaluate(`!!document.querySelector(${q(NAV)})`)); n++) {
       const back = await this.b.evaluate(`['Back','Back to conversation'].find(label=>__qaDOM.find(label))`);
@@ -149,6 +150,11 @@ export class Journeys {
     await this.tap(label, NAV); await this.b.waitFor(`(()=>{const e=__qaDOM.find(${q(label)},${q(NAV)});return e && (e.getAttribute('aria-current')==='page'||e.getAttribute('aria-selected')==='true'||e.classList.contains('active'));})()`);
   }
   async roots() { assertRoots(await this.b.evaluate(`[...document.querySelectorAll(${q(NAV)})].filter(e=>__qaDOM.visible(e)).flatMap(n=>[...n.querySelectorAll('button,a,[role="tab"]')].map(e=>__qaDOM.label(e)))`)); }
+  async selectChatFilter(label, value) {
+    await this.tap('Filter chats');
+    await this.b.evaluate(`(()=>{const e=[...document.querySelectorAll('.chat-filters select')].find(e=>e.getAttribute('aria-label')===${q(label)});if(!e||![...e.options].some(o=>o.value===${q(value)}))throw Error('Missing filter option');e.value=${q(value)};e.dispatchEvent(new Event('change',{bubbles:true}));})()`);
+    await this.b.settle();await this.tap('Done');
+  }
   async back(direction = -1) {
     const history = await this.b.command('Page.getNavigationHistory');
     const target = history.entries[history.currentIndex + direction];
@@ -192,11 +198,12 @@ export async function checkNavigationRegressions(j, browser, fixture, trace) {
     });
     await j.run('manage-navigation-context', async () => {
       await j.root('Manage');
+      await j.tap('Capabilities','.manage',false);
       await browser.waitFor(`!!document.querySelector('select[aria-label="Management profile"] option[value="qa-bot"]')`);
       await browser.evaluate(`(()=>{const e=document.querySelector('select[aria-label="Management profile"]');e.value='qa-bot';e.dispatchEvent(new Event('change',{bubbles:true}));})()`);
-      await j.tap('Devices & gateways','body',false); await j.tap('Back');
-      assert.equal(await browser.evaluate('document.querySelector("select").value'), 'qa-bot');
+      await j.tap('Back to Manage');await j.tap('Devices & gateways','body',false); await j.tap('Back');
       await j.tap('Profiles','body',false); await j.text('Profile description');
+      assert.equal(await browser.evaluate('document.querySelector(".manage-values dd").textContent'), 'qa-bot');
       await j.type('textarea[aria-label="Profile description"]', 'QA UNCONFIRMED NAVIGATION REVIEW');
       const writes = (await trace()).filter(t=>t.method==='profiles.configure').length;
       await j.tap('Review description change'); await j.text('Confirm description change');
@@ -204,11 +211,11 @@ export async function checkNavigationRegressions(j, browser, fixture, trace) {
       assert.equal(await browser.evaluate('!!document.querySelector("dialog[open]")'), false, 'Navigation must discard a one-shot review');
       assert.notEqual(await browser.evaluate('document.querySelector("textarea").value'), 'QA UNCONFIRMED NAVIGATION REVIEW');
       assert.equal((await trace()).filter(t=>t.method==='profiles.configure').length, writes, 'Leaving review never writes');
-      assert.equal(await browser.evaluate('document.querySelector("select").value'), 'qa-bot');
+      assert.equal(await browser.evaluate('document.querySelector(".manage-values dd").textContent'), 'qa-bot');
       await j.tap('Back to Manage');
       await j.tap('Appearance & preferences','body',false); await j.tap('Connection settings','body',false); await j.tap('Back');
       await j.text('Model and reasoning controls stay');
-      assert.equal(await browser.evaluate('document.querySelector("select").value'), 'qa-bot');
+      assert.equal(await browser.evaluate('!!document.querySelector("select")'), false);
       await j.back(1); await j.text('Settings'); await j.back(); await j.text('Model and reasoning controls stay');
       await j.tap('Back to Manage');
     });
@@ -363,7 +370,7 @@ async function checkProduction(options) {
         await browser.settle();
       };
       // Fixed source-backed families, not candidate-derived coverage. Models stay in chat.
-      await selectProfile('default');
+      await j.tap('Profiles','.manage',false);await j.tap('default','.manage',false);await j.tap('Back to Manage');
       for (const [section, expected] of [['Capabilities','QA Fixture Skill'],['Memory','QA Fixture Memory'],['Schedules & cron','QA Fixture Schedule'],['Messaging','QA Fixture Messaging'],['Webhooks','No webhook request was sent'],['Kanban','QA Fixture Board'],['Appearance & preferences','Model and reasoning controls'],['Native capabilities','SSH & cloud lifecycle']]) {
         const start = (await trace()).length;
         await j.tap(section, '.manage', false); await j.text(expected);

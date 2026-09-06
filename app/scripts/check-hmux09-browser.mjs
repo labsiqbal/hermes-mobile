@@ -45,8 +45,8 @@ try {
     assert.equal(await browser.evaluate('localStorage.getItem("hermes-mobile.ui-scale")'),String(scale));
     for(const width of [320,390]) {
       await resize(width);await appearance();await audit(`appearance-${scale}-${width}`);
-      await j.root('Chats');await browser.waitFor(`document.querySelector('[aria-label="Refresh Chats"]')?.disabled===false`);await audit(`chats-selects-${scale}-${width}`);
-      await j.root('Manage');await browser.waitFor('document.querySelector("select")?.options.length>1');await audit(`manage-select-${scale}-${width}`);
+      await j.root('Chats');await browser.waitFor(`document.querySelector('[aria-label="Refresh Chats"]')?.disabled===false`);await j.tap('Filter chats');await audit(`chats-selects-${scale}-${width}`);await j.tap('Done');
+      await j.root('Manage');if(await browser.evaluate(`!!__qaDOM.find('Back to Manage')`))await j.tap('Back to Manage');await j.tap('Capabilities','.manage',false);await browser.waitFor('document.querySelector("select")?.options.length>1');await audit(`manage-select-${scale}-${width}`);await j.tap('Back to Manage');
       await j.root('Cronjobs');await browser.waitFor('document.querySelector("select")?.options.length>1');await audit(`cronjobs-select-${scale}-${width}`);
     }
   }

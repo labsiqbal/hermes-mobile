@@ -27,7 +27,7 @@ import {
   type GroupRegistry,
   type GroupRoom,
 } from "../lib/group-store";
-import { botHandle, botInitials, botTint, botTitle, isBotManaged } from "./bots-utils";
+import { botHandle, botInitials, botTint, botTitle } from "./bots-utils";
 import { ChevronRightIcon, GroupIcon } from "../components/icons";
 
 const ROSTER_POLL_MS = 20_000;
@@ -85,8 +85,8 @@ function botGroups(meta: Record<string, unknown> | null): string[] {
   return groups;
 }
 
-function botsMeta(profile: ProfileSummary): Record<string, unknown> | null {
-  const meta = profile.ui_meta?.[BOTS_META_KEY];
+function botsMeta(profile: ProfileSummary | undefined): Record<string, unknown> | null {
+  const meta = profile?.ui_meta?.[BOTS_META_KEY];
   return meta && typeof meta === "object" && !Array.isArray(meta)
     ? (meta as Record<string, unknown>)
     : null;
@@ -194,7 +194,8 @@ export function Groups({
     [registry],
   );
 
-  const bots = useMemo(() => (profiles ?? []).filter(isBotManaged), [profiles]);
+  // Metadata decorates profiles; it is not a group-membership prerequisite.
+  const bots = profiles ?? [];
 
   async function confirmDelete() {
     const target = pendingDelete;
@@ -294,6 +295,7 @@ export function Groups({
           </>
         ) : (
           <CreateGroupCard
+            error={error}
             client={client}
             conn={conn}
             bots={bots}
@@ -412,7 +414,7 @@ function GroupRow({
         </div>
       </div>
       <div className="rowcard-meta mono" style={{ textAlign: "right" }}>
-        {room.log.length} pesan
+        {room.log.length} messages
         <br />
         {room.members.length} bot
       </div>
@@ -424,6 +426,7 @@ function GroupRow({
 }
 
 function CreateGroupCard({
+  error,
   client,
   conn,
   bots,
@@ -433,6 +436,7 @@ function CreateGroupCard({
   onCancel,
   onCreated,
 }: {
+  error: string;
   client: HermesConnection;
   conn?: SavedConnection;
   bots: ProfileSummary[];
@@ -450,7 +454,7 @@ function CreateGroupCard({
     const q = query.trim().toLowerCase();
     if (!q) return bots;
     return bots.filter((bot) =>
-      `${botHandle(bot)} ${bot.description ?? ""} ${bot.display_name ?? ""}`
+      `${bot.name} ${botTitle(bot)} ${botHandle(bot)} ${bot.description ?? ""} ${bot.display_name ?? ""}`
         .toLowerCase()
         .includes(q),
     );
@@ -473,7 +477,7 @@ function CreateGroupCard({
    *  join displayName). Basis dipotong 64 char, suffix unik ditambah nanti. */
   const defaultName = selected.map(memberLabel).join(", ").slice(0, 64);
   const canCreate =
-    !busy && selected.length >= MIN_GROUP_MEMBERS && Boolean(name.trim() || defaultName);
+    !busy && selected.length >= MIN_GROUP_MEMBERS && selected.length <= MAX_GROUP_MEMBERS && Boolean(name.trim() || defaultName);
 
   async function create() {
     if (!canCreate) return;
@@ -483,6 +487,9 @@ function CreateGroupCard({
       // Baca roster segar: membership bot dan registry bisa berubah sejak
       // layar dimuat (Desktop menulis slot yang sama).
       const fresh = await client.profilesList({ includeSessions: false });
+      if (selected.some(bot => !fresh.some(row => row.name === bot.name))) {
+        throw new Error("A selected profile is no longer available. Cancel and reload the roster before creating a group.");
+      }
       const base = (name.trim() || defaultName).slice(0, 64);
       const groupName = uniqueGroupName(base, readGroupRegistry(fresh));
       const roomId = mintGroupRoomId();
@@ -503,10 +510,11 @@ function CreateGroupCard({
         const meta = { ...(botsMeta(freshBot ?? bot) ?? {}) };
         const groups = botGroups(meta);
         if (!groups.includes(groupName)) groups.push(groupName);
-        await client.profileConfigureUiMeta({
+        const result = await client.profileConfigureUiMeta({
           name: bot.name,
           uiMeta: { [BOTS_META_KEY]: { ...meta, groups, group: groups[0] ?? null } },
         });
+        if (result?.applied?.ui_meta !== true) throw new Error("Group membership was not acknowledged. Changes may be partial; reload Groups before retrying.");
       }
 
       // 2) Room baru di registry bersama (log kosong), CAS + retry terbatas.
@@ -519,6 +527,12 @@ function CreateGroupCard({
       };
       await writeRegistryWithRetry(client, (remote) => upsertRoom(remote, room));
 
+      const verifiedProfiles = await client.profilesList({ includeSessions: false });
+      const verified = readGroupRegistry(verifiedProfiles).rooms[`id:${roomId}`];
+      if (!verified || verified.name !== room.name || JSON.stringify(verified.members) !== JSON.stringify(members) ||
+          selected.some(bot => !botGroups(botsMeta(verifiedProfiles.find(row => row.name === bot.name))).includes(groupName))) {
+        throw new Error("Group creation could not be verified. Changes may be partial; reload Groups before retrying.");
+      }
       onCreated(roomId);
     } catch (err) {
       onError(err instanceof Error ? err.message : String(err));
@@ -529,7 +543,8 @@ function CreateGroupCard({
 
   return (
     <>
-      <div className="section-label">Group baru · pilih {MIN_GROUP_MEMBERS}–{MAX_GROUP_MEMBERS} bot</div>
+      <div className="section-label">New group · choose {MIN_GROUP_MEMBERS}–{MAX_GROUP_MEMBERS} profiles</div>
+      {error && <div className="error-line" role="alert">{error}</div>}
       {selected.length > 0 && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--space-6)" }}>
           {selected.map((bot) => {
@@ -542,14 +557,15 @@ function CreateGroupCard({
                 style={{ background: tint.bg, color: tint.fg, borderColor: "transparent" }}
               >
                 @{handle}
-                <span
-                  role="button"
-                  aria-label={`remove ${handle}`}
-                  style={{ marginLeft: 2, opacity: 0.65, cursor: "pointer" }}
+                <button
+                  type="button"
+                  className="group-member-remove"
+                  disabled={busy}
+                  aria-label={`Remove ${handle}`}
                   onClick={() => toggle(bot)}
                 >
                   ×
-                </span>
+                </button>
               </span>
             );
           })}
@@ -558,13 +574,14 @@ function CreateGroupCard({
       <input
         className="field"
         type="search"
-        placeholder="Search bots…"
+        aria-label="Search profiles"
+        placeholder="Search profiles…"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
       {bots.length === 0 && (
         <div className="hint">
-          No bot-managed profiles yet — add bots via Desktop first.
+          No profiles were returned by this gateway.
         </div>
       )}
       {bots.length > 0 && visible.length === 0 && (
@@ -580,6 +597,7 @@ function CreateGroupCard({
             key={bot.name}
             className="rowcard"
             style={atCap ? { opacity: 0.45 } : undefined}
+            aria-pressed={checked}
             disabled={busy || atCap}
             onClick={() => toggle(bot)}
           >
@@ -616,15 +634,15 @@ function CreateGroupCard({
       })}
       <input
         className="field"
+        aria-label="Group name"
         placeholder={defaultName || "Group name"}
         value={name}
         maxLength={64}
         onChange={(e) => setName(e.target.value)}
       />
-      <div style={{ display: "flex", gap: "var(--space-8)" }}>
+      <div className="group-create-actions">
         <button
           className="btn btn-primary"
-          style={{ flex: 1 }}
           disabled={!canCreate}
           onClick={() => void create()}
         >

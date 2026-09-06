@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Pin, Trash2, RefreshCw } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { Pin, Trash2, RefreshCw, ListFilter, X } from 'lucide-react';
 import type { HermesConnection, ProjectTreeItem, SavedConnection, SessionSummary } from '../lib/hermes-client';
 import { ChatSource, chatReadFailure, type ChatReadFailure } from '../lib/chat-source';
 import { chatKey, uniqueChats, orderedProjects, preferenceKey, readIds, type BrowserChat } from '../lib/chat-browser';
@@ -34,6 +34,8 @@ export default function ChatList({conn,client,onOpenChat}: Props) {
   const [recentExpanded,setRecentExpanded] = useState(true);
   const [projectFilter,setProjectFilter] = useState('');
   const [profileFilter,setProfileFilter] = useState('');
+  const [filtersOpen,setFiltersOpen] = useState(false);
+  const dismissFilters = useCallback(()=>setFiltersOpen(false),[]);
   const [pendingDelete,setPendingDelete] = useState<BrowserChat | null>(null);
 
   const load = useCallback(async () => {
@@ -104,12 +106,19 @@ export default function ChatList({conn,client,onOpenChat}: Props) {
       <button className="iconbtn chat-delete" aria-label={`Delete session ${row.title || 'Untitled'}`} disabled={!available(row)} title={row.bot ? 'Canonical bot chats cannot be deleted here' : !available(row) ? 'Only inactive sessions in the verified running profile can be deleted' : 'Delete this session and its history'} onClick={()=>{setStatus('');setPendingDelete({...row});}}><Trash2 size={17} aria-hidden="true" /></button>
     </div>;
   }
+  const activeFilters = Number(Boolean(projectFilter)) + Number(Boolean(profileFilter));
+  const clearFilters = () => { setProjectFilter(''); setProfileFilter(''); setPendingDelete(null); };
+  const closeFilters = () => history.back();
   return <div className="screen"><div className="body chatlist">
-    <div className="chat-filters" aria-label="Filter chats">
-      <label>Project<select aria-label="Project filter" value={projectFilter} onChange={e=>{setProjectFilter(e.target.value);setPendingDelete(null);}}><option value="">All projects</option><option value="recent">Recent</option>{realProjects.map(project=><option key={project.id} value={project.id}>{project.label} · {project.profile}</option>)}</select></label>
-      <label>Profile<select aria-label="Profile filter" value={profileFilter} onChange={e=>{setProfileFilter(e.target.value);setPendingDelete(null);}}><option value="">All profiles</option>{data?.profiles.map(profile=><option key={profile.name} value={profile.name}>{profile.name}</option>)}</select></label>
+    <div className="chat-filter-toolbar">
+      <button className="btn btn-ghost" aria-label="Filter chats" aria-haspopup="dialog" aria-expanded={filtersOpen} onClick={()=>{history.pushState(history.state,'');setFiltersOpen(true);}}><ListFilter size={18} aria-hidden="true" /> Filter{activeFilters ? ` (${activeFilters})` : ''}</button>
       <button className="iconbtn" disabled={loading} onClick={()=>void load()} aria-label="Refresh Chats" title="Refresh Chats"><RefreshCw size={18} aria-hidden="true" /></button>
     </div>
+    {activeFilters > 0 && <div className="chat-filter-summary"><span>{[projectFilter && `Project: ${projectFilter==='recent'?'Recent':realProjects.find(p=>p.id===projectFilter)?.label || projectFilter}`,profileFilter && `Profile: ${profileFilter}`].filter(Boolean).join(' · ')}</span><button className="btn btn-ghost" onClick={clearFilters} aria-label="Clear filters">Clear</button></div>}
+    {filtersOpen && <FilterSheet onBack={dismissFilters} onClose={closeFilters}><div className="chat-filters">
+      <label>Project<select aria-label="Project filter" value={projectFilter} onChange={e=>{setProjectFilter(e.target.value);setPendingDelete(null);}}><option value="">All projects</option><option value="recent">Recent</option>{realProjects.map(project=><option key={project.id} value={project.id}>{project.label} · {project.profile}</option>)}</select></label>
+      <label>Profile<select aria-label="Profile filter" value={profileFilter} onChange={e=>{setProfileFilter(e.target.value);setPendingDelete(null);}}><option value="">All profiles</option>{data?.profiles.map(profile=><option key={profile.name} value={profile.name}>{profile.name}</option>)}</select></label>
+    </div><div className="sheet-actions"><button className="btn btn-ghost" onClick={clearFilters} disabled={!activeFilters}>Clear filters</button><button className="btn btn-primary" onClick={closeFilters}>Done</button></div></FilterSheet>}
     {data && <details className="hint chat-scope"><summary>Browsing & deletion limits</summary><p>Profile-owned history and projects from this gateway. Pins only change display order. Delete is available only for inactive sessions in the running profile ({data.profile || 'unverified'}). Other profiles and canonical bot chats are protected. A disabled trash button means deletion is unavailable here.</p></details>}
     {error && <div className="error-line" role="alert">{error}</div>}
     {(loadError || !!data?.readFailures.length) && <ReadStatus failures={loadError ? [loadError] : data!.readFailures} empty={!data?.sessions.length && !data?.projects.length} identityOnly={!loadError && data?.failedProfiles.length===0} loading={loading} onRetry={()=>void load()} />}
@@ -128,6 +137,18 @@ export default function ChatList({conn,client,onOpenChat}: Props) {
       {!error && !loadError && !data?.readFailures.length && projects.length===0 && (projectFilter && projectFilter!=='recent' || recent.length===0) && <p className="hint">No chats match these filters.</p>}
     </>}
   </div>{pendingDelete && <DeleteDialog target={pendingDelete} device={conn.label} available={()=>available(pendingDelete)} source={source} onClose={()=>setPendingDelete(null)} onFinished={message=>{setPendingDelete(null);setStatus(message);void load();}} />}</div>;
+}
+
+function FilterSheet({children,onBack,onClose}:{children:ReactNode;onBack:()=>void;onClose:()=>void}) {
+  const dialog=useRef<HTMLDialogElement>(null);
+  useEffect(()=>{
+    const node=dialog.current;
+    const trigger=document.querySelector<HTMLElement>('[aria-label="Filter chats"]');
+    node?.showModal();
+    window.addEventListener('popstate',onBack);
+    return ()=>{window.removeEventListener('popstate',onBack);node?.close();trigger?.focus();};
+  },[onBack]);
+  return <dialog ref={dialog} className="chat-filter-sheet" aria-labelledby="chat-filter-title" onCancel={e=>{e.preventDefault();onClose();}} onClick={e=>{if(e.target===e.currentTarget){const r=e.currentTarget.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)onClose();}}}><div className="chat-filter-heading"><h2 id="chat-filter-title">Filter chats</h2><button className="iconbtn" aria-label="Close filters" onClick={onClose} autoFocus><X size={20} aria-hidden="true" /></button></div>{children}</dialog>;
 }
 
 function ReadStatus({failures,empty,identityOnly,loading,onRetry}:{failures:ChatReadFailure[];empty:boolean;identityOnly:boolean;loading:boolean;onRetry:()=>void}) {

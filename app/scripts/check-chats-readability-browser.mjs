@@ -107,7 +107,9 @@ try {
     assert.equal(await browser.evaluate(`document.querySelector('[data-session-id="reading-29"] .chat-delete').disabled`),true);
     await j.clickCSS('[data-session-id="reading-3"] .chat-delete');await j.text('Delete this session?');await j.text('This cannot be undone.');await j.tap('Cancel','dialog');
     assert.equal(await browser.evaluate(`!!document.querySelector('dialog')`),false);
+    await j.tap('Filter chats');
     assert.deepEqual(await browser.evaluate(`[...document.querySelectorAll('.chat-filters select')].map(e=>e.getAttribute('aria-label'))`),['Project filter','Profile filter']);
+    await j.tap('Done');
   });
   report.fixture=await browser.evaluate('({trace:__productionFixture.trace,violations:__productionFixture.violations})');
   await check('no unexpected outbound request or mutation',async()=>{assert.deepEqual(browser.diagnostics,[]);assert.deepEqual(host.rejected,[]);assert.deepEqual(report.fixture.violations,[]);assert.ok(!report.fixture.trace.some(r=>['session.delete','session.create','prompt.submit','config.set','projects.set_active','profiles.configure'].includes(r.method)));});
