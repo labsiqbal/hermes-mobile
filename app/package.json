@@ -17,6 +17,7 @@
     "check:management:browser": "node scripts/check-management.mjs --browser",
     "check:workspace": "node scripts/check-workspace.mjs",
     "check:chat-browser": "node scripts/check-chat-browser.mjs && node scripts/check-chat-source.mjs",
+    "check:layout-overlap:browser": "node scripts/check-layout-overlap-browser.mjs",
     "check:chat-cron:browser": "node scripts/check-chat-cron-browser.mjs && node scripts/check-chat-review-browser.mjs",
     "test:unit": "npm run check:chat-browser && npm run check:bots && npm run check:chat-resume && npm run check:shell-state && npm run check:management && npm run check:workspace",
     "test": "npm run test:unit",

@@ -79,6 +79,10 @@ jobs:
         timeout-minutes: 2
         run: npm run check:shell-navigation -- "$RUNNER_TEMP/production-browser/navigation"
 
+      - name: Mobile layout overlap regressions (built React, fictional transport)
+        timeout-minutes: 4
+        run: npm run check:layout-overlap:browser -- "$RUNNER_TEMP/production-browser/layout-overlap"
+
       - name: Browser harness self-test
         id: browser_self_test
         timeout-minutes: 2
