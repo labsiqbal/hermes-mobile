@@ -1,0 +1,12 @@
+{
+  "status": "committed-pushed-remote-verified",
+  "source_head": "67359166ede295d3ffb8e48e6513ef2cda3bebd7",
+  "source_tree": "0e999f5b57acffcfef66f628a6d40998afb54b0f",
+  "branch": "fix/chats-read-filters",
+  "baseline": "f2f9ef9d052885ac75173a6db1e38fb99a937e9c",
+  "frozen_source_sha256": "586f0872ecb94c2eb8f93e6c7b3095f05cb89b3c52396eb3ad51f7c462c4f3c3",
+  "artifact_manifest_sha256": "c20dd0d40d7e24c1c47ef84664f45957680b147951958ede8fd76f4bc4cb0b83",
+  "clean_rebuild_exact_files": 12,
+  "source_changed_during_release": false,
+  "precommit_cached_baseline_whitespace": "passed"
+}

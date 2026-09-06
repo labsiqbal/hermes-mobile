@@ -1,0 +1,123 @@
+{
+  "status": "passed",
+  "origin": "https://nuc.tailcf7779.ts.net:8451",
+  "policy": "Fresh disposable Chrome; actual HTTPS bytes only; no fixtures, login, input, cookies, saved credentials, API or WebSocket requests. Requests restricted to GET of approved static paths.",
+  "dom": {
+    "title": "Hermes Mobile",
+    "text": "Hermes\nYour personal relay\nNot connected\nCONNECTION REGISTRY\nA place for\nyour work.\n\nChoose your Hermes gateway. Your conversations stay on your machine.\n\nTailnet · 0 devices\nAdd device\nTest\nSave\nCredentials are stored unencrypted in this browser. Use a trusted, private device and your private tailnet; do not use a shared browser.",
+    "fixturePresent": false,
+    "localStorageEntries": 0,
+    "sessionStorageEntries": 0,
+    "passwordEmpty": true,
+    "width": 390
+  },
+  "responses": [
+    {
+      "id": "D9A71CEA717D5185D694BABBD36BE4DE",
+      "path": "/",
+      "status": 200,
+      "mime": "text/html",
+      "fromDiskCache": false,
+      "fromServiceWorker": false,
+      "sha256": "4cdfb4b705c173e12ab07a703af937140a113c3bd7b5826685facc2e2417434d"
+    },
+    {
+      "id": "410021.3",
+      "path": "/assets/index-BvKYzNGc.css",
+      "status": 200,
+      "mime": "text/css",
+      "fromDiskCache": false,
+      "fromServiceWorker": false,
+      "sha256": "d455efcd9ea5dc76e26946af7d79b80f6aed425b147a9253b3c8f8bde592bc4d"
+    },
+    {
+      "id": "410021.6",
+      "path": "/manifest.webmanifest",
+      "status": 200,
+      "mime": "text/plain",
+      "fromDiskCache": false,
+      "fromServiceWorker": false,
+      "sha256": "3d22b80afea0926ace467d10607775eb49be77abe8d78b3dfcfff10a8d44db95"
+    },
+    {
+      "id": "410021.2",
+      "path": "/assets/index-XvSn6Erm.js",
+      "status": 200,
+      "mime": "text/javascript",
+      "fromDiskCache": false,
+      "fromServiceWorker": false,
+      "sha256": "bfba04960fe216d3552a466a2e1667a485acf113fd9eb53306df25cfbde6d8f0"
+    },
+    {
+      "id": "410021.7",
+      "path": "/logo.png",
+      "status": 200,
+      "mime": "image/png",
+      "fromDiskCache": false,
+      "fromServiceWorker": false,
+      "sha256": "2eaff911b9da9b1f1fcc81adb02f4992bb9ea6b781f4dd048cd79349927ddb7a"
+    },
+    {
+      "id": "410021.8",
+      "path": "/logo.png",
+      "status": 200,
+      "mime": "image/png",
+      "fromDiskCache": false,
+      "fromServiceWorker": false,
+      "sha256": "2eaff911b9da9b1f1fcc81adb02f4992bb9ea6b781f4dd048cd79349927ddb7a"
+    },
+    {
+      "id": "410021.9",
+      "path": "/logo.png",
+      "status": 200,
+      "mime": "image/png",
+      "fromDiskCache": false,
+      "fromServiceWorker": false,
+      "sha256": "2eaff911b9da9b1f1fcc81adb02f4992bb9ea6b781f4dd048cd79349927ddb7a"
+    }
+  ],
+  "requests": [
+    {
+      "path": "/",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/index-XvSn6Erm.js",
+      "method": "GET"
+    },
+    {
+      "path": "/manifest.webmanifest",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/index-BvKYzNGc.css",
+      "method": "GET"
+    },
+    {
+      "path": "/logo.png",
+      "method": "GET"
+    },
+    {
+      "path": "/logo.png",
+      "method": "GET"
+    },
+    {
+      "path": "/logo.png",
+      "method": "GET"
+    }
+  ],
+  "diagnostics": [],
+  "screenshot": {
+    "file": "/tmp/hm-ux0607-release-p72qsv83/live-browser/served-entry.png",
+    "bytes": 48138,
+    "width": 390,
+    "height": 844
+  },
+  "cleanup": {
+    "exited": true,
+    "profileRemoved": true,
+    "exitCode": 0,
+    "signal": null,
+    "profile": "/tmp/hm-ux0607-release-p72qsv83/live-browser/.chrome-profile-bkmBk4"
+  }
+}
