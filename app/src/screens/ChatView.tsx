@@ -7,11 +7,10 @@ import type { ConversationViews } from "../lib/shell-state";
 import { MessageContent } from "../components/MessageContent";
 import { ArrowUpIcon, ChevronDownIcon, FileIcon, ImageIcon, PlusIcon, SearchIcon, StopIcon, XIcon } from "../components/icons";
 import {
-  clearSessionEvents,
   getSessionEvents,
   linkSessionAliases,
 } from "../lib/active-sessions";
-import { BOT_CHAT_TITLE } from "../lib/hermes-client";
+import { BOT_CHAT_TITLE, RpcError } from "../lib/hermes-client";
 import type {
   ApprovalRequest,
   ConnectionState,
@@ -197,6 +196,23 @@ function historyText(m: Record<string, unknown>): string {
  *  ("Message from 🤖 <handle> (@<handle>): …"). */
 const BOT_DM_RE = /^Message from 🤖 [^\n]*?\(@([A-Za-z0-9_.-]{1,64})\):\s*/;
 
+const SESSION_NOT_OWNED = "SESSION_NOT_OWNED";
+
+type OpenFailure = "none" | "session-not-owned" | "create-failed";
+
+class CreateFolderMismatchError extends Error {}
+
+export function isSessionNotOwned(error: unknown): boolean {
+  if (!(error instanceof RpcError) || !error.data || typeof error.data !== "object") return false;
+  return (error.data as { reason?: unknown }).reason === SESSION_NOT_OWNED;
+}
+
+export function safeServerFolder(path: string): boolean {
+  return path.length > 1 && path.length <= 2048 && path.startsWith("/")
+    && !/[\\%\x00-\x1f\x7f:?#*[\]{}]/.test(path)
+    && path.split("/").every((part, index) => index === 0 || (part.length > 0 && part !== "." && part !== ".."));
+}
+
 // ── @-mention autocomplete (Bot Chat) ───────────────────────────────────────
 
 const HANDLE_CHAR_RE = /[A-Za-z0-9_.-]/;
@@ -354,6 +370,13 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   const [items, setItems] = useState<TimelineItem[]>([]);
   const [input, setInput] = useState(savedView.draft);
   const [streaming, setStreaming] = useState(false);
+  const [folderInput, setFolderInput] = useState("");
+  const [createFolder, setCreateFolder] = useState<string | null>(null);
+  const [createBusy, setCreateBusy] = useState(false);
+  const [createAttempt, setCreateAttempt] = useState(0);
+  const [knownFolders, setKnownFolders] = useState<string[]>([]);
+  const [foldersLoading, setFoldersLoading] = useState(false);
+  const [openRetry, setOpenRetry] = useState(0);
   // History resume disembunyikan sampai cache live terlipat dan snap awal selesai.
   const [initializing, setInitializing] = useState(Boolean(session));
   const [transcriptReady, setTranscriptReady] = useState(!session);
@@ -368,6 +391,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   const [sheetClosing, setSheetClosing] = useState(false);
   const [stuck, setStuck] = useState(false);
   const [fatal, setFatal] = useState("");
+  const [openFailure, setOpenFailure] = useState<OpenFailure | "create-mismatch">("none");
   // @-mention autocomplete (Bot Chat only): roster fetched once per session,
   // `mention` is the active token ending at the composer caret.
   const [botRoster, setBotRoster] = useState<ProfileSummary[] | null>(null);
@@ -395,6 +419,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   const resumeRunningRef = useRef(false);
   const resumeCatchupRef = useRef(Boolean(session));
   const storedSidRef = useRef("");
+  const transcriptHydratedRef = useRef(false);
   const loadedMessageCountRef = useRef(0);
   const loadedMessageKeysRef = useRef(new Set<string>());
   const profileRef = useRef("");
@@ -431,6 +456,25 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   // Room sessions keep the "Bot Chat" title, so mentions work automatically;
   // the explicit room check keeps them on even if that ever changes.
   const mentionEnabled = isBotChat || room !== null || isGroup;
+
+  useEffect(() => {
+    if (session || isGroup) return;
+    let cancelled = false;
+    setFoldersLoading(true);
+    client.projectTree(3).then((tree) => {
+      if (cancelled) return;
+      const folders = tree.projects.flatMap((project) => [
+        ...(project.previewSessions ?? []),
+        ...(project.repos?.flatMap((repo) => repo.groups?.flatMap((group) => group.sessions ?? []) ?? []) ?? []),
+      ]).map((item) => item.cwd).filter((cwd): cwd is string => typeof cwd === "string" && safeServerFolder(cwd));
+      setKnownFolders([...new Set(folders)]);
+    }).catch(() => {
+      if (!cancelled) setKnownFolders([]);
+    }).finally(() => {
+      if (!cancelled) setFoldersLoading(false);
+    });
+    return () => { cancelled = true; };
+  }, [client, isGroup, session]);
 
   // Load the group room and start its driver. The driver's onEntry appends
   // every new log entry (user + member) to the timeline.
@@ -499,6 +543,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   // ── open (create or resume) the session ─────────────────────────────────
   useLayoutEffect(() => {
     if (isGroup) return; // group mode is driven by GroupDriver, no session
+    if (!session && !createFolder) return;
     let cancelled = false;
     if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
     settleTimerRef.current = null;
@@ -511,18 +556,23 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
     initialSnapPendingRef.current = Boolean(session);
     sidRef.current = "";
     storedSidRef.current = "";
+    const retainTranscript = Boolean(session && transcriptHydratedRef.current);
+    const readOnlyHistory = session && !session.unpersisted && !retainTranscript
+      ? client.sessionMessages(session.resolved_id || session.id, { profile: session.profile })
+      : null;
     readySummaryRef.current = null;
     loadedMessageCountRef.current = 0;
     loadedMessageKeysRef.current = new Set<string>();
     profileRef.current = "";
     setLiveSid("");
-    setItems([]);
+    if (!retainTranscript) setItems([]);
     setStreaming(false);
     setAwaiting(false);
     setApproval(null);
     setFatal("");
+    setOpenFailure("none");
     setInitializing(Boolean(session));
-    setTranscriptReady(!session);
+    setTranscriptReady(!session || retainTranscript);
     setHasOlder(false);
     setLoadingOlder(false);
     setComposerStatus("");
@@ -533,8 +583,11 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
               omitMessages: true,
               profile: session.profile,
             })
-          : await client.createSession({});
+          : await client.createSession({ cwd: createFolder! });
         if (cancelled) return;
+        if (!session && opened.info?.cwd !== createFolder) {
+          throw new CreateFolderMismatchError(`The gateway did not accept ${createFolder} as this session's working folder. It returned ${opened.info?.cwd || "no folder"}. No message was sent.`);
+        }
         const cached = getSessionEvents(
           client,
           opened.session_id,
@@ -549,7 +602,9 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
           || cached.some(event => event.type === "message.complete");
         const unpersisted = (session?.unpersisted ?? !session) && !persisted;
         if (shouldFetchSessionHistory(Boolean(session), storedSid, unpersisted)) {
-          const page = await client.sessionMessages(storedSid, { profile });
+          const page = readOnlyHistory
+            ? await readOnlyHistory
+            : await client.sessionMessages(storedSid, { profile });
           if (cancelled) return;
           rawMessages = page.messages;
           loadedMessageCountRef.current = page.pagination.returned;
@@ -612,6 +667,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
               ]
             : seeded,
         );
+        transcriptHydratedRef.current = true;
         setStreaming(running);
         setAwaiting(running && !inflightText);
         // Catch up on an approval that fired while we were away.
@@ -619,18 +675,41 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
         if (!cancelled && pending.length > 0) setApproval(pending[0]);
       } catch (err) {
         if (!cancelled) {
-          setFatal(err instanceof Error ? err.message : String(err));
+          const notOwned = isSessionNotOwned(err);
+          if (notOwned && readOnlyHistory && !transcriptHydratedRef.current) {
+            try {
+              const page = await readOnlyHistory;
+              if (cancelled) return;
+              loadedMessageCountRef.current = page.pagination.returned;
+              loadedMessageKeysRef.current = new Set(
+                page.messages
+                  .map((message) => historyMessageKey(message as Record<string, unknown>))
+                  .filter((key): key is string => key !== null),
+              );
+              setHasOlder(page.pagination.returned === page.pagination.limit);
+              setItems(page.messages.flatMap((message) => historyItems(message as Record<string, unknown>)));
+              transcriptHydratedRef.current = true;
+            } catch {
+              // Read-only history is optional when writer acquisition is refused.
+            }
+          }
+          setOpenFailure(notOwned ? "session-not-owned" : err instanceof CreateFolderMismatchError ? "create-mismatch" : !session ? "create-failed" : "none");
+          setFatal(notOwned
+            ? "Writer acquisition was refused because another live Hermes process owns this session. Read-only history is shown when available. Exit or hand off the other writer, then retry."
+            : err instanceof Error ? err.message : String(err));
           setInitializing(false);
           initialSnapPendingRef.current = false;
           setTranscriptReady(true);
         }
+      } finally {
+        if (!cancelled) setCreateBusy(false);
       }
     })();
     return () => {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [client, session?.id]);
+  }, [client, createAttempt, createFolder, openRetry, session?.id]);
 
   // ── mid-turn catch-up: fold cached events before first paint ─────────────
   useLayoutEffect(() => {
@@ -660,7 +739,6 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
       handleGatewayEvent(event, true);
       handledEventsRef.current.add(event);
     }
-    clearSessionEvents(client, liveSid, client.replayGeneration);
     resumeCatchupRef.current = false;
     setInitializing(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -762,22 +840,20 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
           },
         ]);
         break;
-      case "tool.complete":
+      case "tool.complete": {
         // Tool finished but turn is still open: agent returns to reasoning until
         // another tool or response delta says otherwise.
         setAwaiting(true);
+        const summary = typeof p?.summary === "string" ? p.summary : undefined;
+        const duration = typeof p?.duration_s === "number" ? p.duration_s : undefined;
+        const status: ToolStatus = p?.error ? "error" : "done";
         setItems((prev) => {
           const id = String(p?.tool_id ?? "");
           const next = [...prev];
           for (let i = next.length - 1; i >= 0; i--) {
             const item = next[i];
             if (item.kind === "tool" && item.id === id) {
-              next[i] = {
-                ...item,
-                status: "done",
-                summary: typeof p?.summary === "string" ? p.summary : undefined,
-                duration: typeof p?.duration_s === "number" ? p.duration_s : undefined,
-              };
+              next[i] = { ...item, status, summary, duration };
               return next;
             }
           }
@@ -787,13 +863,16 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
               kind: "tool",
               id: id || nextItemId(),
               name: String(p?.name ?? "tool"),
-              context: String(p?.summary ?? ""),
-              status: "done",
+              context: "",
+              status,
+              summary,
+              duration,
               entering: !replay,
             },
           ];
         });
         break;
+      }
       case "bot.reply":
       case "bot_reply":
       case "relay.reply": {
@@ -1357,6 +1436,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
             {t.duration !== undefined && (
               <span className="rowcard-meta">{t.duration.toFixed(1)}s</span>
             )}
+            {t.summary && <span className="toolcard-summary">{t.summary}</span>}
           </div>,
         );
       }
@@ -1567,6 +1647,50 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
         {state !== 'open' && <div className="composer-status" role="status">{state === 'connecting' ? 'Reconnecting…' : 'Gateway unavailable.'} Your draft stays here; sending is disabled.</div>}
         {composerStatus && (
           <div className="composer-status" role="status">{composerStatus}</div>
+        )}
+        {!session && !isGroup && !liveSid && (
+          <div className="working-folder">
+            <label htmlFor="working-folder">Working folder</label>
+            <div className="working-folder-row">
+              <input
+                id="working-folder"
+                className="field"
+                list="known-working-folders"
+                value={folderInput}
+                onChange={(event) => {
+                  const next = event.target.value;
+                  setFolderInput(next);
+                  if (openFailure === "create-mismatch" && next.trim() !== createFolder) setOpenFailure("none");
+                }}
+                placeholder="/workspace/project"
+                aria-describedby="working-folder-help"
+              />
+              <button
+                type="button"
+                className="btn btn-primary"
+                disabled={createBusy || (openFailure === "create-mismatch" && folderInput.trim() === createFolder) || state !== "open" || !safeServerFolder(folderInput.trim())}
+                onClick={() => {
+                  const folder = folderInput.trim();
+                  setCreateBusy(true);
+                  setCreateFolder(folder);
+                  setCreateAttempt(current => current + 1);
+                }}
+              >
+                {createBusy ? "Starting…" : "Start"}
+              </button>
+            </div>
+            <datalist id="known-working-folders">
+              {knownFolders.map((folder) => <option key={folder} value={folder} />)}
+            </datalist>
+            <div id="working-folder-help" className="hint">
+              {foldersLoading ? "Loading server projects…" : "Choose a server project or enter its absolute server path."}
+            </div>
+          </div>
+        )}
+        {openFailure === "session-not-owned" && (
+          <button type="button" className="btn btn-ghost session-retry" onClick={() => setOpenRetry((value) => value + 1)}>
+            Retry session
+          </button>
         )}
         {attachError && (
           <div className="error-line" style={{ marginBottom: "var(--space-6)" }}>{attachError}</div>

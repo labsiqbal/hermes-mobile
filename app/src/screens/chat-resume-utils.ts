@@ -12,7 +12,11 @@ export function liveTurnEvents(events: GatewayEvent[]): GatewayEvent[] {
 
 /** Cache hanya melengkapi state turn yang menurut gateway masih berjalan. */
 export function resumeTurnEvents(events: GatewayEvent[], running: boolean): GatewayEvent[] {
-  return running ? liveTurnEvents(events) : [];
+  if (running) return liveTurnEvents(events);
+  // Completed turns already live in server history. Cache only preserves tool
+  // cards observed on this connection until the next message.start replaces it.
+  if (!events.some((event) => event.type === "message.complete" || event.type === "error")) return [];
+  return events.filter((event) => event.type === "tool.start" || event.type === "tool.complete");
 }
 
 /** Gabungkan state awal dengan event baru yang tiba selama fetch history.

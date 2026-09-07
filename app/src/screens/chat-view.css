@@ -162,6 +162,14 @@
   font-size: var(--text-12);
   font-weight: 500;
 }
+.chat-view .toolcard-summary {
+  max-width: 45%;
+  overflow: hidden;
+  color: var(--fg-dim);
+  font: 500 var(--text-11) var(--font-mono);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 @keyframes cv-chip-pulse {
   0%, 100% { opacity: 1; }
   50%      { opacity: 0.55; }
@@ -359,6 +367,18 @@
   color: var(--fg-dim);
   font: 500 var(--text-11) var(--font-mono);
 }
+.chat-view .working-folder {
+  display: grid;
+  gap: var(--space-6);
+  padding: 0 var(--space-6) var(--space-8);
+}
+.chat-view .working-folder > label {
+  color: var(--fg-dim);
+  font: 600 var(--text-11) var(--font-mono);
+}
+.chat-view .working-folder-row { display: flex; gap: var(--space-6); }
+.chat-view .working-folder-row .field { min-width: 0; flex: 1; }
+.chat-view .session-retry { margin: 0 var(--space-6) var(--space-6); }
 
 /* staged-attachment chips above the pill */
 .chat-view .attach-chips {

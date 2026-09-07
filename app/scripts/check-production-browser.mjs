@@ -9,7 +9,7 @@ import { ChromePipe } from './production-browser-chrome-pipe.mjs';
 import { FIXTURE, installProductionFixtures } from './production-browser-fixtures.mjs';
 
 export const ROOTS = ['Home', 'Chats', 'Bots', 'Cronjobs', 'Manage'];
-export const JOURNEYS = ['login-connect', 'root-navigation', 'project-resume', 'workspace-history-draft', 'bot-profile-draft', 'groups', 'activity-runs', 'manage-sections', 'chat-controls-approval', 'transport-states', 'responsive', 'palette-focus', 'created-session-navigation', 'manage-navigation-context', 'transport-audit'];
+export const JOURNEYS = ['login-connect', 'root-navigation', 'project-resume', 'workspace-history-draft', 'bot-profile-draft', 'groups', 'activity-runs', 'manage-sections', 'chat-controls-approval', 'chat-owner-blocked-history', 'chat-inflight-resume', 'transport-states', 'responsive', 'palette-focus', 'created-session-navigation', 'manage-navigation-context', 'transport-audit'];
 const NAV = 'nav[aria-label="Primary"], nav.tabbar, .tabbar';
 const CONTROLS = 'button, a[href], summary, input:not([type="hidden"]), textarea, select, [role="button"], [role="tab"]';
 const q = JSON.stringify;
@@ -175,7 +175,25 @@ export async function checkNavigationRegressions(j, browser, fixture, trace) {
     await j.run('created-session-navigation', async () => {
       await j.root('Chats');
       await fixture("f.permits['session.create']=1;"); await j.tap('New chat');
+      await j.type('#working-folder', '/fictional/qa-project'); await j.tap('Start');
+      await browser.waitFor("history.state.route.conversation?.session?.id === 'qa-created-initial'");
+      await j.tap('Back');
+      await fixture("f.createResponse={session_id:'qa-mismatch',stored_session_id:'qa-mismatch',info:{...f.resume['qa-project-session']?.info,cwd:'/fictional/wrong-folder',profile_name:'default'}};f.permits['session.create']=1;");
+      await j.tap('New chat'); await j.type('#working-folder', '/fictional/qa-project'); await j.tap('Start');
+      await j.text('did not accept /fictional/qa-project');
+      assert.equal(await browser.evaluate('document.querySelector("#working-folder").value'), '/fictional/qa-project');
+      assert.equal(await browser.evaluate('document.querySelector(".working-folder .btn").disabled'), true, 'Mismatch cannot silently recreate or orphan another session');
+      await fixture("delete f.createResponse;");
+      await j.type('#working-folder', '/fictional/qa-recent');
+      assert.equal(await browser.evaluate('document.querySelector(".working-folder .btn").disabled'), false, 'Changing folder is explicit recovery after a mismatch');
+      await j.type('#working-folder', '/fictional/qa-project');
+      await fixture("f.errors['session.create']='QA fixture create error';f.permits['session.create']=1;"); await j.tap('Start');
+      await j.text('QA fixture create error');
+      await fixture("delete f.errors['session.create'];f.permits['session.create']=1;");
+      assert.equal(await browser.evaluate('document.querySelector(".working-folder .btn").disabled'), false, 'Same-folder create failure enables retry');
+      await j.tap('Start');
       await browser.waitFor("history.state.route.conversation?.session?.id === 'qa-created-session'");
+      const createsAfterMount = (await trace()).filter(t=>t.method==='session.create' && t.params.profile !== 'qa-bot').length;
       // Truly fresh session: resume has no history, and no speculative REST 404.
       await j.type('textarea', 'QA CREATED UNSENT DRAFT');
       await j.tap('Back'); await j.back(1);
@@ -192,7 +210,7 @@ export async function checkNavigationRegressions(j, browser, fixture, trace) {
         await j.text('QA CREATED SETTLED REPLY');
         assert.equal(await browser.evaluate('document.querySelector("textarea").value'), 'QA CREATED UNSENT DRAFT', list + ' canonical re-entry preserves draft');
       }
-      assert.equal((await trace()).filter(t=>t.method==='session.create' && t.params.profile !== 'qa-bot').length, 1, 'Identity recording never recreates the mounted conversation');
+      assert.equal((await trace()).filter(t=>t.method==='session.create' && t.params.profile !== 'qa-bot').length, createsAfterMount, 'Identity recording never recreates the mounted conversation');
       assert.ok((await trace()).filter(t=>t.method==='session.resume'&&t.params.session_id==='qa-created-session').every(t=>t.params.omit_messages===true));
       await j.shot('created-session-restored'); await j.tap('Back');
     });
@@ -451,6 +469,64 @@ async function checkProduction(options) {
       await browser.waitFor(`__productionFixture.trace.some(t=>t.method==='approval.respond'&&t.params.choice==='deny'&&t.params.request_id==='qa-approval')`);
       await j.tap('Back');
     });
+    await j.run('chat-owner-blocked-history', async () => {
+      await j.root('Home');
+      await fixture("f.ownerBlocked['qa-project-session']=true;");
+      const before = (await trace()).length;
+      await j.tap('QA Project conversation', 'body', false);
+      await j.text('Writer acquisition was refused');
+      await j.text('QA restored answer qa-project-session');
+      const blocked = (await trace()).slice(before);
+      assert.ok(blocked.some(t => t.method === 'session.resume'), 'Owner-blocked open attempts normal writer acquisition');
+      assert.ok(blocked.some(t => t.route === 'GET /api/sessions/qa-project-session/messages'), 'Owner-blocked open independently hydrates read-only history');
+      assert.ok(!blocked.some(t => ['prompt.submit', 'session.create'].includes(t.method)), 'Owner-blocked open makes no submit or clone');
+      const retryBefore = (await trace()).length;
+      await j.tap('Retry session'); await j.text('Writer acquisition was refused');
+      await j.text('QA restored answer qa-project-session');
+      const retry = (await trace()).slice(retryBefore);
+      assert.ok(retry.some(t => t.method === 'session.resume'), 'Retry rechecks writer ownership');
+      assert.ok(!retry.some(t => t.route === 'GET /api/sessions/qa-project-session/messages'), 'Retry retains loaded read-only transcript');
+      assert.ok(!retry.some(t => ['prompt.submit', 'session.create'].includes(t.method)), 'Owner-blocked retry makes no submit or clone');
+      await fixture("delete f.ownerBlocked['qa-project-session'];");
+      await j.tap('Retry session'); await j.text('QA restored answer qa-project-session'); await j.tap('Back');
+    });
+    await j.run('chat-inflight-resume', async () => {
+      await j.root('Home'); await j.tap('QA Project conversation', 'body', false);
+      await fixture("f.resume['qa-project-session']={running:true,status:'streaming',inflight:{assistant:''}};f.emit('message.start','qa-project-session',{});f.emit('tool.start','qa-project-session',{tool_id:'qa-tool',name:'fixture_tool',context:'private command omitted'});");
+      await j.text('Working · fixture_tool');
+      await fixture("f.emit('tool.complete','qa-project-session',{tool_id:'qa-tool',name:'fixture_tool',summary:'fixture tool summary',duration_s:0.2});");
+      await j.text('fixture tool summary');
+      // Leave through real browser history, then reopen. App-level event cache
+      // must restore activity/thinking without fabricating unseen history.
+      await j.tap('Back'); await j.root('Home');
+      await j.text('QA Project conversation'); await j.tap('QA Project conversation', 'body', false);
+      await j.text('fixture tool summary'); await j.text('Thinking…');
+      assert.ok(!/private command omitted/.test(await browser.evaluate('document.body.innerText')), 'Tool context remains hidden');
+      await j.tap('Back'); await j.root('Home');
+      await j.tap('QA Project conversation', 'body', false);
+      await j.text('fixture tool summary'); await j.text('Thinking…');
+      assert.ok(!/private command omitted/.test(await browser.evaluate('document.body.innerText')), 'Second reentry retains completed tool summary without context');
+      await j.shot('chat-inflight-restored');
+      await j.tap('Back'); await j.root('Home');
+      await fixture("f.hold=['GET /api/sessions/qa-project-session/messages'];");
+      await j.tap('QA Project conversation', 'body', false);
+      await browser.waitFor("__productionFixture.trace.some(t=>t.route==='GET /api/sessions/qa-project-session/messages')");
+      await fixture("f.resume['qa-project-session']={running:false,status:'idle'};f.emit('message.complete','qa-project-session',{text:'QA delayed history completion',status:'completed'});f.release('GET /api/sessions/qa-project-session/messages');");
+      await j.text('QA delayed history completion');
+      assert.equal(await browser.evaluate('document.body.innerText.includes("Thinking…")'), false, 'Completion during delayed history fetch must retire stale thinking');
+      await j.tap('Back');
+      // Reload creates a new HermesConnection and unmounts ChatView. No WeakMap
+      // event cache survives; gateway inflight state alone must restore thought.
+      await browser.evaluate("localStorage.setItem('hermes-mobile.qa-inflight-resume', JSON.stringify({resume:{'qa-project-session':{running:true,status:'streaming',inflight:{assistant:'',streaming:true}}},historyBySession:{'qa-project-session':[{role:'user',content:'QA restored question qa-project-session'},{role:'assistant',content:'QA fixture resumed reply'}]}}));");
+      await browser.open(browser.origin + '/');
+      await j.tap(FIXTURE.gateway.label, 'body', false); await j.root('Home');
+      await j.tap('QA Project conversation', 'body', false); await j.text('Thinking…');
+      assert.equal(await browser.evaluate('document.body.innerText.includes("QA fixture resumed reply")'), true, 'Fresh reopen retains server history while active thinking comes from session.resume');
+      await j.shot('chat-inflight-fresh-cacheless');
+      await browser.evaluate("localStorage.removeItem('hermes-mobile.qa-inflight-resume')");
+      await fixture("delete f.historyBySession['qa-project-session'];f.resume['qa-project-session']={running:false,status:'idle'};f.emit('message.complete','qa-project-session',{text:'QA fixture resumed reply',status:'completed'});");
+      await j.tap('Back');
+    });
     await j.run('transport-states', async () => {
       await fixture("f.hold=['profiles.list'];"); await j.root('Bots'); await j.text('Loading'); await j.shot('state-loading');
       await fixture("f.release('profiles.list');"); await j.text('QA Fixture Bot');
@@ -577,8 +653,8 @@ async function selfTest(options) {
       const included=await rpc('session.resume',{session_id:'qa-recent-session',omit_messages:false});
       const deniedCreate=await rpc('session.create',{});
       f.permits['session.create']=1;
-      const created=await rpc('session.create',{});
-      const fresh=await fetch(${q(FIXTURE.gateway.url + '/api/sessions/qa-created-session/messages?profile=default')});
+      const created=await rpc('session.create',{profile:'default',cwd:'/fictional/qa-project'});
+      const fresh=await fetch(${q(FIXTURE.gateway.url + '/api/sessions/')}+created.result.session_id+'/messages?profile=default');
       const identity=await (await fetch(${q(FIXTURE.gateway.url + '/api/profiles/active')})).json();
       const managementInit={method:'GET',credentials:'include',redirect:'error',cache:'no-store'};
       const memory=await (await fetch(${q(FIXTURE.gateway.url + '/api/learning/graph?profile=default')},managementInit)).json();
@@ -597,7 +673,7 @@ async function selfTest(options) {
     assert.deepEqual(fixtureCanary.omitted.result.messages, []);
     assert.equal(fixtureCanary.included.result.messages.length, 2);
     assert.ok(fixtureCanary.deniedCreate.error);
-    assert.equal(fixtureCanary.created.result.session_id,'qa-created-session');
+    assert.equal(fixtureCanary.created.result.session_id,'qa-created-initial');
     assert.equal(fixtureCanary.freshStatus,404);
     cases.push({name:'resume honors exact omit_messages; create requires permit; truly fresh REST is 404',status:'passed'});
     assert.ok(fixtureCanary.mutation.error);

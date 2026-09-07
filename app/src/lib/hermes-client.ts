@@ -146,6 +146,7 @@ export interface ResumeResult {
   running?: boolean;
   status?: "idle" | "resuming" | "streaming" | string;
   hydrating?: boolean;
+  /** Present only for a live turn. Server shape: assistant/user text plus streaming. */
   inflight?: {
     assistant?: string;
     streaming?: boolean;
