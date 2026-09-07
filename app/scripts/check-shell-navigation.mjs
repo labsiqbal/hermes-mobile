@@ -30,7 +30,7 @@ try {
     {id:'created-session-navigation',status:'passed'}, {id:'manage-navigation-context',status:'passed'},
   ]);
   assert.deepEqual(report.fixture.violations, []);
-  assert.equal(report.fixture.trace.filter(t=>t.method==='session.create').length, 1);
+  assert.equal(report.fixture.trace.filter(t=>t.method==='session.create').length, 4, 'One create per intentional initial, mismatch, transient-failure, and retry attempt; mounted-session restoration must not recreate');
   assert.ok(!report.fixture.trace.some(t=>['prompt.submit','session.steer','session.interrupt','profiles.configure','approval.respond'].includes(t.method)));
   assert.deepEqual(browser.diagnostics, []);
   assert.deepEqual(host.rejected, []);
