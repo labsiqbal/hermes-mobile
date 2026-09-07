@@ -9,7 +9,7 @@ import { ChromePipe } from './production-browser-chrome-pipe.mjs';
 import { FIXTURE, installProductionFixtures } from './production-browser-fixtures.mjs';
 
 export const ROOTS = ['Home', 'Chats', 'Bots', 'Cronjobs', 'Manage'];
-export const JOURNEYS = ['login-connect', 'root-navigation', 'project-resume', 'workspace-history-draft', 'bot-profile-draft', 'groups', 'activity-runs', 'manage-sections', 'chat-controls-approval', 'chat-inflight-resume', 'transport-states', 'responsive', 'palette-focus', 'created-session-navigation', 'manage-navigation-context', 'transport-audit'];
+export const JOURNEYS = ['login-connect', 'root-navigation', 'project-resume', 'workspace-history-draft', 'bot-profile-draft', 'groups', 'activity-runs', 'manage-sections', 'chat-controls-approval', 'chat-owner-blocked-history', 'chat-inflight-resume', 'transport-states', 'responsive', 'palette-focus', 'created-session-navigation', 'manage-navigation-context', 'transport-audit'];
 const NAV = 'nav[aria-label="Primary"], nav.tabbar, .tabbar';
 const CONTROLS = 'button, a[href], summary, input:not([type="hidden"]), textarea, select, [role="button"], [role="tab"]';
 const q = JSON.stringify;
@@ -469,6 +469,27 @@ async function checkProduction(options) {
       await browser.waitFor(`__productionFixture.trace.some(t=>t.method==='approval.respond'&&t.params.choice==='deny'&&t.params.request_id==='qa-approval')`);
       await j.tap('Back');
     });
+    await j.run('chat-owner-blocked-history', async () => {
+      await j.root('Home');
+      await fixture("f.ownerBlocked['qa-project-session']=true;");
+      const before = (await trace()).length;
+      await j.tap('QA Project conversation', 'body', false);
+      await j.text('Writer acquisition was refused');
+      await j.text('QA restored answer qa-project-session');
+      const blocked = (await trace()).slice(before);
+      assert.ok(blocked.some(t => t.method === 'session.resume'), 'Owner-blocked open attempts normal writer acquisition');
+      assert.ok(blocked.some(t => t.route === 'GET /api/sessions/qa-project-session/messages'), 'Owner-blocked open independently hydrates read-only history');
+      assert.ok(!blocked.some(t => ['prompt.submit', 'session.create'].includes(t.method)), 'Owner-blocked open makes no submit or clone');
+      const retryBefore = (await trace()).length;
+      await j.tap('Retry session'); await j.text('Writer acquisition was refused');
+      await j.text('QA restored answer qa-project-session');
+      const retry = (await trace()).slice(retryBefore);
+      assert.ok(retry.some(t => t.method === 'session.resume'), 'Retry rechecks writer ownership');
+      assert.ok(!retry.some(t => t.route === 'GET /api/sessions/qa-project-session/messages'), 'Retry retains loaded read-only transcript');
+      assert.ok(!retry.some(t => ['prompt.submit', 'session.create'].includes(t.method)), 'Owner-blocked retry makes no submit or clone');
+      await fixture("delete f.ownerBlocked['qa-project-session'];");
+      await j.tap('Retry session'); await j.text('QA restored answer qa-project-session'); await j.tap('Back');
+    });
     await j.run('chat-inflight-resume', async () => {
       await j.root('Home'); await j.tap('QA Project conversation', 'body', false);
       await fixture("f.resume['qa-project-session']={running:true,status:'streaming',inflight:{assistant:''}};f.emit('message.start','qa-project-session',{});f.emit('tool.start','qa-project-session',{tool_id:'qa-tool',name:'fixture_tool',context:'private command omitted'});");
@@ -481,9 +502,19 @@ async function checkProduction(options) {
       await j.text('QA Project conversation'); await j.tap('QA Project conversation', 'body', false);
       await j.text('fixture tool summary'); await j.text('Thinking…');
       assert.ok(!/private command omitted/.test(await browser.evaluate('document.body.innerText')), 'Tool context remains hidden');
+      await j.tap('Back'); await j.root('Home');
+      await j.tap('QA Project conversation', 'body', false);
+      await j.text('fixture tool summary'); await j.text('Thinking…');
+      assert.ok(!/private command omitted/.test(await browser.evaluate('document.body.innerText')), 'Second reentry retains completed tool summary without context');
       await j.shot('chat-inflight-restored');
-      await fixture("f.resume['qa-project-session']={running:false,status:'idle'};f.emit('message.complete','qa-project-session',{text:'QA fixture resumed reply',status:'completed'});");
-      await j.text('QA fixture resumed reply'); await j.tap('Back');
+      await j.tap('Back'); await j.root('Home');
+      await fixture("f.hold=['GET /api/sessions/qa-project-session/messages'];");
+      await j.tap('QA Project conversation', 'body', false);
+      await browser.waitFor("__productionFixture.trace.some(t=>t.route==='GET /api/sessions/qa-project-session/messages')");
+      await fixture("f.resume['qa-project-session']={running:false,status:'idle'};f.emit('message.complete','qa-project-session',{text:'QA delayed history completion',status:'completed'});f.release('GET /api/sessions/qa-project-session/messages');");
+      await j.text('QA delayed history completion');
+      assert.equal(await browser.evaluate('document.body.innerText.includes("Thinking…")'), false, 'Completion during delayed history fetch must retire stale thinking');
+      await j.tap('Back');
       // Reload creates a new HermesConnection and unmounts ChatView. No WeakMap
       // event cache survives; gateway inflight state alone must restore thought.
       await browser.evaluate("localStorage.setItem('hermes-mobile.qa-inflight-resume', JSON.stringify({resume:{'qa-project-session':{running:true,status:'streaming',inflight:{assistant:'',streaming:true}}},historyBySession:{'qa-project-session':[{role:'user',content:'QA restored question qa-project-session'},{role:'assistant',content:'QA fixture resumed reply'}]}}));");

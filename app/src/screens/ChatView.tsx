@@ -7,7 +7,6 @@ import type { ConversationViews } from "../lib/shell-state";
 import { MessageContent } from "../components/MessageContent";
 import { ArrowUpIcon, ChevronDownIcon, FileIcon, ImageIcon, PlusIcon, SearchIcon, StopIcon, XIcon } from "../components/icons";
 import {
-  clearSessionEvents,
   getSessionEvents,
   linkSessionAliases,
 } from "../lib/active-sessions";
@@ -420,6 +419,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   const resumeRunningRef = useRef(false);
   const resumeCatchupRef = useRef(Boolean(session));
   const storedSidRef = useRef("");
+  const transcriptHydratedRef = useRef(false);
   const loadedMessageCountRef = useRef(0);
   const loadedMessageKeysRef = useRef(new Set<string>());
   const profileRef = useRef("");
@@ -556,19 +556,23 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
     initialSnapPendingRef.current = Boolean(session);
     sidRef.current = "";
     storedSidRef.current = "";
+    const retainTranscript = Boolean(session && transcriptHydratedRef.current);
+    const readOnlyHistory = session && !session.unpersisted && !retainTranscript
+      ? client.sessionMessages(session.resolved_id || session.id, { profile: session.profile })
+      : null;
     readySummaryRef.current = null;
     loadedMessageCountRef.current = 0;
     loadedMessageKeysRef.current = new Set<string>();
     profileRef.current = "";
     setLiveSid("");
-    setItems([]);
+    if (!retainTranscript) setItems([]);
     setStreaming(false);
     setAwaiting(false);
     setApproval(null);
     setFatal("");
     setOpenFailure("none");
     setInitializing(Boolean(session));
-    setTranscriptReady(!session);
+    setTranscriptReady(!session || retainTranscript);
     setHasOlder(false);
     setLoadingOlder(false);
     setComposerStatus("");
@@ -598,7 +602,9 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
           || cached.some(event => event.type === "message.complete");
         const unpersisted = (session?.unpersisted ?? !session) && !persisted;
         if (shouldFetchSessionHistory(Boolean(session), storedSid, unpersisted)) {
-          const page = await client.sessionMessages(storedSid, { profile });
+          const page = readOnlyHistory
+            ? await readOnlyHistory
+            : await client.sessionMessages(storedSid, { profile });
           if (cancelled) return;
           rawMessages = page.messages;
           loadedMessageCountRef.current = page.pagination.returned;
@@ -661,6 +667,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
               ]
             : seeded,
         );
+        transcriptHydratedRef.current = true;
         setStreaming(running);
         setAwaiting(running && !inflightText);
         // Catch up on an approval that fired while we were away.
@@ -669,9 +676,26 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
       } catch (err) {
         if (!cancelled) {
           const notOwned = isSessionNotOwned(err);
+          if (notOwned && readOnlyHistory && !transcriptHydratedRef.current) {
+            try {
+              const page = await readOnlyHistory;
+              if (cancelled) return;
+              loadedMessageCountRef.current = page.pagination.returned;
+              loadedMessageKeysRef.current = new Set(
+                page.messages
+                  .map((message) => historyMessageKey(message as Record<string, unknown>))
+                  .filter((key): key is string => key !== null),
+              );
+              setHasOlder(page.pagination.returned === page.pagination.limit);
+              setItems(page.messages.flatMap((message) => historyItems(message as Record<string, unknown>)));
+              transcriptHydratedRef.current = true;
+            } catch {
+              // Read-only history is optional when writer acquisition is refused.
+            }
+          }
           setOpenFailure(notOwned ? "session-not-owned" : err instanceof CreateFolderMismatchError ? "create-mismatch" : !session ? "create-failed" : "none");
           setFatal(notOwned
-            ? "This session is still owned by another live surface. Exit or hand off the old surface, then retry. Your transcript and draft stay here."
+            ? "Writer acquisition was refused because another live Hermes process owns this session. Read-only history is shown when available. Exit or hand off the other writer, then retry."
             : err instanceof Error ? err.message : String(err));
           setInitializing(false);
           initialSnapPendingRef.current = false;
@@ -715,7 +739,6 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
       handleGatewayEvent(event, true);
       handledEventsRef.current.add(event);
     }
-    clearSessionEvents(client, liveSid, client.replayGeneration);
     resumeCatchupRef.current = false;
     setInitializing(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps

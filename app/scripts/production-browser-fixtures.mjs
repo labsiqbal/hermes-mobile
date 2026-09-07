@@ -21,7 +21,7 @@ export function installProductionFixtures(fixture) {
     trace, violations, mode: 'normal', authenticated: false, approval: false,
     hold: [], errors: {}, unsupported: [], permits: {}, empty: [],
     currentProfiles: [], cronOwner: 'default', resume: persistedServer.resume || {},
-    historyBySession: persistedServer.historyBySession || {},
+    ownerBlocked: {}, historyBySession: persistedServer.historyBySession || {},
     createdHistory: [], normalCreateCount: 0,
     release(method) { this.hold = this.hold.filter(x => x !== method); for (const finish of held.get(method) || []) finish(); held.delete(method); },
     emit(type, session_id, payload) {
@@ -182,6 +182,9 @@ export function installProductionFixtures(fixture) {
         return { name: profile.name, description: profile.description || 'QA fictional description', soul: 'QA fictional role instructions', model: { default: profile.model, provider: profile.provider }, skills: control.empty.includes('profiles.describe') ? [] : [{ name: 'qa-skill', enabled: true, label: 'QA Fixture Skill', description: 'Fictional capability' }], toolsets: [], mcp_servers: [] };
       }
       case 'session.resume': {
+        if (control.ownerBlocked[params.session_id]) {
+          throw { code: 4009, message: 'Session already has a live owner', data: { reason: 'SESSION_NOT_OWNED' } };
+        }
         const session = [...f.sessions, f.bot, f.privateBot].find(s => s.id === params.session_id && s.profile === (params.profile || 'default'));
         if (!session) return fail(`Unknown resume session: ${params.session_id}`);
         if (session.profile === 'qa-bot' && params.profile !== 'qa-bot') return fail('Bot resume lost profile scope');
@@ -243,7 +246,7 @@ export function installProductionFixtures(fixture) {
         trace.push({ transport: 'rpc', method: request.method, params: request.params });
         void wait(request.method).then(() => {
           try { this.frame({ jsonrpc: '2.0', id: request.id, result: rpc(request.method, request.params || {}) }); }
-          catch (error) { this.frame({ jsonrpc: '2.0', id: request.id, error: { code: error.code || -32000, message: error.message } }); }
+          catch (error) { this.frame({ jsonrpc: '2.0', id: request.id, error: { code: error.code || -32000, message: error.message, ...(error.data ? { data: error.data } : {}) } }); }
         });
       }
     }

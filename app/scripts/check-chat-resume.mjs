@@ -72,6 +72,13 @@ assert.deepEqual(
   ["message.start", "tool.start"],
   "running gateway state may restore current thinking/tool state",
 );
+assert.deepEqual(
+  resumeTurnEvents([
+    event("message.start"), event("tool.start"), event("tool.complete"), event("message.complete"),
+  ], false).map((item) => item.type),
+  ["tool.start", "tool.complete"],
+  "a later reopen keeps observed tool summaries without reviving stale thinking",
+);
 const baselineStart = event("message.start");
 const racedStart = event("message.start");
 assert.deepEqual(
@@ -127,6 +134,29 @@ recordSessionEvent(cacheOwner, { type: "message.delta", session_id: "s", payload
 const latestDelta = getSessionEvents(cacheOwner, "s", 1).at(-1);
 assert.equal(latestDelta, cachedDelta, "coalesced deltas must retain object identity");
 assert.equal(latestDelta.payload.text, "AB");
+recordSessionEvent(cacheOwner, { type: "tool.start", session_id: "s", payload: { tool_id: "tool" } }, 1);
+recordSessionEvent(cacheOwner, { type: "tool.complete", session_id: "s", payload: { tool_id: "tool", summary: "done" } }, 1);
+recordSessionEvent(cacheOwner, { type: "message.complete", session_id: "s", payload: { text: "done" } }, 1);
+const firstReentry = getSessionEvents(cacheOwner, "s", 1);
+const secondReentry = getSessionEvents(cacheOwner, "s", 1);
+assert.deepEqual(
+  resumeTurnEvents(firstReentry, false).map((item) => item.type),
+  ["tool.start", "tool.complete"],
+  "first reentry retains observed completed tool summary",
+);
+assert.deepEqual(
+  resumeTurnEvents(secondReentry, false).map((item) => item.type),
+  ["tool.start", "tool.complete"],
+  "second reentry retains observed completed tool summary",
+);
+const delayedStart = event("message.start");
+const delayedTool = event("tool.start");
+const delayedComplete = event("message.complete");
+assert.deepEqual(
+  resumeCatchupEvents([delayedStart, delayedTool], [delayedStart, delayedTool, delayedComplete], true).map((item) => item.type),
+  ["message.start", "tool.start", "message.complete"],
+  "completion during delayed history catch-up retires stale thinking",
+);
 
 const noCacheOwner = {};
 assert.deepEqual(
