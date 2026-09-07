@@ -17,6 +17,7 @@ import type {
   GatewayEvent,
   HermesConnection,
   ModelOptions,
+  PathCompletion,
   ProfileSummary,
   SavedConnection,
   SessionInfo,
@@ -207,10 +208,43 @@ export function isSessionNotOwned(error: unknown): boolean {
   return (error.data as { reason?: unknown }).reason === SESSION_NOT_OWNED;
 }
 
+const sensitiveServerPart = /^(?:\.ssh|\.gnupg|\.aws|\.kube|\.docker|\.netrc|id_(?:rsa|dsa|ecdsa|ed25519)|.*\.(?:pem|key|p12|pfx|kdbx))$/i;
+
+function withoutTrailingSlash(path: string): string {
+  return path.length > 1 && path.endsWith("/") ? path.slice(0, -1) : path;
+}
+
 export function safeServerFolder(path: string): boolean {
-  return path.length > 1 && path.length <= 2048 && path.startsWith("/")
+  return path === "/" || (path.length > 1 && path.length <= 2048 && path.startsWith("/")
     && !/[\\%\x00-\x1f\x7f:?#*[\]{}]/.test(path)
-    && path.split("/").every((part, index) => index === 0 || (part.length > 0 && part !== "." && part !== ".."));
+    && path.split("/").every((part, index, parts) => index === 0 || (index === parts.length - 1 && part === "") || (part.length > 0 && part !== "." && part !== ".." && !sensitiveServerPart.test(part))));
+}
+
+export function pathCompletionContext(path: string): { word: string; cwd: string; prefix: string } | null {
+  if (!safeServerFolder(path)) return null;
+  if (path.endsWith("/")) {
+    const cwd = withoutTrailingSlash(path) || "/";
+    return { word: "@folder:", cwd, prefix: cwd === "/" ? "/" : `${cwd}/` };
+  }
+  const canonical = withoutTrailingSlash(path);
+  const lastSlash = canonical.lastIndexOf("/");
+  const prefix = canonical.slice(0, lastSlash + 1);
+  const relative = canonical.slice(lastSlash + 1);
+  return { word: `@folder:${relative}`, cwd: prefix.length > 1 ? prefix.slice(0, -1) : "/", prefix };
+}
+
+export function absolutePathCompletions(path: string, items: PathCompletion[]): string[] {
+  const context = pathCompletionContext(path);
+  if (!context) return [];
+  const folders = new Set<string>();
+  for (const item of items) {
+    if (!item || typeof item.text !== "string" || !item.text.startsWith("@folder:")) continue;
+    const relative = item.text.slice("@folder:".length).replace(/\/$/, "");
+    if (!relative || !safeServerFolder(`${context.prefix}${relative}`)) continue;
+    folders.add(`${context.prefix}${relative}/`);
+    if (folders.size === 30) break;
+  }
+  return [...folders];
 }
 
 // ── @-mention autocomplete (Bot Chat) ───────────────────────────────────────
@@ -371,11 +405,11 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   const [input, setInput] = useState(savedView.draft);
   const [streaming, setStreaming] = useState(false);
   const [folderInput, setFolderInput] = useState("");
+  const [folderSuggestions, setFolderSuggestions] = useState<string[]>([]);
+  const [folderSuggestionIndex, setFolderSuggestionIndex] = useState(0);
   const [createFolder, setCreateFolder] = useState<string | null>(null);
   const [createBusy, setCreateBusy] = useState(false);
   const [createAttempt, setCreateAttempt] = useState(0);
-  const [knownFolders, setKnownFolders] = useState<string[]>([]);
-  const [foldersLoading, setFoldersLoading] = useState(false);
   const [openRetry, setOpenRetry] = useState(0);
   // History resume disembunyikan sampai cache live terlipat dan snap awal selesai.
   const [initializing, setInitializing] = useState(Boolean(session));
@@ -410,6 +444,8 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   const [modelError, setModelError] = useState("");
   const [modelQuery, setModelQuery] = useState("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const completionRequestRef = useRef(0);
+  const folderListboxId = "working-folder-suggestions";
   const imageInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const sidRef = useRef("");
@@ -457,24 +493,6 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   // the explicit room check keeps them on even if that ever changes.
   const mentionEnabled = isBotChat || room !== null || isGroup;
 
-  useEffect(() => {
-    if (session || isGroup) return;
-    let cancelled = false;
-    setFoldersLoading(true);
-    client.projectTree(3).then((tree) => {
-      if (cancelled) return;
-      const folders = tree.projects.flatMap((project) => [
-        ...(project.previewSessions ?? []),
-        ...(project.repos?.flatMap((repo) => repo.groups?.flatMap((group) => group.sessions ?? []) ?? []) ?? []),
-      ]).map((item) => item.cwd).filter((cwd): cwd is string => typeof cwd === "string" && safeServerFolder(cwd));
-      setKnownFolders([...new Set(folders)]);
-    }).catch(() => {
-      if (!cancelled) setKnownFolders([]);
-    }).finally(() => {
-      if (!cancelled) setFoldersLoading(false);
-    });
-    return () => { cancelled = true; };
-  }, [client, isGroup, session]);
 
   // Load the group room and start its driver. The driver's onEntry appends
   // every new log entry (user + member) to the timeline.
@@ -540,6 +558,36 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
     };
   }, [client, mentionEnabled, isGroup]);
 
+  useEffect(() => {
+    if (session || isGroup || liveSid || state !== "open") {
+      completionRequestRef.current += 1;
+      setFolderSuggestions([]);
+      return;
+    }
+    const context = pathCompletionContext(folderInput);
+    if (!context) {
+      completionRequestRef.current += 1;
+      setFolderSuggestions([]);
+      return;
+    }
+    const request = ++completionRequestRef.current;
+    const timer = setTimeout(() => {
+      void client.completePath(context.word, context.cwd)
+        .then((items) => {
+          if (completionRequestRef.current !== request) return;
+          setFolderSuggestions(absolutePathCompletions(folderInput, items));
+          setFolderSuggestionIndex(0);
+        })
+        .catch(() => {
+          if (completionRequestRef.current === request) setFolderSuggestions([]);
+        });
+    }, 120);
+    return () => {
+      clearTimeout(timer);
+      completionRequestRef.current += 1;
+    };
+  }, [client, folderInput, isGroup, liveSid, session, state]);
+
   // ── open (create or resume) the session ─────────────────────────────────
   useLayoutEffect(() => {
     if (isGroup) return; // group mode is driven by GroupDriver, no session
@@ -583,9 +631,9 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
               omitMessages: true,
               profile: session.profile,
             })
-          : await client.createSession({ cwd: createFolder! });
+          : await client.createSession({ cwd: withoutTrailingSlash(createFolder!) });
         if (cancelled) return;
-        if (!session && opened.info?.cwd !== createFolder) {
+        if (!session && withoutTrailingSlash(opened.info?.cwd || "") !== withoutTrailingSlash(createFolder!)) {
           throw new CreateFolderMismatchError(`The gateway did not accept ${createFolder} as this session's working folder. It returned ${opened.info?.cwd || "no folder"}. No message was sent.`);
         }
         const cached = getSessionEvents(
@@ -1600,7 +1648,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
                 ? "Connect to continue this conversation. You can keep writing your draft below."
                 : liveSid
                 ? "Say something — the agent runs on " + conn.label + "."
-                : "Opening session…"}
+                : "Choose a working folder to start."}
           </div>
         )}
       </div>
@@ -1651,20 +1699,74 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
         {!session && !isGroup && !liveSid && (
           <div className="working-folder">
             <label htmlFor="working-folder">Working folder</label>
-            <div className="working-folder-row">
+            <div className="working-folder-path">
               <input
                 id="working-folder"
-                className="field"
-                list="known-working-folders"
+                className="field mono"
                 value={folderInput}
                 onChange={(event) => {
                   const next = event.target.value;
+                  completionRequestRef.current += 1;
                   setFolderInput(next);
+                  setFolderSuggestions([]);
+                  setFolderSuggestionIndex(0);
                   if (openFailure === "create-mismatch" && next.trim() !== createFolder) setOpenFailure("none");
                 }}
                 placeholder="/workspace/project"
                 aria-describedby="working-folder-help"
+                role="combobox"
+                aria-autocomplete="list"
+                aria-controls={folderListboxId}
+                aria-expanded={folderSuggestions.length > 0}
+                aria-activedescendant={folderSuggestions.length > 0 ? `${folderListboxId}-${folderSuggestionIndex}` : undefined}
+                autoComplete="off"
+                autoCapitalize="off"
+                autoCorrect="off"
+                spellCheck={false}
+                onKeyDown={(event) => {
+                  if (!folderSuggestions.length) return;
+                  if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+                    event.preventDefault();
+                    setFolderSuggestionIndex((current) => (current + (event.key === "ArrowDown" ? 1 : folderSuggestions.length - 1)) % folderSuggestions.length);
+                  } else if (event.key === "Enter" || (event.key === "Tab" && !event.shiftKey)) {
+                    event.preventDefault();
+                    setFolderInput(folderSuggestions[folderSuggestionIndex]);
+                    setFolderSuggestions([]);
+                  } else if (event.key === "Escape") {
+                    setFolderSuggestions([]);
+                  }
+                }}
               />
+            </div>
+            {folderSuggestions.length > 0 && (
+              <div id={folderListboxId} className="folder-suggestions" role="listbox" aria-label="Folder suggestions">
+                {folderSuggestions.map((suggestion, index) => (
+                  <button
+                    id={`${folderListboxId}-${index}`}
+                    key={suggestion}
+                    type="button"
+                    role="option"
+                    aria-selected={index === folderSuggestionIndex}
+                    className={index === folderSuggestionIndex ? "active" : ""}
+                    onPointerDown={(event) => {
+                      event.preventDefault();
+                      setFolderInput(suggestion);
+                      setFolderSuggestions([]);
+                    }}
+                    onClick={() => {
+                      setFolderInput(suggestion);
+                      setFolderSuggestions([]);
+                    }}
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div id="working-folder-help" className="hint">
+              Enter an absolute server path. Matching folders come from this gateway.
+            </div>
+            <div className="working-folder-actions">
               <button
                 type="button"
                 className="btn btn-primary"
@@ -1678,12 +1780,6 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
               >
                 {createBusy ? "Starting…" : "Start"}
               </button>
-            </div>
-            <datalist id="known-working-folders">
-              {knownFolders.map((folder) => <option key={folder} value={folder} />)}
-            </datalist>
-            <div id="working-folder-help" className="hint">
-              {foldersLoading ? "Loading server projects…" : "Choose a server project or enter its absolute server path."}
             </div>
           </div>
         )}
@@ -1739,7 +1835,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
             </button>
           </div>
         )}
-        <div className="composer-pill">
+        {(session || isGroup || liveSid) && <div className="composer-pill">
           <textarea
             ref={inputRef}
             className="composer-input"
@@ -1833,7 +1929,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
             )}
             </div>
           </div>
-        </div>
+        </div>}
         <input
           ref={imageInputRef}
           type="file"
