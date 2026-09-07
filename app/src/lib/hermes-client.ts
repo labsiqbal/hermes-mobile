@@ -207,6 +207,19 @@ export interface CreateResult extends ResumeResult {
   message_count?: number;
 }
 
+/** A source-backed path completion returned by the gateway. */
+export interface PathCompletion {
+  text: string;
+  display?: string;
+  meta?: string;
+}
+
+function isFolderCompletion(value: unknown): value is PathCompletion {
+  if (!value || typeof value !== "object") return false;
+  const text = (value as { text?: unknown }).text;
+  return typeof text === "string" && /^@folder:[^/\\%\x00-\x1f\x7f:?#*[\]{}]+$/.test(text);
+}
+
 /** Result shape of `profiles.configure` (methods_profiles.py): every accepted
  *  field reports under `applied`; a ui_meta CAS mismatch lands as
  *  `applied.ui_meta === false` + `ui_meta_conflicts` ({key: {expected,
@@ -1023,6 +1036,12 @@ export class HermesConnection {
 
   async createSession(options: { title?: string; cwd?: string; model?: string; profile?: string } = {}): Promise<CreateResult> {
     return await this.rpc<CreateResult>("session.create", { ...options });
+  }
+
+  /** Native gateway completion with an explicit absolute lookup root. */
+  async completePath(word: string, cwd: string): Promise<PathCompletion[]> {
+    const result = await this.rpc<{ items?: PathCompletion[] }>("complete.path", { word, cwd });
+    return Array.isArray(result.items) ? result.items.filter(isFolderCompletion).slice(0, 30) : [];
   }
 
   async resumeSession(

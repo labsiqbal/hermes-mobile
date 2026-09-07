@@ -174,9 +174,36 @@ export class Journeys {
 export async function checkNavigationRegressions(j, browser, fixture, trace) {
     await j.run('created-session-navigation', async () => {
       await j.root('Chats');
+      const projectTreeCallsBeforeNewChat = (await trace()).filter(t => t.method === 'projects.tree').length;
       await fixture("f.permits['session.create']=1;"); await j.tap('New chat');
-      await j.type('#working-folder', '/fictional/qa-project'); await j.tap('Start');
+      for (const width of [320, 390, 769]) {
+        await browser.viewport(width, 844); await j.auditLayout(`working-folder-${width}`);
+        const geometry = await browser.evaluate(`(()=>{const field=document.querySelector('#working-folder').getBoundingClientRect(),start=document.querySelector('.working-folder-actions .btn').getBoundingClientRect(),form=document.querySelector('.working-folder').getBoundingClientRect();return{field:{x:field.x,y:field.y,width:field.width,height:field.height},start:{x:start.x,y:start.y,width:start.width,height:start.height},form:{x:form.x,width:form.width}}})()`);
+        assert.ok(geometry.field.width >= geometry.form.width - 12, `Working-folder path input must use full row at ${width}: ${JSON.stringify(geometry)}`);
+        assert.ok(geometry.field.width >= 200, `Working-folder path input collapsed at ${width}: ${JSON.stringify(geometry)}`);
+        assert.ok(geometry.start.width >= 76 && geometry.start.width < geometry.form.width, `Start must stay compact at ${width}: ${JSON.stringify(geometry)}`);
+        assert.ok(geometry.start.y >= geometry.field.y + geometry.field.height, `Start must sit below path field at ${width}: ${JSON.stringify(geometry)}`);
+        await j.shot(`working-folder-${width}`);
+      }
+      await browser.viewport(390, 844);
+      await browser.waitFor("innerWidth === 390 && !!document.querySelector('#working-folder') && document.querySelector('#working-folder').getBoundingClientRect().width > 0");
+      assert.match(await browser.evaluate('document.querySelector("#working-folder-help").textContent'), /absolute server path.*matching folders/i);
+      await j.type('#working-folder', '/fictional/qa');
+      await browser.waitFor("document.querySelectorAll('.folder-suggestions [role=option]').length === 2");
+      assert.deepEqual(await browser.evaluate("[...document.querySelectorAll('.folder-suggestions [role=option]')].map(el=>el.textContent.trim())"), ['/fictional/qa-project/','/fictional/qa-recent/']);
+      assert.ok((await trace()).some(t => t.method === 'complete.path' && t.params.cwd === '/fictional' && t.params.word === '@folder:qa'), 'Completion must use source-proven folder query and native explicit parent cwd');
+      await j.shot(`working-folder-suggestions-390`);
+      await browser.command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'ArrowDown', code: 'ArrowDown' });
+      await browser.command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Tab', code: 'Tab' });
+      await browser.waitFor("document.querySelector('#working-folder').value === '/fictional/qa-recent/'");
+      await j.type('#working-folder', '/fictional/qa');
+      await browser.waitFor("document.querySelectorAll('.folder-suggestions [role=option]').length === 2");
+      await j.clickCSS('.folder-suggestions [role=option]');
+      await browser.waitFor("document.querySelector('#working-folder').value === '/fictional/qa-project/'");
+      await j.tap('Start');
       await browser.waitFor("history.state.route.conversation?.session?.id === 'qa-created-initial'");
+      assert.deepEqual((await trace()).filter(t => t.method === 'session.create' && t.params.profile !== 'qa-bot').map(t => t.params.cwd), ['/fictional/qa-project'], 'Selecting a suggestion creates once with trailing slash normalized only at create boundary');
+      assert.equal((await trace()).filter(t => t.method === 'projects.tree').length, projectTreeCallsBeforeNewChat, 'New chat must not fetch project registry suggestions');
       await j.tap('Back');
       await fixture("f.createResponse={session_id:'qa-mismatch',stored_session_id:'qa-mismatch',info:{...f.resume['qa-project-session']?.info,cwd:'/fictional/wrong-folder',profile_name:'default'}};f.permits['session.create']=1;");
       await j.tap('New chat'); await j.type('#working-folder', '/fictional/qa-project'); await j.tap('Start');

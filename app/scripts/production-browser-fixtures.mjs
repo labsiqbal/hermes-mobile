@@ -151,6 +151,17 @@ export function installProductionFixtures(fixture) {
     if (control.errors[method]) throw { code: 4900, message: control.errors[method] };
     if (control.unsupported.includes(method)) throw { code: -32601, message: `QA fixture method not supported: ${method}` };
     switch (method) {
+      case 'complete.path': {
+        if (typeof params.cwd !== 'string' || !params.cwd.startsWith('/fictional')) return fail('Completion must use explicit absolute parent cwd');
+        if (typeof params.word !== 'string' || !params.word.startsWith('@folder:')) return fail('Completion must request source-proven folders');
+        if (params.cwd !== '/fictional' || params.word !== '@folder:qa') return { items: [] };
+        return { items: [
+          { text: '@folder:qa-project' },
+          { text: '@folder:qa-recent' },
+          { text: 'qa-readme.md', display: 'qa-readme.md', meta: 'file' },
+          { text: 42 },
+        ] };
+      }
       case 'session.create': {
         if (!(control.permits[method] > 0)) return fail('Creation without harness confirmation permit');
         control.permits[method]--;
