@@ -368,6 +368,8 @@ try {
       });
     }
     try {
+      const version = await rpc('Browser.getVersion');
+      console.log(`Workspace Chrome CDP ready: product=${version.product} revision=${version.revision} elapsed=${Date.now() - started}ms`);
       const { targetId } = await rpc('Target.createTarget', { url: 'about:blank' });
       console.log(`Workspace Chrome target ready: ${Date.now() - started}ms`);
       if (process.env.CI) console.log(`Workspace Chrome startup stderr (last 12000 characters):\n${stderr || '(empty)'}`);
