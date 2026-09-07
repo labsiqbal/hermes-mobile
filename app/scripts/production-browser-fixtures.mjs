@@ -156,8 +156,8 @@ export function installProductionFixtures(fixture) {
         if (typeof params.word !== 'string' || !params.word.startsWith('@folder:')) return fail('Completion must request source-proven folders');
         if (params.cwd !== '/fictional' || params.word !== '@folder:qa') return { items: [] };
         return { items: [
-          { text: '@folder:qa-project' },
-          { text: '@folder:qa-recent' },
+          { text: '@folder:qa-project/', display: 'qa-project/', meta: 'dir' },
+          { text: '@folder:qa-recent/', display: 'qa-recent/', meta: 'dir' },
           { text: 'qa-readme.md', display: 'qa-readme.md', meta: 'file' },
           { text: 42 },
         ] };
