@@ -200,6 +200,23 @@ const BOT_DM_RE = /^Message from 🤖 [^\n]*?\(@([A-Za-z0-9_.-]{1,64})\):\s*/;
 
 const SESSION_NOT_OWNED = "SESSION_NOT_OWNED";
 
+type SlashOption = { command: "/exit" | "/model"; description: string };
+const SLASH_OPTIONS: SlashOption[] = [
+  { command: "/exit", description: "Close this Mobile runtime" },
+  { command: "/model", description: "Choose model" },
+];
+
+/** A first-token `/word` is local command syntax. `/path/like-this` remains chat text. */
+function slashToken(value: string): string | null {
+  const match = value.match(/^\/([A-Za-z][A-Za-z0-9_-]*)?$/);
+  return match ? (match[1] ?? "").toLowerCase() : null;
+}
+
+function slashCommand(value: string): string | null {
+  const match = value.match(/^\/([A-Za-z][A-Za-z0-9_-]*)(?:\s|$)/);
+  return match ? match[1].toLowerCase() : null;
+}
+
 type OpenFailure = "none" | "session-not-owned" | "create-failed";
 
 class CreateFolderMismatchError extends Error {}
@@ -425,6 +442,10 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   // drives the iMessage-style typing indicator bubble.
   const [awaiting, setAwaiting] = useState(false);
   const [approval, setApproval] = useState<ApprovalRequest | null>(null);
+  const [pendingApprovalLookup, setPendingApprovalLookup] = useState(Boolean(session));
+  const [pendingApprovalLookupFailed, setPendingApprovalLookupFailed] = useState(false);
+  const [slashIndex, setSlashIndex] = useState(0);
+  const [slashDismissed, setSlashDismissed] = useState(false);
   const [sheetClosing, setSheetClosing] = useState(false);
   const [stuck, setStuck] = useState(false);
   const [fatal, setFatal] = useState("");
@@ -448,6 +469,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   const [modelQuery, setModelQuery] = useState("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const completionRequestRef = useRef(0);
+  const slashListboxId = "slash-suggestions";
   const folderListboxId = "working-folder-suggestions";
   const imageInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -624,6 +646,9 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
     setStreaming(false);
     setAwaiting(false);
     setApproval(null);
+    lastApprovalRef.current = null;
+    setPendingApprovalLookup(true);
+    setPendingApprovalLookupFailed(false);
     setFatal("");
     setOpenFailure("none");
     setInitializing(Boolean(session));
@@ -727,9 +752,17 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
         transcriptHydratedRef.current = true;
         setStreaming(running);
         setAwaiting(running && !inflightText);
-        // Catch up on an approval that fired while we were away.
-        const pending = await client.pendingApprovals(opened.session_id);
-        if (!cancelled && pending.length > 0) setApproval(pending[0]);
+        // Close must not race an unknown approval state after resume.
+        setPendingApprovalLookup(true);
+        setPendingApprovalLookupFailed(false);
+        try {
+          const pending = await client.pendingApprovals(opened.session_id);
+          if (!cancelled && pending.length > 0) setApproval(pending[0]);
+        } catch {
+          if (!cancelled) setPendingApprovalLookupFailed(true);
+        } finally {
+          if (!cancelled) setPendingApprovalLookup(false);
+        }
       } catch (err) {
         if (!cancelled) {
           const notOwned = isSessionNotOwned(err);
@@ -1074,7 +1107,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
     }
     stickRef.current = near;
     views.update(viewKey, {scroll:{top:el.scrollTop, atBottom:near, anchor:captureTranscriptAnchor(el)}});
-    setStuck(!near);
+    if (stuck !== !near) setStuck(!near);
   }
 
   function jumpToBottom() {
@@ -1107,10 +1140,23 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   function handleComposerChange(e: ChangeEvent<HTMLTextAreaElement>) {
     setInput(e.target.value);
     trackMention(e.target);
+    setSlashIndex(0);
+    setSlashDismissed(false);
   }
 
   function handleComposerSelect(e: SyntheticEvent<HTMLTextAreaElement>) {
     trackMention(e.currentTarget);
+  }
+
+  function pickSlash(option: SlashOption) {
+    const next = option.command;
+    setInput(next);
+    setSlashIndex(0);
+    setSlashDismissed(true);
+    requestAnimationFrame(() => {
+      inputRef.current?.focus();
+      inputRef.current?.setSelectionRange(next.length, next.length);
+    });
   }
 
   /** Insert `@handle ` over the active partial token and keep typing. */
@@ -1239,6 +1285,10 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
 
   async function openModelSheet() {
     if (closeInFlightRef.current || runtimeUnavailableRef.current) return;
+    if (state !== "open" || !sidRef.current || initializing) {
+      setComposerStatus("/model is unavailable while conversation is opening. No message was sent.");
+      return;
+    }
     setModelSheetOpen(true);
     setModelQuery("");
     setModelError("");
@@ -1340,6 +1390,19 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
       setComposerStatus("/exit does not accept arguments. No message was sent.");
       return;
     }
+    if (text === "/model" || /^\/model\s/.test(text)) {
+      setComposerStatus("/model is unavailable while a run is active. No message was sent.");
+      return;
+    }
+    if (text === "/") {
+      setComposerStatus("Unknown command: /. No message was sent.");
+      return;
+    }
+    const command = slashCommand(text);
+    if (command) {
+      setComposerStatus(`Unknown command: /${command}. No message was sent.`);
+      return;
+    }
     setRunActionBusy(true);
     setComposerStatus("");
     setInput("");
@@ -1379,6 +1442,10 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
     }
     if (!sid || initializing) {
       setComposerStatus("Exit unavailable while conversation is opening.");
+      return;
+    }
+    if (pendingApprovalLookup || pendingApprovalLookupFailed) {
+      setComposerStatus(pendingApprovalLookup ? "Exit unavailable while approval state is loading." : "Exit unavailable because approval state could not be verified.");
       return;
     }
     if (streaming || awaiting || runActionBusy || approval || attachBusy || catalogBusy || modelBusy) {
@@ -1423,6 +1490,31 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
     }
     if (text === "/exit") {
       await exitRuntime();
+      return;
+    }
+    if (/^\/model\s/.test(text)) {
+      setComposerStatus("/model does not accept arguments. No message was sent.");
+      return;
+    }
+    if (text === "/model") {
+      if (isGroup) {
+        setComposerStatus("/model is unavailable in group chats. No message was sent.");
+        return;
+      }
+      if (streaming) {
+        await steer();
+        return;
+      }
+      await openModelSheet();
+      return;
+    }
+    if (text === "/") {
+      setComposerStatus("Unknown command: /. No message was sent.");
+      return;
+    }
+    const command = slashCommand(text);
+    if (command) {
+      setComposerStatus(`Unknown command: /${command}. No message was sent.`);
       return;
     }
     if (runtimeUnavailableRef.current) return;
@@ -1534,6 +1626,14 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
             desc: p.description || p.display_name || "",
           }))
     : [];
+
+  const slashSuggestions = useMemo(() => {
+    const token = slashToken(input);
+    if (token === null || slashDismissed || !liveSid || released || closing || state !== "open") return [];
+    return SLASH_OPTIONS.filter((option) =>
+      option.command.slice(1).startsWith(token) && (option.command !== "/model" || !isGroup),
+    );
+  }, [closing, input, isGroup, liveSid, released, slashDismissed, state]);
 
   // During the close animation the sheet keeps rendering the last request.
   if (approval) lastApprovalRef.current = approval;
@@ -1774,6 +1874,30 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
         </div>
       )}
 
+      {slashSuggestions.length > 0 && (
+        <div id={slashListboxId} className="slash-suggestions" role="listbox" aria-label="Slash commands">
+          {slashSuggestions.map((option, index) => (
+            <button
+              id={`${slashListboxId}-${index}`}
+              key={option.command}
+              type="button"
+              role="option"
+              aria-selected={index === slashIndex}
+              className={index === slashIndex ? "active" : ""}
+              onPointerDown={(event) => {
+                event.preventDefault();
+              }}
+              onClick={() => {
+                pickSlash(option);
+              }}
+            >
+              <span>{option.command}</span>
+              <small>{option.description}</small>
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="composer-wrap">
         {stuck && !approval && (
           <button type="button" className="jump-btn" aria-label="Scroll to bottom" onClick={jumpToBottom}>
@@ -1948,8 +2072,30 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
             disabled={released || closing}
             onChange={handleComposerChange}
             onSelect={handleComposerSelect}
-            onBlur={() => setMention(null)}
+            onBlur={() => {
+              if (mention) setMention(null);
+            }}
+            aria-autocomplete="list"
+            aria-controls={slashSuggestions.length > 0 ? slashListboxId : undefined}
+            aria-activedescendant={slashSuggestions.length > 0 ? `${slashListboxId}-${slashIndex}` : undefined}
             onKeyDown={(e) => {
+              if (slashSuggestions.length > 0) {
+                if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+                  e.preventDefault();
+                  setSlashIndex((current) => (current + (e.key === "ArrowDown" ? 1 : slashSuggestions.length - 1)) % slashSuggestions.length);
+                  return;
+                }
+                if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+                  e.preventDefault();
+                  pickSlash(slashSuggestions[slashIndex]);
+                  return;
+                }
+                if (e.key === "Escape") {
+                  e.preventDefault();
+                  setSlashDismissed(true);
+                  return;
+                }
+              }
               // Enter sends, Shift+Enter inserts a newline.
               if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
                 e.preventDefault();

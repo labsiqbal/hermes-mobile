@@ -728,6 +728,30 @@
 .chat-view .model-pill::before { border:0; background:transparent; }
 .chat-view .composer-wrap { padding-top:var(--space-4); border-top:0; }
 
+/* Local slash palette: sits above composer, every option keeps a 44px touch target. */
+.chat-view .slash-suggestions {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-6) var(--space-14);
+  border-top: 1px solid var(--line-soft);
+  background: var(--chrome);
+}
+.chat-view .slash-suggestions button {
+  display: flex;
+  align-items: center;
+  gap: var(--space-10);
+  min-height: 44px;
+  padding: var(--space-8) var(--space-10);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-row);
+  background: var(--card);
+  color: var(--fg);
+  font: 600 var(--text-13) var(--font-mono);
+  text-align: left;
+}
+.chat-view .slash-suggestions button.active { border-color: var(--blue); background: color-mix(in srgb, var(--blue) 14%, var(--card)); }
+.chat-view .slash-suggestions small { color: var(--fg-dim); font: 500 var(--text-11) var(--font-sans); }
+
 /* ── @-mention autocomplete (Bot Chat) ──────────────────────────────────── */
 .chat-view .mentionbar {
   display: flex;
