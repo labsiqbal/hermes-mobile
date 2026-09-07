@@ -22,13 +22,14 @@ const bundle = buildSync({
       globalThis.IS_REACT_ACT_ENVIRONMENT=true;
       const runtime='runtime-builder-42', stored='stored-builder-99', profile='builder';
       const trace=[], views=new ConversationViews(), conn={id:'qa-gateway',label:'QA',url:'https://qa.invalid'};
-      let root, client, options={}, ready=[], state='open', openRelease;
+      let root, client, options={}, ready=[], state='open', openRelease, detachRelease;
       const base={replayGeneration:0,sessionMessages:async()=>({messages:[{role:'assistant',content:'retained history'}],pagination:{returned:1,limit:100}}),pendingApprovals:async()=>[],addEventHandler:()=>()=>{}};
       const groupRoom={roomId:'fixture-group',name:'Fixture group',members:[],log:[],revision:1};
       function makeClient(next){return {...base,
         profilesList:async()=>next.group?[{name:'default',is_default:true,ui_meta:{'hermes-bots-groups':{rooms:{'id:fixture-group':groupRoom}}}}]:[],
         resumeSession:async(sid,opts)=>{trace.push({method:'session.resume',sid,opts});if(next.openHold) await new Promise(resolve=>openRelease=resolve);return {session_id:runtime,stored_session_id:stored,messages:[{role:'assistant',content:'retained history'}],message_count:1,info:{profile_name:profile},running:next.running===true,status:next.running?'streaming':'idle'};},
         closeSession:async sid=>{trace.push({method:'session.close',sid});if(next.hold)return await new Promise(resolve=>window.releaseClose=()=>resolve(next.result??{closed:true}));if(next.error)throw Error(next.error);return next.result??{closed:true};},
+        detachImage:async(sid,path)=>{trace.push({method:'image.detach',sid,path});if(next.detachHold)return await new Promise(resolve=>detachRelease=resolve);if(next.detachError)throw Error(next.detachError);return {detached:true};},
         submitPrompt:async(sid,text)=>{trace.push({method:'prompt.submit',sid,text});return {status:'streaming'};},
         steerSession:async(sid,text)=>{trace.push({method:'session.steer',sid,text});return {status:'streaming'};},
       };}
@@ -39,9 +40,12 @@ const bundle = buildSync({
       async function type(text,enter=true){const e=document.querySelector('textarea'),set=Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value').set;await act(async()=>{set.call(e,text);e.dispatchEvent(new InputEvent('input',{bubbles:true,inputType:'insertText',data:text}));if(enter)e.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true}));await new Promise(r=>setTimeout(r,0));});}
       async function steerTap(){await act(async()=>{document.querySelector('[aria-label=' + JSON.stringify('Steer active run') + ']')?.click();await new Promise(r=>setTimeout(r,0));});}
       async function releaseClose(){await act(async()=>{window.releaseClose?.();await new Promise(r=>setTimeout(r,0));});}
+      async function releaseDetach(){await act(async()=>{detachRelease?.();await new Promise(r=>setTimeout(r,0));});}
       async function releaseOpen(){await act(async()=>{openRelease?.();await new Promise(r=>setTimeout(r,0));});}
       async function nativeClose(){const native=new HermesConnection({url:'https://fixture.invalid'}),calls=[];native.rpc=async(method,params)=>{calls.push({method,params});return {closed:true};};return {calls,result:await native.closeSession(runtime)};}
-      window.fixture={mount,rerender,unmount,type,steerTap,releaseClose,releaseOpen,nativeClose,trace:()=>trace.slice(),status:()=>({text:document.body.innerText,disabled:document.querySelector('textarea')?.disabled,value:document.querySelector('textarea')?.value,history:document.body.innerText.includes('retained history'),ready:ready.slice(),workspaceDisabled:[...document.querySelectorAll('button')].find(x=>x.textContent.includes('Workspace'))?.disabled})};
+      function seedImage(){views.update('fixture',{attachments:[{kind:'image',name:'fixture.png',path:'/tmp/fixture.png'}]});}
+      async function removeImage(){await act(async()=>{document.querySelector('[aria-label="Remove fixture.png"]')?.click();await new Promise(r=>setTimeout(r,0));});}
+      window.fixture={mount,rerender,unmount,type,steerTap,releaseClose,releaseDetach,releaseOpen,nativeClose,seedImage,removeImage,trace:()=>trace.slice(),status:()=>({text:document.body.innerText,disabled:document.querySelector('textarea')?.disabled,value:document.querySelector('textarea')?.value,history:document.body.innerText.includes('retained history'),ready:ready.slice(),workspaceDisabled:[...document.querySelectorAll('button')].find(x=>x.textContent.includes('Workspace'))?.disabled})};
     `,
   },
   bundle: true, write: false, platform: 'browser', format: 'iife', jsx: 'automatic',
@@ -91,11 +95,25 @@ try {
     assert.equal(wire.filter(x => x.method === 'session.close').length, 1);
   });
 
-  await check('explicit unmount/reopen resumes stored ID and profile with retained history', async () => {
+  await check('image detach blocks /exit until gateway staging settles', async () => {
+    await run('fixture.seedImage()');
+    await run('fixture.mount({detachHold:true})');
+    await run('fixture.removeImage()');
+    await run("fixture.type('/exit')");
+    const wire = await run('fixture.trace()');
+    assert.equal(wire.filter(x => x.method === 'image.detach').length, 1);
+    assert.equal(wire.filter(x => x.method === 'session.close').length, 0);
+    assert.equal((await run('fixture.status()')).workspaceDisabled, false);
+    await run('fixture.releaseDetach()');
+  });
+
+  await check('explicit unmount/reopen after /exit resumes stored ID and profile with retained history', async () => {
     await run('fixture.mount()');
+    await run("fixture.type('/exit')");
     await run('fixture.unmount()');
     await run('fixture.mount({reset:false})');
     const wire = await run('fixture.trace()');
+    assert.equal(wire.filter(x => x.method === 'session.close').length, 1);
     const resumes = wire.filter(x => x.method === 'session.resume');
     assert.equal(resumes.length, 2);
     assert.deepEqual(resumes.map(x => [x.sid, x.opts]), [
@@ -129,7 +147,9 @@ try {
     let wire = await run('fixture.trace()');
     assert.equal(wire.filter(x => x.method === 'session.close').length, 1);
     assert.equal(wire.filter(x => x.method === 'prompt.submit').length, 0);
-    assert.equal((await run('fixture.status()')).disabled, true);
+    const view = await run('fixture.status()');
+    assert.equal(view.disabled, true);
+    assert.equal(view.workspaceDisabled, true);
     await run('fixture.releaseClose()');
     wire = await run('fixture.trace()');
     assert.equal(wire.filter(x => x.method === 'session.close').length, 1);

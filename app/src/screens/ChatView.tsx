@@ -1200,13 +1200,19 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   }
 
   async function removeAttachment(item: Attachment) {
-    if (closeInFlightRef.current || runtimeUnavailableRef.current) return;
+    if (attachBusy || closeInFlightRef.current || runtimeUnavailableRef.current) return;
     if (item.kind === "image") {
+      setAttachBusy(true);
+      setAttachError("");
       try {
         await client.detachImage(sidRef.current, item.path);
-      } catch {
-        /* best-effort unstage; the chip leaves the composer regardless */
+        setAttachments((prev) => (prev ?? []).filter((a) => a.path !== item.path));
+      } catch (err) {
+        setAttachError(err instanceof Error ? err.message : String(err));
+      } finally {
+        setAttachBusy(false);
       }
+      return;
     }
     setAttachments((prev) => (prev ?? []).filter((a) => a.path !== item.path));
   }
@@ -1687,7 +1693,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
         </div>
       )}
 
-      {onWorkspace && <nav className="conversation-tools" aria-label="Conversation tools"><button onClick={onWorkspace} disabled={released || !liveSid || initializing}><FileIcon size={18} />Workspace · files &amp; Git</button></nav>}
+      {onWorkspace && <nav className="conversation-tools" aria-label="Conversation tools"><button onClick={onWorkspace} disabled={released || closing || !liveSid || initializing}><FileIcon size={18} />Workspace · files &amp; Git</button></nav>}
 
       <div
         className={`body${transcriptReady ? "" : " transcript-hidden"}`}
@@ -1883,7 +1889,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
                 <button
                   type="button"
                   className="attach-chip-x"
-                  disabled={released || closing}
+                  disabled={released || closing || attachBusy}
                   onClick={() => void removeAttachment(item)}
                   aria-label={`Remove ${item.name}`}
                 >
