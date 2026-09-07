@@ -9,6 +9,7 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "check:chat-reveal": "node scripts/check-chat-reveal.mjs",
+    "check:session-exit:browser": "node scripts/check-session-exit-browser.mjs",
     "check:shell-navigation": "node scripts/check-shell-navigation.mjs",
     "check:chat-resume": "node scripts/check-chat-resume.mjs",
     "check:bots": "node scripts/check-bots-utils.mjs",

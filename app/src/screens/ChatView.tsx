@@ -9,6 +9,7 @@ import { ArrowUpIcon, ChevronDownIcon, FileIcon, ImageIcon, PlusIcon, SearchIcon
 import {
   getSessionEvents,
   linkSessionAliases,
+  markInactive,
 } from "../lib/active-sessions";
 import { BOT_CHAT_TITLE, RpcError } from "../lib/hermes-client";
 import type {
@@ -418,6 +419,8 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [composerStatus, setComposerStatus] = useState("");
   const [runActionBusy, setRunActionBusy] = useState(false);
+  const [released, setReleased] = useState(false);
+  const [closing, setClosing] = useState(false);
   // true between prompt submit / message.start and the first message.delta —
   // drives the iMessage-style typing indicator bubble.
   const [awaiting, setAwaiting] = useState(false);
@@ -449,6 +452,9 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   const imageInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const sidRef = useRef("");
+  const closeInFlightRef = useRef(false);
+  const runtimeUnavailableRef = useRef(false);
+
   const handledEventsRef = useRef(new WeakSet<GatewayEvent>());
   const resumeReplayRef = useRef<GatewayEvent[]>([]);
   const resumeHasInflightRef = useRef(false);
@@ -603,6 +609,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
     handledEventsRef.current = new WeakSet<GatewayEvent>();
     initialSnapPendingRef.current = Boolean(session);
     sidRef.current = "";
+    runtimeUnavailableRef.current = false;
     storedSidRef.current = "";
     const retainTranscript = Boolean(session && transcriptHydratedRef.current);
     const readOnlyHistory = session && !session.unpersisted && !retainTranscript
@@ -624,6 +631,8 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
     setHasOlder(false);
     setLoadingOlder(false);
     setComposerStatus("");
+    setReleased(false);
+    setClosing(false);
     (async () => {
       try {
         const opened = session
@@ -687,7 +696,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
           title: '', preview: '', started_at: 0, message_count: 0, source: 'mobile',
           ...session,
           id: session?.id || storedSid || opened.session_id,
-          resolved_id: opened.session_id,
+          resolved_id: storedSid,
           profile: profile || session?.profile || 'default',
           cwd: opened.info?.cwd || session?.cwd,
           unpersisted,
@@ -794,6 +803,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
 
   // ── gateway event stream ────────────────────────────────────────────────
   const handleGatewayEvent = useCallback((event: GatewayEvent, replay = false) => {
+    if (runtimeUnavailableRef.current) return;
     const sid = sidRef.current;
     if (!sid || (event.session_id && event.session_id !== sid)) return;
     const p = event.payload as Record<string, unknown> | undefined;
@@ -1136,7 +1146,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
 
   async function handlePickedImage(file: File) {
     const sid = sidRef.current;
-    if (!sid) return;
+    if (!sid || closeInFlightRef.current || runtimeUnavailableRef.current) return;
     setAttachBusy(true);
     setAttachError("");
     try {
@@ -1164,7 +1174,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
 
   async function handlePickedFile(file: File) {
     const sid = sidRef.current;
-    if (!sid) return;
+    if (!sid || closeInFlightRef.current || runtimeUnavailableRef.current) return;
     setAttachBusy(true);
     setAttachError("");
     try {
@@ -1190,6 +1200,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   }
 
   async function removeAttachment(item: Attachment) {
+    if (closeInFlightRef.current || runtimeUnavailableRef.current) return;
     if (item.kind === "image") {
       try {
         await client.detachImage(sidRef.current, item.path);
@@ -1221,6 +1232,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   }, [catalog, modelQuery]);
 
   async function openModelSheet() {
+    if (closeInFlightRef.current || runtimeUnavailableRef.current) return;
     setModelSheetOpen(true);
     setModelQuery("");
     setModelError("");
@@ -1237,6 +1249,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
 
   /** Session-scoped model switch — same wire format as the desktop composer. */
   async function pickModel(provider: string, model: string) {
+    if (closeInFlightRef.current || runtimeUnavailableRef.current) return;
     setModelBusy(true);
     setModelError("");
     try {
@@ -1263,6 +1276,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
 
   /** Session-scoped reasoning effort (`none` disables thinking). */
   async function pickReasoning(effort: string) {
+    if (closeInFlightRef.current || runtimeUnavailableRef.current) return;
     setModelBusy(true);
     setModelError("");
     try {
@@ -1311,7 +1325,15 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   async function steer() {
     const text = input.trim();
     const sid = sidRef.current;
-    if (state !== "open" || !text || !sid || runActionBusy) return;
+    if (state !== "open" || !text || !sid || runActionBusy || closeInFlightRef.current || runtimeUnavailableRef.current) return;
+    if (text === "/exit") {
+      await exitRuntime();
+      return;
+    }
+    if (/^\/exit\s/.test(text)) {
+      setComposerStatus("/exit does not accept arguments. No message was sent.");
+      return;
+    }
     setRunActionBusy(true);
     setComposerStatus("");
     setInput("");
@@ -1328,7 +1350,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   }
 
   async function stop() {
-    if (state !== "open" || !sidRef.current) return;
+    if (state !== "open" || !sidRef.current || closeInFlightRef.current || runtimeUnavailableRef.current) return;
     setComposerStatus("");
     try {
       await client.interruptSession(sidRef.current);
@@ -1337,10 +1359,71 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
     }
   }
 
+  async function exitRuntime() {
+    if (closeInFlightRef.current) return;
+    if (runtimeUnavailableRef.current) return;
+    if (released) {
+      setComposerStatus("Session already released. Reopen explicitly before sending.");
+      return;
+    }
+    const sid = sidRef.current;
+    if (state !== "open") {
+      setComposerStatus("Exit unavailable while gateway is disconnected.");
+      return;
+    }
+    if (!sid || initializing) {
+      setComposerStatus("Exit unavailable while conversation is opening.");
+      return;
+    }
+    if (streaming || awaiting || runActionBusy || approval || attachBusy || catalogBusy || modelBusy) {
+      setComposerStatus("Exit unavailable while session is busy. Wait for it to become idle.");
+      return;
+    }
+    closeInFlightRef.current = true;
+    runtimeUnavailableRef.current = true;
+    setClosing(true);
+    setComposerStatus("");
+    try {
+      const result = await client.closeSession(sid);
+      if (!result || result.closed !== true) throw new Error("Close outcome uncertain.");
+      markInactive(conn.id, sid);
+      sidRef.current = "";
+      setLiveSid("");
+      setReleased(true);
+      setInput((current) => (current.trim() === "/exit" ? "" : current));
+      setComposerStatus("Session closed in Mobile. Resume this conversation in terminal.");
+    } catch (err) {
+      sidRef.current = "";
+      setLiveSid("");
+      setReleased(true);
+      setComposerStatus(`Close outcome uncertain: ${err instanceof Error ? err.message : String(err)}. Reopen this conversation normally before sending.`);
+    } finally {
+      closeInFlightRef.current = false;
+      setClosing(false);
+    }
+  }
+
   async function send() {
     if (state !== "open") return;
     const text = input.trim();
     if (!text) return;
+    if (isGroup && text === "/exit") {
+      setComposerStatus("/exit is unavailable in group chats. No message was sent.");
+      return;
+    }
+    if (/^\/exit\s/.test(text)) {
+      setComposerStatus("/exit does not accept arguments. No message was sent.");
+      return;
+    }
+    if (text === "/exit") {
+      await exitRuntime();
+      return;
+    }
+    if (runtimeUnavailableRef.current) return;
+    if (released || closeInFlightRef.current) {
+      setComposerStatus("Session released. Reopen explicitly before sending.");
+      return;
+    }
     if (streaming && !isGroup) {
       await steer();
       return;
@@ -1385,7 +1468,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   }
 
   async function answerApproval(choice: string) {
-    if (state !== "open") return;
+    if (state !== "open" || closeInFlightRef.current || runtimeUnavailableRef.current) return;
     const current = approval;
     setApproval(null);
     if (current) {
@@ -1604,7 +1687,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
         </div>
       )}
 
-      {onWorkspace && <nav className="conversation-tools" aria-label="Conversation tools"><button onClick={onWorkspace} disabled={!liveSid || initializing}><FileIcon size={18} />Workspace · files &amp; Git</button></nav>}
+      {onWorkspace && <nav className="conversation-tools" aria-label="Conversation tools"><button onClick={onWorkspace} disabled={released || !liveSid || initializing}><FileIcon size={18} />Workspace · files &amp; Git</button></nav>}
 
       <div
         className={`body${transcriptReady ? "" : " transcript-hidden"}`}
@@ -1696,7 +1779,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
         {composerStatus && (
           <div className="composer-status" role="status">{composerStatus}</div>
         )}
-        {!session && !isGroup && !liveSid && (
+        {!session && !isGroup && !liveSid && !released && (
           <div className="working-folder">
             <label htmlFor="working-folder">Working folder</label>
             <div className="working-folder-path">
@@ -1800,6 +1883,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
                 <button
                   type="button"
                   className="attach-chip-x"
+                  disabled={released || closing}
                   onClick={() => void removeAttachment(item)}
                   aria-label={`Remove ${item.name}`}
                 >
@@ -1814,7 +1898,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
             <button
               type="button"
               className="attach-menu-item"
-              disabled={attachBusy}
+              disabled={released || closing || attachBusy}
               onClick={() => {
                 setAttachMenuOpen(false);
                 imageInputRef.current?.click();
@@ -1825,7 +1909,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
             <button
               type="button"
               className="attach-menu-item"
-              disabled={attachBusy}
+              disabled={released || closing || attachBusy}
               onClick={() => {
                 setAttachMenuOpen(false);
                 fileInputRef.current?.click();
@@ -1855,6 +1939,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
                     : "Opening session…"
             }
             value={input}
+            disabled={released || closing}
             onChange={handleComposerChange}
             onSelect={handleComposerSelect}
             onBlur={() => setMention(null)}
@@ -1872,7 +1957,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
               <button
                 type="button"
                 className="composer-plus"
-                disabled={state !== "open" || !liveSid || attachBusy}
+                disabled={released || closing || state !== "open" || !liveSid || attachBusy}
                 onClick={() => setAttachMenuOpen((v) => !v)}
                 aria-label="Attach"
                 title="Attach"
@@ -1882,7 +1967,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
             )}
             {!isGroup && liveSid && (
               <div className="model-row">
-                <button type="button" className="model-pill" disabled={state !== "open"} onClick={() => void openModelSheet()}>
+                <button type="button" className="model-pill" disabled={released || closing || state !== "open"} onClick={() => void openModelSheet()}>
                   <span className="model-pill-name">
                     {(info?.model || catalog?.model || "model").split("/").pop()}
                     {info?.reasoning_effort && info.reasoning_effort !== "none"
@@ -1897,7 +1982,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
             {streaming && !isGroup && input.trim() && (
               <button
                 className="composer-action composer-send"
-                disabled={state !== "open" || runActionBusy}
+                disabled={released || closing || state !== "open" || runActionBusy}
                 title="Steer"
                 aria-label="Steer active run"
                 onClick={() => void steer()}
@@ -1908,7 +1993,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
             {streaming && !isGroup ? (
               <button
                 className="composer-action composer-stop"
-                disabled={state !== "open" || runActionBusy}
+                disabled={released || closing || state !== "open" || runActionBusy}
                 title="Stop"
                 aria-label="Stop active run"
                 onClick={() => void stop()}
@@ -1920,7 +2005,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
                 className="composer-action composer-send"
                 aria-label="Send message"
                 disabled={
-                  state !== "open" || (isGroup ? !groupRoom || groupBusy || !input.trim() : !liveSid || !input.trim())
+                  released || closing || state !== "open" || (isGroup ? !groupRoom || groupBusy || !input.trim() : !liveSid || !input.trim())
                 }
                 onClick={() => void send()}
               >
@@ -1987,7 +2072,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
                           key={model}
                           type="button"
                           className={`model-row-btn${current ? " current" : ""}`}
-                          disabled={modelBusy}
+                          disabled={released || closing || modelBusy}
                           onClick={() => void pickModel(provider.slug, model)}
                         >
                           <span className="model-row-name">{model}</span>
@@ -2016,7 +2101,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
                       className={`reasoning-chip${
                         (info?.reasoning_effort ?? "medium") === effort ? " current" : ""
                       }`}
-                      disabled={modelBusy}
+                      disabled={released || closing || modelBusy}
                       onClick={() => void pickReasoning(effort)}
                     >
                       {effort === "none" ? "Off" : effort}

@@ -99,6 +99,10 @@ jobs:
         timeout-minutes: 3
         run: npm run check:chats-readability:browser -- "$RUNNER_TEMP/production-browser/chats-readability"
 
+      - name: Session exit browser regression (built React, fictional transport)
+        timeout-minutes: 2
+        run: npm run check:session-exit:browser
+
       - name: Browser harness self-test
         id: browser_self_test
         timeout-minutes: 2
