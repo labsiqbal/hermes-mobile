@@ -1285,6 +1285,10 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
 
   async function openModelSheet() {
     if (closeInFlightRef.current || runtimeUnavailableRef.current) return;
+    if (state !== "open" || !sidRef.current || initializing) {
+      setComposerStatus("/model is unavailable while conversation is opening. No message was sent.");
+      return;
+    }
     setModelSheetOpen(true);
     setModelQuery("");
     setModelError("");

@@ -186,6 +186,23 @@ try {
     await run('fixture.releaseOpen()');
   });
 
+  await check('/model Enter waits for runtime readiness without opening or requesting catalog', async () => {
+    await run('fixture.mount({openHold:true})');
+    await run("fixture.type('/model',false)");
+    await run("fixture.key('Enter')");
+    let wire = await run('fixture.trace()');
+    let view = await run('fixture.status()');
+    assert.equal(wire.filter(x => x.method === 'model.options').length, 0);
+    assert.equal(wire.filter(x => x.method === 'config.set').length, 0);
+    assert.equal(view.value, '/model');
+    assert.match(view.text, /\/model is unavailable while conversation is opening/);
+    await run('fixture.releaseOpen()');
+    await run('fixture.sendTap()');
+    wire = await run('fixture.trace()');
+    assert.deepEqual(wire.filter(x => x.method === 'model.options'), [{ method: 'model.options', sid: 'runtime-builder-42' }]);
+    assert.equal(wire.filter(x => x.method === 'config.set').length, 0);
+  });
+
   await check('busy keyboard and steer routes refuse exact exit without close', async () => {
     await run('fixture.mount({running:true})');
     await run("fixture.type('/exit',false)");
