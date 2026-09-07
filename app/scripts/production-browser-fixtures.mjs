@@ -98,7 +98,7 @@ export function installProductionFixtures(fixture) {
     if (method === 'GET' && /^\/api\/sessions\/[^/]+\/messages$/.test(url.pathname)) {
       const sid = url.pathname.split('/')[3];
       if(![...f.sessions,f.bot].some(s=>s.id===sid && s.profile===url.searchParams.get('profile'))) return fail('History lost exact session/profile');
-      if (sid === 'qa-created-session' && !control.createdHistory.length) return json({error:'Session not found'}, 404);
+      if (f.sessions.some(session => session.id === sid && session.unpersisted) && !control.createdHistory.length) return json({error:'Session not found'}, 404);
       if (sid === f.bot.id && url.searchParams.get('profile') !== 'qa-bot') return fail('Bot REST history lost profile scope');
       return json({ session_id: sid, messages: history(sid), pagination: { limit: 100, offset: 0, order: 'latest', returned: history(sid).length } });
     }

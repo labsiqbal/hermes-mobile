@@ -653,8 +653,8 @@ async function selfTest(options) {
       const included=await rpc('session.resume',{session_id:'qa-recent-session',omit_messages:false});
       const deniedCreate=await rpc('session.create',{});
       f.permits['session.create']=1;
-      const created=await rpc('session.create',{});
-      const fresh=await fetch(${q(FIXTURE.gateway.url + '/api/sessions/qa-created-session/messages?profile=default')});
+      const created=await rpc('session.create',{profile:'default',cwd:'/fictional/qa-project'});
+      const fresh=await fetch(${q(FIXTURE.gateway.url + '/api/sessions/')}+created.result.session_id+'/messages?profile=default');
       const identity=await (await fetch(${q(FIXTURE.gateway.url + '/api/profiles/active')})).json();
       const managementInit={method:'GET',credentials:'include',redirect:'error',cache:'no-store'};
       const memory=await (await fetch(${q(FIXTURE.gateway.url + '/api/learning/graph?profile=default')},managementInit)).json();
@@ -673,7 +673,7 @@ async function selfTest(options) {
     assert.deepEqual(fixtureCanary.omitted.result.messages, []);
     assert.equal(fixtureCanary.included.result.messages.length, 2);
     assert.ok(fixtureCanary.deniedCreate.error);
-    assert.equal(fixtureCanary.created.result.session_id,'qa-created-session');
+    assert.equal(fixtureCanary.created.result.session_id,'qa-created-initial');
     assert.equal(fixtureCanary.freshStatus,404);
     cases.push({name:'resume honors exact omit_messages; create requires permit; truly fresh REST is 404',status:'passed'});
     assert.ok(fixtureCanary.mutation.error);
