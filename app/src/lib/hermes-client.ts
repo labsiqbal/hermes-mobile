@@ -217,7 +217,7 @@ export interface PathCompletion {
 function isFolderCompletion(value: unknown): value is PathCompletion {
   if (!value || typeof value !== "object") return false;
   const text = (value as { text?: unknown }).text;
-  return typeof text === "string" && /^@folder:[^/\\%\x00-\x1f\x7f:?#*[\]{}]+$/.test(text);
+  return typeof text === "string" && /^@folder:[^/\\%\x00-\x1f\x7f:?#*[\]{}]+\/?$/.test(text);
 }
 
 /** Result shape of `profiles.configure` (methods_profiles.py): every accepted
