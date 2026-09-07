@@ -3,10 +3,10 @@
 import assert from 'node:assert/strict';
 import { buildSync } from 'esbuild';
 import { mkdtempSync, rmSync, writeFileSync, readFileSync } from 'node:fs';
-import { spawn } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
+import { ChromePipe } from './production-browser-chrome-pipe.mjs';
 const here = fileURLToPath(new URL('.', import.meta.url));
 const temp = mkdtempSync(join(tmpdir(), 'workspace-check-'));
 let passed = 0;
@@ -314,73 +314,39 @@ try {
   `;
   buildSync({ stdin: { contents: browserScript, loader: 'tsx', resolveDir: join(here, '..') }, outfile: join(temp, 'browser.js'), bundle: true, format: 'iife', platform: 'browser', jsx: 'automatic', define: { 'process.env.NODE_ENV': '"production"' }, logLevel: 'silent' });
   writeFileSync(join(temp, 'browser.html'), '<!doctype html><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="browser.css"><div id="root"></div><pre id="result"></pre><script src="browser.js"></script>');
-  // CDP pipe avoids Chrome's 500px minimum desktop window and opens no debug port.
-  for (const width of [360, 390, 430]) {
-    const chrome = spawn(process.env.CHROME_BIN || 'google-chrome', ['--headless', '--no-sandbox', '--disable-gpu', '--disable-background-networking', '--disable-component-update', '--disable-sync', '--disable-extensions', '--no-first-run', '--no-default-browser-check', `--user-data-dir=${join(temp, `chrome-${width}`)}`, '--remote-debugging-pipe', 'about:blank'], { stdio: ['ignore', 'ignore', 'pipe', 'pipe', 'pipe'] });
-    const pending = new Map(); let nextId = 0; let buffer = '';
-    let stderr = '', failure;
-    const started = Date.now();
-    const diagnostic = message => new Error(`${message}; Chrome pid=${chrome.pid ?? 'not spawned'} elapsed=${Date.now() - started}ms exit=${chrome.exitCode} signal=${chrome.signalCode}\nChrome stderr (last 12000 characters):\n${stderr || '(empty)'}`);
-    const fail = message => {
-      failure = diagnostic(message);
-      for (const waiter of pending.values()) { clearTimeout(waiter.timer); waiter.reject(failure); }
-      pending.clear();
-    };
-    chrome.stderr.on('data', chunk => { stderr = (stderr + chunk).slice(-12000); });
-    chrome.once('spawn', () => console.log(`Workspace Chrome startup: executable=${process.env.CHROME_BIN || 'google-chrome'} pid=${chrome.pid} viewport=${width}`));
-    const exited = new Promise(resolve => {
-      chrome.once('close', (code, signal) => { fail(`Chrome closed (${code ?? signal})`); resolve(); });
-    });
-    chrome.once('error', error => fail(`Chrome spawn failed: ${error.message}`));
-    chrome.stdio[3].on('error', error => fail(`Chrome CDP input: ${error.message}`));
-    chrome.stdio[4].on('error', error => fail(`Chrome CDP output: ${error.message}`));
-    const unexpectedRequests = [];
-    const fixtureOrigin = 'https://gateway.example:8451';
-    chrome.stdio[4].on('data', chunk => {
-      buffer += chunk.toString();
-      let end;
-      while ((end = buffer.indexOf('\0')) !== -1) {
-        const message = JSON.parse(buffer.slice(0, end)); buffer = buffer.slice(end + 1);
-        if (message.method === 'Fetch.requestPaused') {
-          const { requestId, request } = message.params;
-          const files = new Map(['/browser.html', '/browser.js', '/browser.css'].map(path => [fixtureOrigin + path, path.slice(1)]));
-          const file = files.get(request.url);
-          // Fulfill the entire synthetic HTTPS origin locally, before any network request.
-          if (file) void rpc('Fetch.fulfillRequest', { requestId, responseCode: 200, body: readFileSync(join(temp, file)).toString('base64'), responseHeaders: [{ name: 'Content-Type', value: file.endsWith('.js') ? 'text/javascript' : file.endsWith('.css') ? 'text/css' : 'text/html' }] }, message.sessionId);
-          else if (request.url === fixtureOrigin + '/favicon.ico') void rpc('Fetch.fulfillRequest', { requestId, responseCode: 204 }, message.sessionId);
-          else { unexpectedRequests.push(request.url); void rpc('Fetch.failRequest', { requestId, errorReason: 'BlockedByClient' }, message.sessionId); }
-        }
-        const waiter = pending.get(message.id);
-        if (waiter) {
-          pending.delete(message.id); clearTimeout(waiter.timer);
-          if (message.error) waiter.reject(new Error(JSON.stringify(message.error)));
-          else waiter.resolve(message.result);
-        }
+  // Reuse production ChromePipe: resolver rules block startup networking before Fetch interception.
+  const fixtureOrigin = 'https://gateway.example:8451';
+  class WorkspaceBrowser extends ChromePipe {
+    constructor() { super({ output: temp, chrome: process.env.CHROME_BIN || '/usr/bin/google-chrome' }); this.unexpectedRequests = []; }
+    onEvent(event) {
+      const { method, params = {}, sessionId } = event;
+      if (sessionId !== this.sessionId) return;
+      if (method === 'Fetch.requestPaused') {
+        const { requestId, request } = params;
+        const files = new Map(['/browser.html', '/browser.js', '/browser.css'].map(path => [fixtureOrigin + path, path.slice(1)]));
+        const file = files.get(request.url);
+        if (file) void this.command('Fetch.fulfillRequest', { requestId, responseCode: 200, body: readFileSync(join(temp, file)).toString('base64'), responseHeaders: [{ name: 'Content-Type', value: file.endsWith('.js') ? 'text/javascript' : file.endsWith('.css') ? 'text/css' : 'text/html' }] }).catch(error => this.diagnostics.push({ kind: 'interception-error', message: error.message }));
+        else if (request.url === fixtureOrigin + '/favicon.ico') void this.command('Fetch.fulfillRequest', { requestId, responseCode: 204 }).catch(error => this.diagnostics.push({ kind: 'interception-error', message: error.message }));
+        else { this.unexpectedRequests.push(request.url); void this.command('Fetch.failRequest', { requestId, errorReason: 'BlockedByClient' }).catch(error => this.diagnostics.push({ kind: 'interception-error', message: error.message })); }
+        return;
       }
-    });
-    function rpc(method, params = {}, sessionId) {
-      if (failure) return Promise.reject(failure);
-      return new Promise((resolve, reject) => {
-        const id = ++nextId;
-        const timer = setTimeout(() => { pending.delete(id); reject(diagnostic(`CDP timeout: ${method}`)); }, 10000);
-        pending.set(id, { resolve, reject, timer });
-        chrome.stdio[3].write(JSON.stringify({ id, method, params, ...(sessionId ? { sessionId } : {}) }) + '\0');
-      });
+      if (method === 'Network.requestWillBeSent' || method === 'Network.webSocketCreated') {
+        const url = params.request?.url ?? params.url;
+        if (!url?.startsWith(fixtureOrigin)) this.unexpectedRequests.push(url);
+        return;
+      }
+      super.onEvent(event);
     }
+  }
+  for (const width of [360, 390, 430]) {
+    const browser = new WorkspaceBrowser();
     try {
-      const version = await rpc('Browser.getVersion');
-      console.log(`Workspace Chrome CDP ready: product=${version.product} revision=${version.revision} elapsed=${Date.now() - started}ms`);
-      const { targetId } = await rpc('Target.createTarget', { url: 'about:blank' });
-      console.log(`Workspace Chrome target ready: ${Date.now() - started}ms`);
-      if (process.env.CI) console.log(`Workspace Chrome startup stderr (last 12000 characters):\n${stderr || '(empty)'}`);
-      const { sessionId } = await rpc('Target.attachToTarget', { targetId, flatten: true });
-      await rpc('Fetch.enable', { patterns: [{ urlPattern: '*', requestStage: 'Request' }] }, sessionId);
-      await rpc('Emulation.setDeviceMetricsOverride', { width, height: 844, deviceScaleFactor: 1, mobile: true }, sessionId);
-      await rpc('Page.navigate', { url: fixtureOrigin + '/browser.html' }, sessionId);
+      await browser.start();
+      await browser.viewport(width, 844);
+      await browser.command('Page.navigate', { url: fixtureOrigin + '/browser.html' });
       let raw = '';
       for (let i = 0; i < 240; i++) {
-        const result = await rpc('Runtime.evaluate', { expression: "document.getElementById('result')?.textContent || ''", returnByValue: true }, sessionId);
-        raw = result.result.value;
+        raw = await browser.evaluate("document.getElementById('result')?.textContent || ''");
         if (raw) break;
         await new Promise(resolve => setTimeout(resolve, 50));
       }
@@ -388,11 +354,8 @@ try {
       const result = JSON.parse(raw);
       assert.equal(result.ok, true, JSON.stringify(result));
       assert.equal(result.viewport, width, 'Chrome must exercise the requested mobile viewport');
-      assert.deepEqual(unexpectedRequests, [], 'no preview or other external request may be attempted');
+      assert.deepEqual(browser.unexpectedRequests, [], 'no preview or other external request may be attempted');
       console.log(`Workspace browser ${width}x844: ${result.checks} checks passed (mock transport, real React components).`);
-    } finally {
-      for (const waiter of pending.values()) clearTimeout(waiter.timer);
-      chrome.kill(); await exited;
-    }
+    } finally { await browser.close(); }
   }
 } finally { rmSync(temp, { recursive: true, force: true }); }
