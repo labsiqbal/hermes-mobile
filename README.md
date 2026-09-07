@@ -19,7 +19,7 @@ Tap a screenshot for the full-size image. Captured at 390 × 844 with 100% Stand
 
 ## What you can do
 
-- Resume chats, read streaming replies and tool activity, attach files, and respond to explicit command approvals. Model and reasoning controls sit inside the composer's bottom row.
+- Resume chats, read streaming replies and tool activity, attach files, and respond to explicit command approvals. Type exact `/exit` in an idle one-to-one chat to close Mobile runtime without deleting conversation; resume normally later. Model and reasoning controls sit inside the composer's bottom row.
 - Browse Chats with combined Project/Profile filters and local project pins. Groups live under Chats; canonical Bot Chats are also accessible. Pins change display order, not session membership. Deletion is limited to inactive sessions in the verified running profile.
 - Open Bots, inspect Cronjobs and tracked Runs, and use Manage for profile/capability inspection, a reviewed profile-description update, bounded memory/schedule/messaging reads and shared Kanban boards. Manage is not a universal configuration editor.
 - Read conversation-scoped files and Git status/diffs in Workspace. External previews require explicit trust review; terminal execution and in-app annotation are unavailable.

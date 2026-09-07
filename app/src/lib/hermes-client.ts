@@ -1141,6 +1141,11 @@ export class HermesConnection {
     });
   }
 
+  /** Detach a live runtime and retain its stored session/history. */
+  async closeSession(sessionId: string): Promise<{ closed?: boolean }> {
+    return await this.rpc<{ closed?: boolean }>("session.close", { session_id: sessionId });
+  }
+
   async interruptSession(sessionId: string): Promise<unknown> {
     return await this.rpc("session.interrupt", { session_id: sessionId });
   }
