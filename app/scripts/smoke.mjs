@@ -19,7 +19,6 @@
 
 import { buildSync } from "esbuild";
 import { readFileSync } from "node:fs";
-import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL, fileURLToPath } from "node:url";
