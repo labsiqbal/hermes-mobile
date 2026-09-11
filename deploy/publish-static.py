@@ -18,8 +18,7 @@ import time
 from urllib.parse import urlsplit
 from urllib.request import HTTPRedirectHandler, ProxyHandler, Request, build_opener
 
-ROOT = Path("/home/iqbal/workspace/personal/hermes-mobile/app/dist")
-ORIGIN = "https://nuc.tailcf7779.ts.net:8451"
+ORIGIN = None  # Initialized once from private operator configuration by main().
 SHA256 = re.compile(r"[0-9a-f]{64}\Z")
 COMPONENT = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]*\Z")
 HASHED_ASSET = re.compile(r"assets/[A-Za-z0-9_][A-Za-z0-9_.-]*-[A-Za-z0-9_-]{8,}\.[A-Za-z0-9.]+\Z")
@@ -79,6 +78,29 @@ def read_regular(path):
         return stream.read()
 
 
+def load_installation():
+    """Read the fixed operator-owned target; no CLI or environment overrides."""
+    try:
+        path = safe_path(Path.home() / ".config/hermes-mobile/publisher.json")
+        info = path.stat()
+        require(info.st_uid == os.getuid() and info.st_mode & 0o077 == 0,
+                "installation_config_invalid")
+        config = parse_json(read_regular(path))
+        require(isinstance(config, dict) and set(config) == {"root", "origin"},
+                "installation_config_invalid")
+        root = safe_path(config["root"])
+        origin = config["origin"]
+        require(isinstance(origin, str) and re.fullmatch(
+            r"https://[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?(?::[0-9]+)?", origin),
+            "installation_config_invalid")
+        parsed = urlsplit(origin)
+        require(parsed.port is None or 1 <= parsed.port <= 65535,
+                "installation_config_invalid")
+        return root, origin
+    except Exception:
+        raise Refusal("installation_config_invalid") from None
+
+
 def tree_hashes(root, *, ignore_stage=None):
     safe_path(root)
     require(root.is_dir(), "missing_directory")
@@ -123,7 +145,7 @@ class NoRedirect(HTTPRedirectHandler):
 
 
 def https_fetch(url):
-    require(url.startswith(ORIGIN + "/"), "origin_boundary")
+    require(ORIGIN is not None and url.startswith(ORIGIN + "/"), "origin_boundary")
     # No environment proxy, cookies, credentials or redirect-following.
     opener = build_opener(ProxyHandler({}), NoRedirect())
     request = Request(url, headers={"Cache-Control": "no-cache",
@@ -203,7 +225,7 @@ def stage_file(destination, data, mtime_ns=None):
 
 
 def run_release(*, artifact, manifest, manifest_sha256, expected_entry_sha256,
-                expected_route_sha256, root=ROOT, publish=False,
+                expected_route_sha256, root, publish=False,
                 fetch=https_fetch, read_route=read_serve_route):
     """Return a sanitized receipt even on failure; never automatically restore.
 
@@ -337,6 +359,7 @@ class Parser(argparse.ArgumentParser):
 
 
 def main(argv=None):
+    global ORIGIN
     parser = Parser(description=__doc__, allow_abbrev=False)
     parser.add_argument("--artifact", required=True, help="Absolute approved build directory")
     parser.add_argument("--manifest", required=True, help="Absolute frozen JSON manifest, outside both trees")
@@ -346,9 +369,11 @@ def main(argv=None):
     parser.add_argument("--publish", action="store_true", help="Explicitly enable static writes")
     try:
         args = parser.parse_args(argv)
-        receipt = run_release(**vars(args))
-    except Refusal:
-        receipt = {"status": "failed", "stage": "arguments", "error": "invalid_arguments",
+        root, ORIGIN = load_installation()
+        receipt = run_release(root=root, **vars(args))
+    except Refusal as exc:
+        receipt = {"status": "failed", "stage": "configuration" if str(exc) ==
+                   "installation_config_invalid" else "arguments", "error": str(exc),
                    "entry_replaced": False, "assets_added": 0}
     print(json.dumps(receipt, sort_keys=True, separators=(",", ":")))
     return 0 if receipt["status"] in ("dry_run", "published") else 1

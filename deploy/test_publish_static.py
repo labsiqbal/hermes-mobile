@@ -45,6 +45,9 @@ def http_transport(respond):
 
 class PublicationTests(unittest.TestCase):
     def setUp(self):
+        origin_patch = patch.object(publisher, "ORIGIN", "https://gateway.example.invalid:8451")
+        origin_patch.start()
+        self.addCleanup(origin_patch.stop)
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.base = Path(self.temp.name)
@@ -63,7 +66,7 @@ class PublicationTests(unittest.TestCase):
                 path.write_bytes(data)
         self.manifest = self.base / "manifest.json"
         self.freeze()
-        self.route = {"Web": {"nuc.tailcf7779.ts.net:8451": {
+        self.route = {"Web": {"gateway.example.invalid:8451": {
             "Handlers": {"/": {"Path": str(self.root)},
                          "/api": {"Proxy": "redacted-for-test"}}}}}
         self.route_sha = sha(json.dumps(self.route, sort_keys=True,
@@ -294,7 +297,7 @@ class PublicationTests(unittest.TestCase):
     def test_old_entry_and_route_guards_are_mandatory(self):
         self.assertEqual(self.run_release(expected_entry_sha256="0" * 64)["error"], "old_entry_mismatch")
         self.assertEqual(self.run_release(expected_route_sha256="0" * 64)["error"], "route_digest_mismatch")
-        self.route["Web"]["nuc.tailcf7779.ts.net:8451"]["Handlers"]["/"] = {"Path": "/wrong"}
+        self.route["Web"]["gateway.example.invalid:8451"]["Handlers"]["/"] = {"Path": "/wrong"}
         digest = sha(json.dumps(self.route, sort_keys=True, separators=(",", ":")).encode())
         self.assertEqual(self.run_release(expected_route_sha256=digest)["error"], "serving_root_mismatch")
 

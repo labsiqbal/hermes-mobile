@@ -8,7 +8,7 @@ lintas koneksi) tetap jalan 24/7 tanpa Desktop app — syarat untuk mobile app.
 
 ## Apa yang dilakukan
 
-Per koneksi di `config.yaml`, daemon memegang satu WebSocket JSON-RPC ke
+Per koneksi di `~/.config/hermes-mobile/relay.yaml`, daemon memegang satu WebSocket JSON-RPC ke
 `ws://<host>/api/ws` dan menjalankan dua loop:
 
 1. **Roster loop (60s)** — fetch `profiles.list` per koneksi, bentuk union
@@ -42,7 +42,14 @@ socket up. Nilai secret tidak pernah di-log.
 
 ## Menambah koneksi
 
-Edit `config.yaml`, tambah entry (contoh `t14` sudah ada, dikomentari), lalu:
+Konfigurasi koneksi disimpan di `~/.config/hermes-mobile/relay.yaml`, di luar repo.
+Untuk instalasi baru, salin `config.example.yaml` ke lokasi itu dengan izin `0600`,
+lalu isi alamat gateway sendiri. Instalasi lama harus memindahkan `config.yaml`
+ke lokasi privat ini sebelum menjalankan versi baru; pertahankan nama koneksi
+agar envelope yang masih antre tetap valid. `--config /absolute/private/path.yaml`
+tetap didukung. Jangan commit konfigurasi privat.
+
+Edit file privat tersebut untuk menambah koneksi, lalu:
 
 ```
 systemctl --user restart hermes-relay

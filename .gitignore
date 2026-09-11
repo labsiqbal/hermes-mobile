@@ -19,3 +19,7 @@ __pycache__/
 /PRODUCT.md
 /DESIGN.md
 /app/production-browser-evidence/
+
+# Installation addresses and operator configuration stay private.
+/relay-daemon/config.yaml
+/deploy/publisher.json

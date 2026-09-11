@@ -66,7 +66,7 @@ try {
   const response = data => new Response(JSON.stringify(data), { headers: { 'content-type': 'application/json' } });
   const makeApi = fetch => new WorkspaceClient(conn, client, session, { fetch });
   await test('explicit .worktrees cwd retains bounded Files and Git with protected descendants denied', async () => {
-    const cwd = '/home/iqbal/workspace/.worktrees/hermes-mobile/feature';
+    const cwd = '/home/operator/workspace/.worktrees/hermes-mobile/feature';
     assert.equal(safeWorkspacePath(cwd), true);
     const requested = [];
     const worktree = new WorkspaceClient(conn, client, { ...session, cwd, git_repo_root: cwd }, { fetch: async url => {
@@ -83,11 +83,11 @@ try {
     assert.equal((await worktree.diff(cwd + '/README.md')).text, '-old\n+new');
     assert.ok(requested.every(u => u.searchParams.get('path') === cwd || u.searchParams.get('path') === cwd + '/README.md'));
     const before = requested.length;
-    for (const path of [cwd + '/.env', cwd + '/.ssh/id_rsa', cwd + '/.git/config', cwd + '/auth.json', cwd + '/../other', cwd + '/%2e%2e/other', '/home/iqbal/workspace/.worktrees', '/home/iqbal/.other/project']) {
+    for (const path of [cwd + '/.env', cwd + '/.ssh/id_rsa', cwd + '/.git/config', cwd + '/auth.json', cwd + '/../other', cwd + '/%2e%2e/other', '/home/operator/workspace/.worktrees', '/home/operator/.other/project']) {
       assert.equal(safeWorkspacePath(path), false, path);
       await assert.rejects(worktree.readText(path));
     }
-    await assert.rejects(worktree.list('/home/iqbal/workspace/.worktrees/hermes-mobile/sibling'));
+    await assert.rejects(worktree.list('/home/operator/workspace/.worktrees/hermes-mobile/sibling'));
     assert.equal(requested.length, before);
     const alias = new WorkspaceClient(conn, client, { ...session, cwd }, { fetch: async () => response({ path: '/elsewhere', entries: [] }) });
     await assert.rejects(alias.list(cwd), /exact workspace/);
@@ -285,7 +285,7 @@ try {
       ok(opens.length === 1 && !button('Trust and open preview'), 'live gateway change at click refuses stale confirmation');
       client.url = conn.url;
       ok(!document.querySelector('iframe, object, embed') && document.documentElement.scrollWidth <= window.innerWidth, 'preview remains text-only without mobile overflow');
-      session = { ...session, cwd: '/home/iqbal/workspace/.worktrees/hermes-mobile/feature', git_repo_root: '/home/iqbal/workspace/.worktrees/hermes-mobile/feature' }; render(); await until(() => row('README.md'));
+      session = { ...session, cwd: '/home/operator/workspace/.worktrees/hermes-mobile/feature', git_repo_root: '/home/operator/workspace/.worktrees/hermes-mobile/feature' }; render(); await until(() => row('README.md'));
       ok(document.body.textContent.includes(session.cwd), 'real component accepts explicit worktree session cwd');
       row('README.md').click(); await until(() => document.querySelector('.workspace-code'));
       ok(document.querySelector('.workspace-code').textContent === 'hello', 'worktree Files text read remains usable');

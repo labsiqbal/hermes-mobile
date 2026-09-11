@@ -388,7 +388,7 @@ export function newConnectionId(): string {
 // ---------------------------------------------------------------------------
 
 export interface HermesConnectionOptions {
-  /** Base URL, e.g. "http://100.105.150.35:9119". Trailing slash stripped. */
+  /** Base URL, e.g. "http://gateway.example.invalid:9119". Trailing slash stripped. */
   url: string;
   username?: string;
   password?: string;

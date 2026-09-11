@@ -14,7 +14,7 @@
  * printed. A provider/LLM upstream failure is reported as such — it still
  * proves auth + WS + RPC work and that the error propagates to the client.
  *
- * Usage: node scripts/smoke.mjs [base-url]   (default http://100.105.150.35:9119)
+ * Usage: node scripts/smoke.mjs <base-url>   (or set HERMES_BACKEND)
  */
 
 import { buildSync } from "esbuild";
@@ -26,7 +26,11 @@ import { pathToFileURL, fileURLToPath } from "node:url";
 import crypto from "node:crypto";
 import yaml from "yaml";
 
-const BASE = process.argv[2] ?? "http://100.105.150.35:9119";
+const BASE = process.argv[2] ?? process.env.HERMES_BACKEND;
+if (!BASE) {
+  console.error("Provide a gateway URL argument or HERMES_BACKEND before running a live smoke test.");
+  process.exit(1);
+}
 const TURN_TIMEOUT_MS = 120_000;
 
 // ── bundle the TS client lib and import it (same artifact the app ships) ────

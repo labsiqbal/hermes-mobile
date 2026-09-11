@@ -5,7 +5,7 @@
  * module is reusable verbatim from a Node smoke test or another shell.
  *
  * Wire facts (verified against gateway/platforms/api_server.py + the live
- * server on 100.105.150.35:8643):
+ * server on gateway.example.invalid:8643):
  *   - Auth is `Authorization: Bearer <API_SERVER_KEY>` on every route.
  *   - GET /v1/runs/{id} → pollable status object:
  *       {object:"hermes.run", run_id, status, created_at, updated_at,
