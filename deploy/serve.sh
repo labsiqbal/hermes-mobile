@@ -14,7 +14,7 @@
 set -euo pipefail
 
 DIST=${1:?dist dir, e.g. app/dist}
-BACKEND=${2:?backend host:port, e.g. 100.105.150.35:9119}
+BACKEND=${2:?backend host:port, e.g. gateway.example.invalid:9119}
 PORT=${3:-8451}
 
 tailscale serve --bg --https="$PORT" --set-path / "$DIST"

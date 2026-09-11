@@ -624,8 +624,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Hermes Bot Mode headless relay daemon")
     parser.add_argument(
         "--config",
-        default=str(Path(__file__).resolve().parent / "config.yaml"),
-        help="path to the daemon config.yaml (default: beside this script)",
+        default=str(Path.home() / ".config/hermes-mobile/relay.yaml"),
+        help="private relay configuration (default: ~/.config/hermes-mobile/relay.yaml)",
     )
     parser.add_argument("--hermes-home", default=None, help="HERMES_HOME (default: ~/.hermes)")
     parser.add_argument("-v", "--verbose", action="store_true", help="DEBUG logging")

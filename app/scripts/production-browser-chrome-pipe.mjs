@@ -72,7 +72,13 @@ export class ChromePipe {
       this.rejectPending(this.aborted);
       void this.close().catch(error => console.error(error.message));
     }, this.options.deadline);
-    this.version = await this.send('Browser.getVersion');
+    try {
+      // Cold browser startup on CI needs its own budget; page/RPC deadlines stay strict.
+      this.version = await this.send('Browser.getVersion', {}, undefined,
+        Math.max(30000, this.options.timeout));
+    } catch (error) {
+      throw new Error(`Chrome startup failed: ${error.message}\n${this.stderr}`, { cause: error });
+    }
     const { targetId } = await this.send('Target.createTarget', { url: 'about:blank' });
     this.targetId = targetId;
     this.sessionId = (await this.send('Target.attachToTarget', { targetId, flatten: true })).sessionId;

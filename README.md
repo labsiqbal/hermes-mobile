@@ -65,14 +65,25 @@ Open the printed `localhost` URL. This example explicitly binds development to l
 The optional live smoke test authenticates, creates a real session and sends a real prompt, which may incur provider cost. It reads local gateway credentials and is not part of the offline/CI release gate. Run it only with explicit operator approval:
 
 ```bash
-npm run smoke   # explicit operator approval required: reads local auth and sends a real prompt
+npm run smoke -- "$HERMES_BACKEND"   # explicit operator approval required; sends a real prompt
 ```
 
 ## Updating an existing deployment
 
 Build and test in an isolated worktree/output directory; never run Vite against a currently served `app/dist`, because its cleanup can remove assets still needed by open clients. Commit/push alone does not update an existing Tailscale filesystem mount. Keep old hashed assets available for open clients.
 
-[`deploy/publish-static.py`](deploy/publish-static.py) is the existing installation-specific publisher, **not a portable deployment command**: its `ROOT` and `ORIGIN` are fixed to the maintainer's mount. It defaults to a read-only dry-run and does not build, change routes, restart services, prune files or roll back. Do not invoke it against a different installation or change its guards merely to make a release pass.
+[`deploy/publish-static.py`](deploy/publish-static.py) is an installation-specific publisher. Its target is fixed by the operator-owned `~/.config/hermes-mobile/publisher.json`, outside the repository. It refuses missing, invalid, or group/world-accessible configuration and accepts no target overrides on the command line. It defaults to a read-only dry-run and does not build, change routes, restart services, prune files or roll back. Do not change its configuration or guards merely to make a release pass.
+
+During initial operator setup, create that file with mode `0600`, substituting the actual absolute mount path and HTTPS origin (no trailing slash):
+
+```json
+{
+  "root": "/absolute/path/to/hermes-mobile/app/dist",
+  "origin": "https://gateway.example.invalid:8451"
+}
+```
+
+Keep installation URLs, tailnet addresses, routing snapshots and release receipts outside public Git history, PR descriptions, comments and screenshots. Public examples and test fixtures must use fictional endpoints. Existing operators must migrate their previous fixed publisher values into this private file before the next release; missing configuration fails closed.
 
 For that installation, an operator first reviews the source and isolated build, freezes a JSON object mapping every artifact-relative path to its SHA-256, and records the manifest digest plus independently reviewed live-entry and complete Serve-route digests. Keep the artifact and manifest outside the live tree and the manifest outside the artifact. Manifest keys are relative POSIX paths; digests are lowercase SHA-256. The route digest uses UTF-8 `json.dumps(route, sort_keys=True, separators=(",", ":")).encode()` over the complete Serve JSON object. Keep raw routing data and release receipts private.
 

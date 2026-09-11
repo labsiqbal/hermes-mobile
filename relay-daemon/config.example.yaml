@@ -9,11 +9,11 @@
 # Auth is shared: credentials come from $HERMES_HOME/config.yaml
 # (dashboard.basic_auth) on the machine running the daemon.
 connections:
-  - name: nuc
-    url: http://100.105.150.35:9119
+  - name: primary
+    url: http://gateway.example.invalid:9119
 
-  # Example second connection (T14 laptop). Uncomment once it runs
+  # Example second connection. Uncomment once it runs
   # `hermes serve`/dashboard on its Tailscale address with the same
   # dashboard.basic_auth credentials.
-  # - name: t14
-  #   url: http://100.85.238.50:9119
+  # - name: secondary
+  #   url: http://second-gateway.example.invalid:9119
