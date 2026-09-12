@@ -1,5 +1,9 @@
 # Hermes Mobile
 
+Read ~/workspace/AGENTS.md for shared rules. For a specialist method or
+delegation, read ~/workspace/.standards/agent-operations.md; load only the
+selected role guide. Project scope, queue and delivery rules remain local.
+
 Type: coding · Ownership: own · Delivery mode: local-only
 
 Follow ~/workspace/.standards/. This repository owns the mobile PWA and relay,
