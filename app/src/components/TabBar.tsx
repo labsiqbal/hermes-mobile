@@ -1,20 +1,18 @@
 import type { ComponentType } from "react";
 import {
-  BoardIcon,
   BotIcon,
   ChatIcon,
-  RunsIcon,
   SettingsIcon,
+  ClockIcon,
   type IconProps,
 } from "./icons";
 
 export type NavId = "home" | "chats" | "bots" | "activity" | "manage";
 
 const TABS: { id: NavId; label: string; icon: ComponentType<IconProps> }[] = [
-  { id: "home", label: "Home", icon: BoardIcon },
   { id: "chats", label: "Chats", icon: ChatIcon },
   { id: "bots", label: "Bots", icon: BotIcon },
-  { id: "activity", label: "Cronjobs", icon: RunsIcon },
+  { id: "activity", label: "Cronjobs", icon: ClockIcon },
   { id: "manage", label: "Manage", icon: SettingsIcon },
 ];
 

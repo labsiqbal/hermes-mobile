@@ -160,6 +160,7 @@ export function Runs({ client, conn }: { client?: HermesConnection; conn?: Saved
   }, [api]);
 
   useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect -- Synchronize the run list with the external API.
     void load();
   }, [load]);
 

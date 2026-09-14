@@ -290,7 +290,7 @@ export default function Connections({ store, onConnect, embedded }: Props) {
   return (
     <div className="screen">
       <div className="body connections-body">
-        <div className="shell-hero"><div className="eyebrow">Connection registry</div><h2>A place for<br />your work.</h2><p>Choose your Hermes gateway. Your conversations stay on your machine.</p></div>
+        <div className="connection-intro"><h2>Connections</h2><p>Choose a device to open your conversations.</p></div>
         {rows}
       </div>
     </div>

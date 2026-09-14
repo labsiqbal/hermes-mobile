@@ -131,6 +131,7 @@ export function Groups({
 
   useEffect(() => {
     if (!client) return;
+    // oxlint-disable-next-line react/set-state-in-effect -- Initial synchronization with the gateway roster.
     void load();
     const timer = setInterval(() => {
       if (client.connectionState === "open") void load();

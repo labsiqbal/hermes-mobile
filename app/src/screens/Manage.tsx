@@ -76,7 +76,7 @@ function ManagementHub({ conn, manager, onSettings, onBots, onWorkspace, navigat
     {!!error && <><ErrorNotice error={error} /><button className="manage-text-button" onClick={() => setRefresh(v => v + 1)}>Retry profile list</button></>}
     {page === 'hub' && <>
       <h3 className="manage-section-label">Connections & identity</h3>
-      <Row icon={Monitor} title="Devices & gateways" detail="Saved connections and authentication" onClick={onSettings} />
+      <Row icon={Settings2} title="Settings" detail="Connections, appearance and this device" onClick={onSettings} />
       <Row icon={Users} title="Profiles" detail={rows ? `${rows.length} profiles reported by this gateway` : 'Inspect identity and profile descriptions'} onClick={() => go('profiles')} />
       <Row icon={Brain} title="Memory" detail="Read profile notes from MEMORY.md and USER.md" onClick={() => go('memory')} />
       <h3 className="manage-section-label">Intelligence</h3>

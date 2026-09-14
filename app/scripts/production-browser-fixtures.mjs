@@ -37,7 +37,7 @@ export function installProductionFixtures(fixture) {
   };
   Object.defineProperty(window, '__productionFixture', { value: control });
   // This key exists only in ChromePipe's fresh disposable browser profile.
-  const preferences=f.preservePreferences ? Object.entries(localStorage).filter(([key])=>key.startsWith('hermes-mobile.chat-project-pins:')) : [];
+  const preferences=f.preservePreferences ? Object.entries(localStorage).filter(([key])=>key.startsWith('hermes-mobile.chat-project-pins:') || key.startsWith('hermes-mobile.project-folders:')) : [];
   localStorage.clear();
   preferences.forEach(([key,value])=>localStorage.setItem(key,value));
   localStorage.setItem('hermes-mobile.connections.v1', JSON.stringify([f.gateway]));
@@ -153,6 +153,14 @@ export function installProductionFixtures(fixture) {
     if (control.errors[method]) throw { code: 4900, message: control.errors[method] };
     if (control.unsupported.includes(method)) throw { code: -32601, message: `QA fixture method not supported: ${method}` };
     switch (method) {
+      case 'commands.catalog': {
+        if(!params.session_id || !params.profile)return fail('Command catalog must use explicit session/profile');
+        return {pairs:[['/status','Show runtime status'],['/help','Show help'],['/review','Review changes'],['/fixture-skill','Fixture skill'],...Array.from({length:60},(_,i)=>['/fixture-'+i,'Fictional command '+i]),['/plugin:review','Plugin command'],['/tool.run','Tool command'],['/skills/review','Namespaced skill']],commands:{},skills:{}};
+      }
+      case 'slash.exec': {
+        if(params.command!=='/status' || !params.session_id || !params.profile)return fail('Unexpected slash execution');
+        return {output:'Fixture runtime status: ready'};
+      }
       case 'complete.path': {
         if (typeof params.cwd !== 'string' || !params.cwd.startsWith('/fictional')) return fail('Completion must use explicit absolute parent cwd');
         if (typeof params.word !== 'string' || !params.word.startsWith('@folder:')) return fail('Completion must request source-proven folders');

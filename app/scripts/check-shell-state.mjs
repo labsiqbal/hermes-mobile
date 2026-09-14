@@ -49,7 +49,7 @@ assert.equal(nav.current.gateway.id, 'harbor');
 const direct = new History();
 direct.replaceState({shell:1, depth:0, route:{...project, screen:'workspace'}});
 const directNav = new ShellNavigation(direct);
-for (const target of ['chat', 'chats', 'home', 'home']) {
+for (const target of ['chat', 'chats', 'chats', 'chats']) {
   directNav.back();
   assert.equal(directNav.current.screen, target);
   assert.equal(direct.entries.length, 1, 'synthetic Back must replace, never push');
@@ -58,7 +58,7 @@ const appearanceHistory = new History();
 appearanceHistory.replaceState({shell:1, depth:0, route:{screen:'appearance', gateway, profile:'default'}});
 const appearanceNav = new ShellNavigation(appearanceHistory);
 assert.equal(appearanceNav.current.screen, 'appearance');
-for (const target of ['settings', 'manage', 'home', 'home']) {
+for (const target of ['settings', 'manage', 'chats', 'chats']) {
   appearanceNav.back();
   assert.equal(appearanceNav.current.screen, target);
   assert.equal(appearanceHistory.entries.length, 1, 'Appearance parent fallback replaces, never oscillates');

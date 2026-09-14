@@ -2,9 +2,10 @@ import { Component, lazy, Suspense, useCallback, useEffect, useMemo, useState, u
 import { ConnectionStore, HermesConnection, type SavedConnection, type SessionSummary } from './lib/hermes-client';
 import { ConversationViews, ManageViews, ShellNavigation, conversationKey, type ShellRoute, type ShellScreen } from './lib/shell-state';
 import { markActive, markInactive, recordSessionEvent } from './lib/active-sessions';
-import Home from './screens/Home';
+import { rememberBotThread } from './lib/chat-browser';
 import Connections from './screens/Connections';
-import ChatList from './screens/ChatList';
+import ProjectBrowser from './screens/ProjectBrowser';
+import type { ProjectFolder } from './lib/project-folders';
 import ChatView from './screens/ChatView';
 
 import { Groups } from './screens/Groups';
@@ -13,7 +14,7 @@ import { Appearance } from './screens/Appearance';
 import Header from './components/Header';
 import TabBar, { type NavId } from './components/TabBar';
 import CommandPalette from './components/CommandPalette';
-import { PlusIcon, SearchIcon, UsersIcon } from './components/icons';
+import { SquarePen, MoreHorizontal } from 'lucide-react';
 
 const BotsScreen = lazy(() => import('./screens/Bots').then(module => ({ default: module.BotsScreen })));
 const Manage = lazy(() => import('./screens/Manage'));
@@ -21,7 +22,7 @@ const Cronjobs = lazy(() => import('./screens/Cronjobs'));
 const Workspace = lazy(() => import('./screens/Workspace'));
 
 const TITLES: Record<ShellScreen, string> = { home:'Hermes', chats:'Chats', bots:'Bots', activity:'Cronjobs', manage:'Manage', groups:'Groups', settings:'Settings', appearance:'Appearance', workspace:'Workspace', chat:'Chat' };
-const ROOTS: ShellScreen[] = ['home', 'chats', 'bots', 'activity', 'manage'];
+const ROOTS: ShellScreen[] = ['chats', 'bots', 'activity', 'manage'];
 
 /** Contain chunk/render failures in the body, never the shared navigation or chat.
  * A new destination/context remounts this boundary; failed imports are not retried. */
@@ -62,6 +63,9 @@ export default function App() {
   const [restoreError, setRestoreError] = useState('');
   const [retry, setRetry] = useState(0);
   const [palette, setPalette] = useState(false);
+  const [openedSessions,setOpenedSessions]=useState<{gateway:string;session:SessionSummary}[]>([]);
+  const [desktop,setDesktop]=useState(()=>window.matchMedia('(min-width: 1000px)').matches);
+  useEffect(()=>{const media=window.matchMedia('(min-width: 1000px)');const change=()=>setDesktop(media.matches);media.addEventListener('change',change);return()=>media.removeEventListener('change',change);},[]);
   const screen = route.screen;
   const gatewayId = route.gateway?.id;
   const gatewayUrl = route.gateway?.url;
@@ -142,7 +146,7 @@ export default function App() {
   }
   function handleConnect(conn: SavedConnection, connected: HermesConnection) {
     adopt(conn, connected);
-    go({ screen:'home', gateway:{id:conn.id, url:conn.url}, profile:'default' });
+    go({ screen:'chats', gateway:{id:conn.id, url:conn.url}, profile:'default' });
   }
   function disconnect() {
     client?.disconnect(); setClient(null); setActiveConn(null);
@@ -155,19 +159,20 @@ export default function App() {
   function openGroup(roomId: string) {
     go({screen:'chat', gateway:route.gateway, profile:'default', conversation:{id:roomId, session:null, groupId:roomId}, returnTo:'groups'});
   }
-  function openSessionFromHome(conn: SavedConnection, connected: HermesConnection, session: SessionSummary) {
-    adopt(conn, connected);
-    go({screen:'chat', gateway:{id:conn.id, url:conn.url}, profile:session.profile || 'default', conversation:{id:session.id, session}, returnTo:'home'});
-  }
   function openChatById(sessionId: string, profile: string, unpersisted = false) {
     openChat({id:sessionId, title:'', preview:'', started_at:0, message_count:0, source:'mobile', profile, unpersisted}, 'bots');
   }
+  function newFolderChat(folder:ProjectFolder) {
+    go({screen:'chat',gateway:route.gateway,profile:'default',conversation:{id:`draft:${crypto.randomUUID()}`,session:null},initialFolder:folder.path,returnTo:'chats'});
+  }
+  const projectGateway=JSON.stringify([activeConn?.id,activeConn?.url]);
+  const projectBrowser=matched && <ProjectBrowser key={projectGateway} conn={activeConn!} client={client!} onOpenChat={session=>openChat(session,'chats')} onNewFolderChat={newFolderChat} selectedId={route.conversation?.session?.id} openedSessions={openedSessions.filter(row=>row.gateway===projectGateway).map(row=>row.session)} />;
 
-  const isRoot = ROOTS.includes(screen);
+  const isRoot = ROOTS.includes(screen) && !(screen==='bots' && route.botProfile) || screen==='home' || screen==='groups';
   // Root collections span profiles; Manage owns its explicit profile selection.
   // Only a conversation supplies authoritative profile context to the shell.
   const context = matched ? `${activeConn!.label}${screen === 'workspace' && route.conversation ? ` / ${route.profile}` : ''}` : 'Choose a gateway';
-  const search = <button className="iconbtn" onClick={() => setPalette(true)} aria-label="Open command palette" title="Search destinations (Ctrl+K)"><SearchIcon size={20} /></button>;
+  const search = <button className="iconbtn" onClick={() => setPalette(true)} aria-label="Open command palette" title="Navigation (Ctrl+K)"><MoreHorizontal size={20} /></button>;
   const workspace = matched && <div className="screen workspace-screen">
     <Header title="Workspace" subtitle={context} state={connState} onBack={back} right={search} />
     <main className="shell-body shell-detail workspace-shell">
@@ -186,11 +191,14 @@ export default function App() {
     content = <div className="conversation-stack">
       <div className="conversation-pane" hidden={screen !== 'chat'}>
         <ConversationSurface key={identity} conn={activeConn!} client={client!} session={route.conversation!.session}
+          initialFolder={route.initialFolder}
           group={route.conversation!.groupId ? {roomId:route.conversation!.groupId} : undefined} state={connState}
-          onBack={back} onNewChat={() => openChat(null)} viewKey={identity} views={views} visible={screen === 'chat'}
+          onBack={back} onNewChat={() => route.returnTo==='bots' ? go({screen:'bots',gateway:route.gateway,profile:'default',botProfile:route.profile}) : route.conversation?.groupId ? destination('groups') : openChat(null)} viewKey={identity} views={views} visible={screen === 'chat'}
           onSessionReady={session => {
             const current = navigation.current;
             if (conversationKey(current) !== identity || !current.conversation) return;
+            if(current.returnTo==='bots') rememberBotThread(activeConn!,session);
+            if(current.returnTo==='chats') setOpenedSessions(previous=>[...previous.filter(row=>!(row.gateway===projectGateway&&row.session.id===session.id&&row.session.profile===session.profile)),{gateway:projectGateway,session}]);
             const next = {...current, profile:session.profile || current.profile, conversation:{...current.conversation, session}};
             const nextIdentity = conversationKey(next);
             if (nextIdentity !== identity) views.link(identity, nextIdentity);
@@ -210,23 +218,23 @@ export default function App() {
     content = workspace;
   } else {
     content = <div className="screen">
-      <Header title={TITLES[screen]} subtitle={context} state={connState} onBack={isRoot ? undefined : back}
-        right={<>{screen === 'chats' && <button className="iconbtn" onClick={() => openChat(null)} aria-label="New chat" disabled={connState !== 'open'}><PlusIcon size={20} /></button>}{search}</>} />
+      <Header title={screen==='groups' ? 'Bots' : screen==='home' ? 'Chats' : screen==='bots' && route.botProfile ? route.botProfile : TITLES[screen]} subtitle={context} state={connState} onSettings={()=>destination('settings')} onBack={isRoot ? undefined : back}
+        right={<>{search}{(screen === 'chats' || screen==='home') && <button className="iconbtn" onClick={() => openChat(null)} aria-label="New chat" title="New chat" disabled={connState !== 'open'}><SquarePen size={20} /></button>}</>} />
       <div className={`shell-body${isRoot ? '' : ' shell-detail'}`}>
         {connState !== 'open' && <div className="connection-notice" role="status">{connState === 'connecting' ? 'Reconnecting…' : 'Gateway unavailable.'} Lists may be out of date. Unsent drafts stay in this tab.</div>}
         <ScreenBoundary key={JSON.stringify([screen, gatewayId, gatewayUrl])} title={TITLES[screen]}>
-          {screen === 'home' && <Home key={activeConn!.id} store={store} conn={activeConn!} client={client!} state={connState} onConnect={handleConnect} onOpenSession={openSessionFromHome} onManageDevices={() => destination('settings')} />}
-          {screen === 'chats' && <><button className="collection-link chats-groups-link" aria-label="Groups — shared bot conversations" onClick={() => destination('groups')}><UsersIcon size={20} /><span>Groups</span><span aria-hidden="true">→</span></button><ChatList key={JSON.stringify([activeConn!.id,activeConn!.url])} conn={activeConn!} client={client!} onOpenChat={session => openChat(session)} onDisconnect={disconnect} /></>}
-          {screen === 'bots' && <BotsScreen onOpenChat={openChatById} client={client!} conn={activeConn!} />}
+          {(screen==='chats' || screen==='home') && (desktop ? <div className="desktop-empty"><button className="btn btn-ghost" onClick={()=>openChat(null)}><SquarePen size={18}/>New chat</button></div> : projectBrowser)}
+          {(screen==='bots' && !route.botProfile || screen==='groups') && <div className="bots-switch" aria-label="Bot collections"><button aria-pressed={screen==='bots'} onClick={()=>destination('bots')}>Bots</button><button aria-pressed={screen==='groups'} onClick={()=>destination('groups')}>Groups</button></div>}
+          {screen === 'bots' && <BotsScreen key={route.botProfile || 'roster'} onOpenChat={openChatById} onOpenSession={session=>openChat(session,'bots')} selectedProfile={route.botProfile} onSelectProfile={name=>go({screen:'bots',gateway:route.gateway,profile:'default',botProfile:name})} client={client!} conn={activeConn!} />}
           {screen === 'groups' && <Groups client={client!} conn={activeConn!} onOpenGroup={openGroup} />}
           {screen === 'activity' && <Cronjobs client={client!} conn={activeConn!} />}
-          {screen === 'manage' && <Manage conn={activeConn!} client={client!} navigationViews={manageViews} onSettings={() => destination('settings')} onBots={() => destination('bots')} onWorkspace={() => destination('workspace')} />}
+          {screen === 'manage' && <><button className="collection-link" onClick={()=>destination('activity')}>Cronjobs</button><Manage conn={activeConn!} client={client!} navigationViews={manageViews} onSettings={() => destination('settings')} onBots={() => destination('bots')} onWorkspace={() => destination('workspace')} /></>}
           {screen === 'settings' && <Settings conn={activeConn!} store={store} state={connState} onConnect={handleConnect} onDisconnect={disconnect} onAppearance={() => destination('appearance')} />}
           {screen === 'appearance' && <Appearance />}
         </ScreenBoundary>
       </div>
-      {isRoot && <TabBar active={screen as NavId} onNavigate={destination} />}
+      {isRoot && <TabBar active={screen==='groups' ? 'bots' : screen==='home' ? 'chats' : screen as NavId} onNavigate={destination} />}
     </div>;
   }
-  return <>{content}{palette && <CommandPalette onClose={() => setPalette(false)} onNavigate={destination} connected={matched} />}</>;
+  return <><div className={desktop&&matched?'desktop-layout':'app-layout'}>{desktop&&matched&&<aside className="desktop-sidebar"><div className="sidebar-brand">Hermes<button className="iconbtn" title="New chat" aria-label="New chat" onClick={()=>openChat(null)}><SquarePen size={18}/></button></div>{projectBrowser}</aside>}<div className="desktop-main">{content}</div></div>{palette && <CommandPalette onClose={() => setPalette(false)} onNavigate={destination} connected={matched} />}</>;
 }

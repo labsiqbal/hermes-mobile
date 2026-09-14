@@ -3,6 +3,8 @@ import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useStat
 import "./chat-view.css";
 import { acceptLiveEvent, allowSmoothAutoScroll, freshHistoryMessages, historyMessageKey, preservedScrollTop, resumeCatchupEvents, shouldFetchSessionHistory } from "./chat-resume-utils";
 import Header from "../components/Header";
+import { DictationButton } from '../components/DictationButton';
+import { MoreHorizontal, SquarePen } from 'lucide-react';
 import type { ConversationViews } from "../lib/shell-state";
 import { MessageContent } from "../components/MessageContent";
 import { ArrowUpIcon, ChevronDownIcon, FileIcon, ImageIcon, PlusIcon, SearchIcon, StopIcon, XIcon } from "../components/icons";
@@ -136,6 +138,7 @@ type TimelineItem =
   | { kind: "error"; id: string; text: string; entering?: boolean };
 
 interface Props {
+  initialFolder?: string;
   conn: SavedConnection;
   client: HermesConnection;
   /** null → create a fresh session */
@@ -200,7 +203,7 @@ const BOT_DM_RE = /^Message from 🤖 [^\n]*?\(@([A-Za-z0-9_.-]{1,64})\):\s*/;
 
 const SESSION_NOT_OWNED = "SESSION_NOT_OWNED";
 
-type SlashOption = { command: "/exit" | "/model"; description: string };
+type SlashOption = { command: string; description: string };
 const SLASH_OPTIONS: SlashOption[] = [
   { command: "/exit", description: "Close this Mobile runtime" },
   { command: "/model", description: "Choose model" },
@@ -221,6 +224,7 @@ type OpenFailure = "none" | "session-not-owned" | "create-failed";
 
 class CreateFolderMismatchError extends Error {}
 
+// oxlint-disable-next-line react/only-export-components -- Pure helper exported for regression tests.
 export function isSessionNotOwned(error: unknown): boolean {
   if (!(error instanceof RpcError) || !error.data || typeof error.data !== "object") return false;
   return (error.data as { reason?: unknown }).reason === SESSION_NOT_OWNED;
@@ -232,12 +236,15 @@ function withoutTrailingSlash(path: string): string {
   return path.length > 1 && path.endsWith("/") ? path.slice(0, -1) : path;
 }
 
+// oxlint-disable-next-line react/only-export-components -- Pure helper exported for regression tests.
 export function safeServerFolder(path: string): boolean {
   return path === "/" || (path.length > 1 && path.length <= 2048 && path.startsWith("/")
+    // oxlint-disable-next-line no-control-regex -- Control bytes are deliberately rejected in server paths.
     && !/[\\%\x00-\x1f\x7f:?#*[\]{}]/.test(path)
     && path.split("/").every((part, index, parts) => index === 0 || (index === parts.length - 1 && part === "") || (part.length > 0 && part !== "." && part !== ".." && !sensitiveServerPart.test(part))));
 }
 
+// oxlint-disable-next-line react/only-export-components -- Pure helper exported for regression tests.
 export function pathCompletionContext(path: string): { word: string; cwd: string; prefix: string } | null {
   if (!safeServerFolder(path)) return null;
   if (path.endsWith("/")) {
@@ -251,6 +258,7 @@ export function pathCompletionContext(path: string): { word: string; cwd: string
   return { word: `@folder:${relative}`, cwd: prefix.length > 1 ? prefix.slice(0, -1) : "/", prefix };
 }
 
+// oxlint-disable-next-line react/only-export-components -- Pure helper exported for regression tests.
 export function absolutePathCompletions(path: string, items: PathCompletion[]): string[] {
   const context = pathCompletionContext(path);
   if (!context) return [];
@@ -360,6 +368,7 @@ function useSmoothReveal(target: string, active: boolean): string {
     // baseline in sync too, so toggling reduced motion cannot replay it.
     if (!active || reducedMotion) {
       shownRef.current = target.length;
+      // oxlint-disable-next-line react/set-state-in-effect -- Reset the animation baseline when external text settles.
       setShown(target.length);
       return;
     }
@@ -411,7 +420,7 @@ const StreamingBotBubble = memo(function StreamingBotBubble({
   );
 });
 
-export default function ChatView({ conn, client, session, group, state, onBack, onNewChat, onWorkspace, onPalette, onSessionReady, viewKey, views, visible = true }: Props) {
+export default function ChatView({ conn, client, session, group, state, onBack, onNewChat, onWorkspace, onPalette, onSessionReady, viewKey, views, visible = true, initialFolder }: Props) {
   const [savedView] = useState(() => views.read(viewKey));
   const sessionReadyRef = useRef(onSessionReady);
   const readySummaryRef = useRef<SessionSummary | null>(null);
@@ -421,13 +430,19 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   const [info, setInfo] = useState<SessionInfo | undefined>();
   const [items, setItems] = useState<TimelineItem[]>([]);
   const [input, setInput] = useState(savedView.draft);
+  const [dictationStatus,setDictationStatus] = useState('');
   const [streaming, setStreaming] = useState(false);
-  const [folderInput, setFolderInput] = useState("");
-  const folderEditedRef = useRef(false);
+  const [folderInput, setFolderInput] = useState(initialFolder || "");
+  const folderEditedRef = useRef(!!initialFolder);
   const [defaultFolderStatus, setDefaultFolderStatus] = useState("Loading this device's default folder…");
   const [folderSuggestions, setFolderSuggestions] = useState<string[]>([]);
   const [folderSuggestionIndex, setFolderSuggestionIndex] = useState(0);
   const [createFolder, setCreateFolder] = useState<string | null>(null);
+  useEffect(()=>{
+    let cancelled=false;
+    queueMicrotask(()=>{if(!cancelled && !session && initialFolder && safeServerFolder(initialFolder)){setCreateBusy(true);setCreateFolder(initialFolder);}});
+    return()=>{cancelled=true;};
+  },[initialFolder,session]);
   const [createBusy, setCreateBusy] = useState(false);
   const [createAttempt, setCreateAttempt] = useState(0);
   const [openRetry, setOpenRetry] = useState(0);
@@ -448,6 +463,16 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   const [pendingApprovalLookupFailed, setPendingApprovalLookupFailed] = useState(false);
   const [slashIndex, setSlashIndex] = useState(0);
   const [slashDismissed, setSlashDismissed] = useState(false);
+  const [gatewayCommands,setGatewayCommands]=useState<SlashOption[]>([]);
+  const [catalogStatus,setCatalogStatus]=useState('');
+  const wantsSlash=slashToken(input)!==null;
+  const commandProfile=info?.profile_name || session?.profile || 'default';
+  useEffect(()=>{
+    if(!wantsSlash || !liveSid || state!=='open')return;
+    let cancelled=false;
+    void client.slashCatalog(liveSid,commandProfile).then(rows=>{if(!cancelled){setGatewayCommands(rows);setCatalogStatus('');}}).catch(()=>{if(!cancelled)setCatalogStatus('Gateway commands unavailable. Showing local commands.');});
+    return()=>{cancelled=true;};
+  },[client,liveSid,commandProfile,state,wantsSlash]);
   const [sheetClosing, setSheetClosing] = useState(false);
   const [stuck, setStuck] = useState(false);
   const [fatal, setFatal] = useState("");
@@ -1415,9 +1440,9 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
       setComposerStatus("Unknown command: /. No message was sent.");
       return;
     }
-    const command = slashCommand(text);
+    const command = slashCommand(text) || gatewayCommands.find(option=>option.command===text.split(/\s/,1)[0])?.command.slice(1);
     if (command) {
-      setComposerStatus(`Unknown command: /${command}. No message was sent.`);
+      setComposerStatus(`/${command} cannot run while a response is active. No message was sent.`);
       return;
     }
     setRunActionBusy(true);
@@ -1529,9 +1554,14 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
       setComposerStatus("Unknown command: /. No message was sent.");
       return;
     }
-    const command = slashCommand(text);
+    const command = slashCommand(text) || gatewayCommands.find(option=>option.command===text.split(/\s/,1)[0])?.command.slice(1);
     if (command) {
-      setComposerStatus(`Unknown command: /${command}. No message was sent.`);
+      if(!isGroup && !streaming && !released && !closing && !runActionBusy && state==='open' && sidRef.current && ['/help','/status','/version','/whoami','/usage','/commands'].includes(text)) {
+        setRunActionBusy(true);setComposerStatus('Running command...');setInput('');
+        try {const output=await client.slashInfo(sidRef.current,profileRef.current || commandProfile,text);setComposerStatus(output);}
+        catch(error){setComposerStatus(error instanceof Error?error.message:'Command failed.');}
+        finally{setRunActionBusy(false);}
+      } else setComposerStatus(gatewayCommands.some(option=>option.command===`/${command}`) ? `/${command} is available in Hermes Desktop; execution is not supported here yet. No message was sent.` : `Unknown command: /${command}. No message was sent.`);
       return;
     }
     if (runtimeUnavailableRef.current) return;
@@ -1647,10 +1677,11 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   const slashSuggestions = useMemo(() => {
     const token = slashToken(input);
     if (token === null || slashDismissed || !liveSid || released || closing || state !== "open") return [];
-    return SLASH_OPTIONS.filter((option) =>
-      option.command.slice(1).startsWith(token) && (option.command !== "/model" || !isGroup),
+    return [...SLASH_OPTIONS,...gatewayCommands.filter(option=>!SLASH_OPTIONS.some(local=>local.command===option.command))].filter((option) =>
+      (option.command.slice(1).toLowerCase().includes(token.toLowerCase()) || option.description.toLowerCase().includes(token.toLowerCase())) && (option.command !== "/model" || !isGroup),
     );
-  }, [closing, input, isGroup, liveSid, released, slashDismissed, state]);
+  }, [closing, input, isGroup, liveSid, released, slashDismissed, state,gatewayCommands]);
+  useEffect(()=>{document.getElementById(`${slashListboxId}-${slashIndex}`)?.scrollIntoView({block:'nearest'});},[slashIndex,slashSuggestions.length]);
 
   // During the close animation the sheet keeps rendering the last request.
   if (approval) lastApprovalRef.current = approval;
@@ -1787,8 +1818,8 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
         onBack={onBack}
         right={
           <>
-            <button className="iconbtn" onClick={onNewChat} aria-label="New chat" title="New chat"><PlusIcon size={20} /></button>
-            {onPalette && <button className="iconbtn" onClick={onPalette} aria-label="Open command palette"><SearchIcon size={20} /></button>}
+            <button className="iconbtn" onClick={onNewChat} aria-label="New chat" title="New chat"><SquarePen size={20} /></button>
+            {onPalette && <button className="iconbtn" onClick={onPalette} aria-label="Open command palette" title="Navigation"><MoreHorizontal size={20} /></button>}
           </>
         }
       />
@@ -1891,6 +1922,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
         </div>
       )}
 
+      {wantsSlash && catalogStatus && <div className="dictation-status" role="status">{catalogStatus}</div>}
       {slashSuggestions.length > 0 && (
         <div id={slashListboxId} className="slash-suggestions" role="listbox" aria-label="Slash commands">
           {slashSuggestions.map((option, index) => (
@@ -1909,7 +1941,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
               }}
             >
               <span>{option.command}</span>
-              <small>{option.description}</small>
+              <small>{option.description}{!['/exit','/model','/help','/status','/version','/whoami','/usage','/commands'].includes(option.command) && ' · Desktop'}</small>
             </button>
           ))}
         </div>
@@ -2025,6 +2057,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
         {attachError && (
           <div className="error-line" style={{ marginBottom: "var(--space-6)" }}>{attachError}</div>
         )}
+        {dictationStatus && <p className="dictation-status" role="status">{dictationStatus}</p>}
         {attachments && attachments.length > 0 && (
           <div className="attach-chips">
             {attachments.map((item) => (
@@ -2152,6 +2185,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
               </div>
             )}
             <div className="composer-actions">
+            <DictationButton disabled={!visible || released || closing} draft={input} onStatus={setDictationStatus} onTranscript={text=>setInput(current=>current ? `${current} ${text}` : text)} />
             {streaming && !isGroup && input.trim() && (
               <button
                 className="composer-action composer-send"

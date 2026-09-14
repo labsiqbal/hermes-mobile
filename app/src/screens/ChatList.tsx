@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { Pin, Trash2, RefreshCw, ListFilter, X } from 'lucide-react';
+import { Pin, Trash2, RefreshCw, SlidersHorizontal, Search, MoreHorizontal, X } from 'lucide-react';
 import type { HermesConnection, ProjectTreeItem, SavedConnection, SessionSummary } from '../lib/hermes-client';
 import { ChatSource, chatReadFailure, type ChatReadFailure } from '../lib/chat-source';
-import { chatKey, uniqueChats, orderedProjects, preferenceKey, readIds, type BrowserChat } from '../lib/chat-browser';
+import { chatKey, uniqueChats, orderedProjects, preferenceKey, readIds, sessionPinsKey, readBotThreads, isBotThread, type BrowserChat } from '../lib/chat-browser';
 import { formatSessionTime } from './chat-list-utils';
 import { isActive } from '../lib/active-sessions';
 import { ChevronDownIcon, ChevronRightIcon } from '../components/icons';
@@ -31,7 +31,10 @@ export default function ChatList({conn,client,onOpenChat}: Props) {
   const expandedKey = `${pinsKey}:expanded`;
   const [pins,setPins] = useState(()=>readIds(pinsKey));
   const [expanded,setExpanded] = useState(()=>readIds(expandedKey));
-  const [recentExpanded,setRecentExpanded] = useState(true);
+  const [query,setQuery] = useState('');
+  const [sessionPins,setSessionPins] = useState(()=>readIds(sessionPinsKey(conn)));
+  const [actions,setActions] = useState<BrowserChat | null>(null);
+  const localBots = readBotThreads(conn);
   const [projectFilter,setProjectFilter] = useState('');
   const [profileFilter,setProfileFilter] = useState('');
   const [filtersOpen,setFiltersOpen] = useState(false);
@@ -84,26 +87,30 @@ export default function ChatList({conn,client,onOpenChat}: Props) {
     const bot=data?.bots.find(bot=>bot.profile===row.profile && [bot.id,bot.resolved_id].some(id=>id && [row.id,row.resolved_id].includes(id)));
     return bot ? {...row,...bot} : row;
   }));
-  const matches = (row:BrowserChat) => (!profileFilter || row.profile===profileFilter);
+  const matches = (row:BrowserChat) => !isBotThread(row,data?.profiles || [],localBots)
+    && (!profileFilter || row.profile===profileFilter)
+    && `${row.title} ${row.preview} ${row.cwd || ''}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase());
   const realProjects=data?.projects.filter(project=>!project.isNoProject && project.sessionCount>0) || [];
-  const projects=orderedProjects(realProjects,pins).filter(project=>(!projectFilter || projectFilter===project.id) && (!profileFilter || profileFilter===project.profile));
-  const hydratedKeys=new Set(Object.values(hydrated).flatMap(project=>projectSessions(project).flatMap(row=>[chatKey(row),...(row.resolved_id ? [chatKey({...row,id:row.resolved_id})] : [])])));
-  const recent = identify(uniqueChats([...(data?.bots || []),...(data?.sessions || [])])).filter(row=>{
-    const keys=[chatKey(row),...(row.resolved_id ? [chatKey({...row,id:row.resolved_id})] : [])];
-    const claimed=keys.some(key=>data?.scopedIds.has(key) || hydratedKeys.has(key));
-    return !claimed && matches(row);
-  });
+  const projects=orderedProjects(realProjects,pins).filter(project=>projectFilter===project.id && (!profileFilter || profileFilter===project.profile));
+  const recent = identify([...(data?.bots || []),...(data?.sessions || []),...realProjects.flatMap(project=>project.previewSessions || []),...Object.values(hydrated).flatMap(projectSessions)])
+    .filter(matches).sort((a,b)=>b.started_at-a.started_at);
+  const pinned = recent.filter(row=>sessionPins.has(chatKey(row)));
+  function toggleSessionPin(row:BrowserChat) {
+    const next=new Set(sessionPins), key=chatKey(row);
+    if(next.has(key)) next.delete(key); else next.add(key);
+    setSessionPins(next); persist(sessionPinsKey(conn),next); setActions(null);
+  }
   const available = (row:BrowserChat) => !loading && !loadError && !data?.failedProfiles.includes(row.profile || '') && !row.bot && row.profile===data?.profile && client.connectionState==='open' && !isActive(conn.id,row.id,row.resolved_id);
   function renderRow(row:BrowserChat) {
     return <div className="chat-session-row" key={chatKey(row)} data-session-id={row.id} data-profile={row.profile}>
       <button className="rowcard" onClick={()=>onOpenChat(row)}>
         <span className="rowcard-main">
-          <span className="rowcard-title">{row.title || 'Untitled'}</span>
-          <span className="rowcard-sub">{row.preview || '—'}</span>
-          <span className="rowcard-meta"><span>{row.profile}</span><span>{formatSessionTime(row,'')} · {row.message_count} msg</span>{row.bot && <span className="chip">bot</span>}{isActive(conn.id,row.id,row.resolved_id) && <span className="chip chip-amber chip-live">active</span>}</span>
+          <span className="chat-row-heading"><span className="rowcard-title">{row.title || 'Untitled'}</span><time>{formatSessionTime(row,'')}</time></span>
+          {row.preview && <span className="rowcard-sub">{row.preview}</span>}
+          <span className="rowcard-meta">{row.cwd && <span>{row.cwd.split('/').filter(Boolean).pop() || row.cwd}</span>}{row.profile!==data?.profile && <span>{row.profile}</span>}{isActive(conn.id,row.id,row.resolved_id) && <span className="chip chip-amber chip-live">active</span>}</span>
         </span>
       </button>
-      <button className="iconbtn chat-delete" aria-label={`Delete session ${row.title || 'Untitled'}`} disabled={!available(row)} title={row.bot ? 'Canonical bot chats cannot be deleted here' : !available(row) ? 'Only inactive sessions in the verified running profile can be deleted' : 'Delete this session and its history'} onClick={()=>{setStatus('');setPendingDelete({...row});}}><Trash2 size={17} aria-hidden="true" /></button>
+      <button className="iconbtn chat-row-menu" aria-label={`Actions for ${row.title || 'Untitled'}`} title="Conversation actions" onClick={()=>setActions(row)}><MoreHorizontal size={18} aria-hidden="true" /></button>
     </div>;
   }
   const activeFilters = Number(Boolean(projectFilter)) + Number(Boolean(profileFilter));
@@ -111,19 +118,22 @@ export default function ChatList({conn,client,onOpenChat}: Props) {
   const closeFilters = () => history.back();
   return <div className="screen"><div className="body chatlist">
     <div className="chat-filter-toolbar">
-      <button className="btn btn-ghost" aria-label="Filter chats" aria-haspopup="dialog" aria-expanded={filtersOpen} onClick={()=>{history.pushState(history.state,'');setFiltersOpen(true);}}><ListFilter size={18} aria-hidden="true" /> Filter{activeFilters ? ` (${activeFilters})` : ''}</button>
-      <button className="iconbtn" disabled={loading} onClick={()=>void load()} aria-label="Refresh Chats" title="Refresh Chats"><RefreshCw size={18} aria-hidden="true" /></button>
+      <label className="chat-search"><Search size={20} aria-hidden="true" /><input type="search" aria-label="Search conversations" placeholder="Search conversations" value={query} onChange={event=>setQuery(event.target.value)} /></label>
+      <button className="iconbtn chat-filter-button" aria-label="Filter chats" title="Filter projects and profiles" aria-haspopup="dialog" aria-expanded={filtersOpen} onClick={()=>{history.pushState(history.state,'');setFiltersOpen(true);}}><SlidersHorizontal size={20} aria-hidden="true" />{activeFilters>0 && <span className="filter-count">{activeFilters}</span>}</button>
     </div>
     {activeFilters > 0 && <div className="chat-filter-summary"><span>{[projectFilter && `Project: ${projectFilter==='recent'?'Recent':realProjects.find(p=>p.id===projectFilter)?.label || projectFilter}`,profileFilter && `Profile: ${profileFilter}`].filter(Boolean).join(' · ')}</span><button className="btn btn-ghost" onClick={clearFilters} aria-label="Clear filters">Clear</button></div>}
     {filtersOpen && <FilterSheet onBack={dismissFilters} onClose={closeFilters}><div className="chat-filters">
-      <label>Project<select aria-label="Project filter" value={projectFilter} onChange={e=>{setProjectFilter(e.target.value);setPendingDelete(null);}}><option value="">All projects</option><option value="recent">Recent</option>{realProjects.map(project=><option key={project.id} value={project.id}>{project.label} · {project.profile}</option>)}</select></label>
+      <label>Project<select aria-label="Project filter" value={projectFilter} onChange={e=>{const id=e.target.value;setProjectFilter(id);setExpanded(previous=>new Set([...previous,id]));setPendingDelete(null);}}><option value="">All projects</option><option value="recent">Recent</option>{realProjects.map(project=><option key={project.id} value={project.id}>{project.label} · {project.profile}</option>)}</select></label>
       <label>Profile<select aria-label="Profile filter" value={profileFilter} onChange={e=>{setProfileFilter(e.target.value);setPendingDelete(null);}}><option value="">All profiles</option>{data?.profiles.map(profile=><option key={profile.name} value={profile.name}>{profile.name}</option>)}</select></label>
     </div><div className="sheet-actions"><button className="btn btn-ghost" onClick={clearFilters} disabled={!activeFilters}>Clear filters</button><button className="btn btn-primary" onClick={closeFilters}>Done</button></div></FilterSheet>}
-    {data && <details className="hint chat-scope"><summary>Browsing & deletion limits</summary><p>Profile-owned history and projects from this gateway. Pins only change display order. Delete is available only for inactive sessions in the running profile ({data.profile || 'unverified'}). Other profiles and canonical bot chats are protected. A disabled trash button means deletion is unavailable here.</p></details>}
     {error && <div className="error-line" role="alert">{error}</div>}
     {(loadError || !!data?.readFailures.length) && <ReadStatus failures={loadError ? [loadError] : data!.readFailures} empty={!data?.sessions.length && !data?.projects.length} identityOnly={!loadError && data?.failedProfiles.length===0} loading={loading} onRetry={()=>void load()} />}
     {status && <div className="hint" role="status">{status}</div>}
     {loading ? <div className="hint" role="status">Loading chats…</div> : <>
+      {(!projectFilter || projectFilter==='recent') && <>
+        {pinned.length>0 && <section aria-label="Pinned conversations"><h2 className="chat-section-heading"><Pin size={14} aria-hidden="true" />Pinned</h2>{pinned.map(renderRow)}</section>}
+        <section aria-label="Recent conversations"><div className="chat-section-bar"><h2 className="chat-section-heading">Recent</h2><button className="iconbtn" disabled={loading} onClick={()=>void load()} aria-label="Refresh Chats" title="Refresh Chats"><RefreshCw size={16} aria-hidden="true" /></button></div>{recent.filter(row=>!sessionPins.has(chatKey(row))).map(renderRow)}</section>
+      </>}
       {projects.map(project=>{
         const open=expanded.has(project.id), full=hydrated[project.id];
         const rows=identify(full ? projectSessions(full) : project.previewSessions || []).filter(matches);
@@ -133,10 +143,20 @@ export default function ChatList({conn,client,onOpenChat}: Props) {
           {open && <div className="project-group-rows" id={panelId}>{projectErrors[project.id] ? <><p role="alert" className="error-line">{projectErrors[project.id]} Showing the verified preview only. Refresh Chats to retry.</p>{rows.map(renderRow)}</> : !full ? <p className="hint" role="status">Loading sessions…</p> : rows.length ? rows.map(renderRow) : <p className="hint">No chats match these filters in this project.</p>}</div>}
         </section>;
       })}
-      {(!projectFilter || projectFilter==='recent') && recent.length>0 && <section className="project-group"><button className="project-group-head" aria-expanded={recentExpanded} aria-controls="recent-sessions" onClick={()=>setRecentExpanded(open=>!open)}>{recentExpanded ? <ChevronDownIcon size={16} /> : <ChevronRightIcon size={16} />}<span className="project-group-name">Recent</span><span className="project-group-count">{recent.length}</span></button>{recentExpanded && <div className="project-group-rows" id="recent-sessions">{recent.map(renderRow)}</div>}</section>}
       {!error && !loadError && !data?.readFailures.length && projects.length===0 && (projectFilter && projectFilter!=='recent' || recent.length===0) && <p className="hint">No chats match these filters.</p>}
     </>}
-  </div>{pendingDelete && <DeleteDialog target={pendingDelete} device={conn.label} available={()=>available(pendingDelete)} source={source} onClose={()=>setPendingDelete(null)} onFinished={message=>{setPendingDelete(null);setStatus(message);void load();}} />}</div>;
+  </div>{actions && <ConversationActions row={actions} pinned={sessionPins.has(chatKey(actions))} canDelete={available(actions)} onClose={()=>setActions(null)} onPin={()=>toggleSessionPin(actions)} onDelete={()=>{setPendingDelete(actions);setActions(null);}} />}{pendingDelete && <DeleteDialog target={pendingDelete} device={conn.label} available={()=>available(pendingDelete)} source={source} onClose={()=>setPendingDelete(null)} onFinished={message=>{setPendingDelete(null);setStatus(message);void load();}} />}</div>;
+}
+
+function ConversationActions({row,pinned,canDelete,onClose,onPin,onDelete}:{row:BrowserChat;pinned:boolean;canDelete:boolean;onClose:()=>void;onPin:()=>void;onDelete:()=>void}) {
+  const dialog=useRef<HTMLDialogElement>(null);
+  useEffect(()=>{const previous=document.activeElement;dialog.current?.showModal();return ()=>{if(previous instanceof HTMLElement && previous.isConnected) previous.focus();};},[]);
+  return <dialog ref={dialog} className="chat-delete-dialog conversation-actions" aria-label="Conversation actions" onCancel={onClose}>
+    <div className="chat-filter-heading"><h2>{row.title || 'Untitled'}</h2><button className="iconbtn" autoFocus aria-label="Close actions" onClick={onClose}><X size={20} /></button></div>
+    <button className="collection-link" onClick={onPin}><Pin size={18} />{pinned ? 'Unpin conversation' : 'Pin conversation'}</button>
+    <button className="collection-link chat-delete" disabled={!canDelete} onClick={onDelete}><Trash2 size={18} />Delete session</button>
+    {!canDelete && <p className="hint">Only inactive sessions in the connected running profile can be deleted.</p>}
+  </dialog>;
 }
 
 function FilterSheet({children,onBack,onClose}:{children:ReactNode;onBack:()=>void;onClose:()=>void}) {
@@ -164,7 +184,7 @@ function ReadStatus({failures,empty,identityOnly,loading,onRetry}:{failures:Chat
   </section>;
 }
 
-function DeleteDialog({target,device,source,available,onClose,onFinished}:{target:BrowserChat;device:string;source:ChatSource;available:()=>boolean;onClose:()=>void;onFinished:(message:string)=>void}) {
+export function DeleteDialog({target,device,source,available,onClose,onFinished}:{target:BrowserChat;device:string;source:ChatSource;available:()=>boolean;onClose:()=>void;onFinished:(message:string)=>void}) {
   const dialog=useRef<HTMLDialogElement>(null), lock=useRef(false);
   const request=useRef<AbortController | null>(null);
   useEffect(()=>()=>request.current?.abort(),[]);

@@ -2,14 +2,13 @@ import type { TranscriptAnchor } from "./appearance-transcript";
 import type { ConnectionState, SavedConnection, SessionSummary } from './hermes-client';
 
 export const ROOT_DESTINATIONS = [
-  { id: 'home', label: 'Home', description: 'Devices and recent conversations' },
-  { id: 'chats', label: 'Chats', description: 'Projects, conversations and groups' },
-  { id: 'bots', label: 'Bots', description: 'Profiles and canonical bot conversations' },
-  { id: 'activity', label: 'Cronjobs', description: 'Scheduled jobs and the Runs journal' },
+  { id: 'chats', label: 'Chats', description: 'Sessions and projects' },
+  { id: 'bots', label: 'Bots', description: 'Bot threads and group conversations' },
+  { id: 'activity', label: 'Cronjobs', description: 'Schedules and runs' },
   { id: 'manage', label: 'Manage', description: 'Capabilities, identity and workspace tools' },
 ] as const;
 export type RootScreen = typeof ROOT_DESTINATIONS[number]['id'];
-export type ShellScreen = RootScreen | 'chat' | 'workspace' | 'groups' | 'settings' | 'appearance';
+export type ShellScreen = RootScreen | 'home' | 'activity' | 'chat' | 'workspace' | 'groups' | 'settings' | 'appearance';
 export type GatewayIdentity = Pick<SavedConnection, 'id' | 'url'>;
 export interface ConversationIdentity {
   /** Stable durable session ID, or a unique local draft ID until created. */
@@ -18,11 +17,13 @@ export interface ConversationIdentity {
   groupId?: string;
 }
 export interface ShellRoute {
+  initialFolder?: string;
   screen: ShellScreen;
   gateway?: GatewayIdentity;
   profile: string;
+  botProfile?: string;
   conversation?: ConversationIdentity;
-  returnTo?: RootScreen | 'groups';
+  returnTo?: RootScreen | 'home' | 'activity' | 'groups';
 }
 interface Entry { shell: 1; depth: number; route: ShellRoute }
 interface HistoryAdapter {
@@ -31,12 +32,12 @@ interface HistoryAdapter {
   replaceState(data: unknown, unused: string, url?: string): void;
   back(): void;
 }
-const screens: readonly string[] = [...ROOT_DESTINATIONS.map(d => d.id), 'chat', 'workspace', 'groups', 'settings', 'appearance'];
+const screens: readonly string[] = [...ROOT_DESTINATIONS.map(d => d.id), 'home', 'activity', 'chat', 'workspace', 'groups', 'settings', 'appearance'];
 const home = (): ShellRoute => ({ screen: 'home', profile: 'default' });
 function cleanRoute(route: ShellRoute): ShellRoute {
   const session = route.conversation?.session;
   return {
-    screen:route.screen, profile:route.profile, returnTo:route.returnTo,
+    screen:route.screen, profile:route.profile, returnTo:route.returnTo, botProfile:route.botProfile, initialFolder:route.initialFolder,
     gateway:route.gateway ? {id:route.gateway.id, url:route.gateway.url} : undefined,
     conversation:route.conversation ? {
       id:route.conversation.id, groupId:route.conversation.groupId,
@@ -58,7 +59,9 @@ function entry(value: unknown): Entry | null {
   if (r.conversation && (typeof r.conversation.id !== 'string' || !r.gateway)) return null;
   if (r.screen === 'chat' && !r.conversation) return null;
   if (r.conversation?.session && (typeof r.conversation.session.id !== 'string' || (r.conversation.session.profile && r.conversation.session.profile !== r.profile))) return null;
-  if (r.returnTo && ![...ROOT_DESTINATIONS.map(d => d.id), 'groups'].includes(r.returnTo)) return null;
+  if (r.botProfile !== undefined && typeof r.botProfile !== 'string') return null;
+  if (r.initialFolder !== undefined && (typeof r.initialFolder !== 'string' || !r.initialFolder.startsWith('/'))) return null;
+  if (r.returnTo && ![...ROOT_DESTINATIONS.map(d => d.id), 'home', 'activity', 'groups'].includes(r.returnTo)) return null;
   return {...e, route:cleanRoute(r)};
 }
 /** Browser history owns Back/Forward. Never push a synthetic parent on Back. */
@@ -90,7 +93,7 @@ export class ShellNavigation {
     const r = this.current;
     const screen = r.screen === 'workspace' ? (r.conversation ? 'chat' : 'manage')
       : r.screen === 'chat' ? r.returnTo ?? (r.conversation?.groupId ? 'groups' : 'chats')
-      : r.screen === 'appearance' ? 'settings' : r.screen === 'settings' ? 'manage' : r.screen === 'groups' ? 'chats' : 'home';
+      : r.screen === 'appearance' ? 'settings' : r.screen === 'settings' || r.screen === 'activity' ? 'manage' : r.screen === 'groups' ? 'bots' : 'chats';
     return this.go({ ...r, screen, profile:screen === 'chat' ? r.profile : 'default', conversation: screen === 'chat' ? r.conversation : undefined }, true);
   }
 }

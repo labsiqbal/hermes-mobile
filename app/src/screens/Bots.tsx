@@ -12,6 +12,7 @@ import {
   type HermesConnection,
   type ProfileSummary,
   type SavedConnection,
+  type SessionSummary,
 } from "../lib/hermes-client";
 import {
   botHandle,
@@ -24,6 +25,10 @@ import {
   type BotStatus,
 } from "./bots-utils";
 import { ChevronRightIcon } from "../components/icons";
+import { Plus, MessageCircle, RefreshCw } from 'lucide-react';
+import { ManagementClient, SessionReadError } from '../lib/management-client';
+import { chatKey, canonicalChats, isBotThread, readBotThreads, rememberBotThread, uniqueChats } from '../lib/chat-browser';
+import { formatSessionTime } from './chat-list-utils';
 
 const ROSTER_POLL_MS = 5_000;
 
@@ -37,6 +42,9 @@ export function BotsScreen({
   client: clientProp,
   conn,
   onOpenChat,
+  selectedProfile,
+  onSelectProfile,
+  onOpenSession,
 }: {
   /** Optional: App's integration contract mounts this screen with only
    *  `onOpenChat`, so the client falls back to the module-level active
@@ -44,6 +52,9 @@ export function BotsScreen({
   client?: HermesConnection;
   conn?: SavedConnection;
   onOpenChat: (sessionId: string, profile: string, unpersisted?: boolean) => void;
+  selectedProfile?: string;
+  onSelectProfile?: (profile: string) => void;
+  onOpenSession?: (session: SessionSummary) => void;
 }) {
   const client = clientProp ?? getActiveConnection();
   const [profiles, setProfiles] = useState<ProfileSummary[] | null>(null);
@@ -64,6 +75,7 @@ export function BotsScreen({
 
   useEffect(() => {
     if (!client) return;
+    // oxlint-disable-next-line react/set-state-in-effect -- Initial synchronization with the gateway roster.
     void load();
     const timer = setInterval(() => {
       setNow(Date.now());
@@ -94,6 +106,9 @@ export function BotsScreen({
       if (created.info?.profile_name && created.info.profile_name !== profile.name) {
         throw new Error("Private chat creation returned a different profile.");
       }
+      if (conn) {
+        rememberBotThread(conn,{id:sessionId,profile:profile.name});
+      }
       onOpenChat(
         sessionId,
         profile.name,
@@ -122,6 +137,17 @@ export function BotsScreen({
     );
   }
 
+  if(selectedProfile) {
+    const bot=profiles?.find(profile=>profile.name===selectedProfile);
+    return <div className="screen"><div className="body bot-threads">
+      {error && <p role="alert" className="error-line">{error}</p>}
+      {!profiles ? <p role="status">Loading bot...</p> : !bot ? <p role="alert">This bot is no longer available.</p> : <>
+        <div className="bot-thread-heading"><div><h2>{botTitle(bot)}</h2><p>@{botHandle(bot)}</p></div><button className="iconbtn" title="New bot thread" aria-label="New bot thread" disabled={opening!==null || client.connectionState!=='open'} onClick={()=>void openBot(bot)}><Plus size={22} /></button></div>
+        <BotThreads client={client} conn={conn} bot={bot} onOpen={row=>onOpenSession ? onOpenSession(row) : onOpenChat(row.id,selectedProfile)} />
+      </>}
+    </div></div>;
+  }
+
   return (
     <div className="screen">
       <div className="body flat-list">
@@ -138,14 +164,10 @@ export function BotsScreen({
                 now={now}
                 opening={opening === bot.name}
                 disabled={opening !== null}
-                onOpen={() => void openBot(bot)}
+                onOpen={() => onSelectProfile ? onSelectProfile(bot.name) : void openBot(bot)}
               />
             ))}
             <div style={{ flex: 1 }} />
-            <div className="hint">
-              The roster is read from this gateway's <span className="mono">profiles.list</span>. An
-              offline bot = fail-fast; tasks are not queued.
-            </div>
           </>
         )}
 
@@ -174,6 +196,36 @@ export function BotsScreen({
       </div>
     </div>
   );
+}
+
+function BotThreads({client,conn,bot,onOpen}:{client:HermesConnection;conn?:SavedConnection;bot:ProfileSummary;onOpen:(row:SessionSummary)=>void}) {
+  const [rows,setRows]=useState<SessionSummary[]>([]);
+  const [loading,setLoading]=useState(true);
+  const [error,setError]=useState('');
+  const [revision,setRevision]=useState(0);
+  const canonicalId=bot.canonical_session?.id;
+  const canonicalTip=bot.canonical_session?.resolved_id;
+  useEffect(()=>{
+    let cancelled=false;
+    const manager=new ManagementClient(client);
+    queueMicrotask(()=>{if(!cancelled){setLoading(true);setError('');}});
+    const accept=(sessions:SessionSummary[])=>{
+      const local=conn ? readBotThreads(conn) : new Set<string>();
+      return uniqueChats([...canonicalChats([bot]),...sessions]).filter(row=>isBotThread(row,[bot],local)).sort((a,b)=>b.started_at-a.started_at);
+    };
+    manager.sessions(bot.name).then(sessions=>{if(!cancelled)setRows(accept(sessions));},reason=>{
+      if(cancelled)return;
+      setRows(accept(reason instanceof SessionReadError ? reason.sessions : []));
+      setError('Thread history is incomplete. Retry to load the remaining conversations.');
+    }).finally(()=>{if(!cancelled)setLoading(false);});
+    return ()=>{cancelled=true;};
+    // Roster polling must not refetch the full history unless canonical identity changes.
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+  },[client,conn,bot.name,canonicalId,canonicalTip,revision]);
+  return <section aria-label="Bot threads"><div className="chat-section-bar"><h3 className="chat-section-heading">Threads</h3><button className="iconbtn" title="Refresh threads" aria-label="Refresh threads" disabled={loading} onClick={()=>setRevision(value=>value+1)}><RefreshCw size={18} /></button></div>
+    {error && <p className="error-line" role="alert">{error}</p>}
+    {loading ? <p role="status" className="hint">Loading threads...</p> : rows.length ? rows.map(row=><button className="rowcard bot-thread-row" key={chatKey(row)} onClick={()=>onOpen(row)}><MessageCircle size={20} /><span className="rowcard-main"><span className="chat-row-heading"><strong>{row.title || 'Untitled'}</strong><time>{formatSessionTime(row,'')}</time></span><span className="rowcard-sub">{row.preview || 'Open conversation'}</span></span></button>) : <p className="hint">No threads yet.</p>}
+  </section>;
 }
 
 function BotRow({

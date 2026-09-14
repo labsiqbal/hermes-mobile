@@ -9,10 +9,16 @@ interface Props {
   state: ConnectionState;
   onBack?: () => void;
   right?: ReactNode;
+  large?: boolean;
+  onSettings?: () => void;
 }
 /** One title row + an explicit, live gateway/profile context row. */
-export default function Header({ title, subtitle, state, onBack, right }: Props) {
+export default function Header({ title, subtitle, state, onBack, right, large, onSettings }: Props) {
   const dotClass = state === 'open' ? 'dot-on' : state === 'connecting' ? 'dot-busy' : 'dot-off';
+  if (large) return <header className="shell-header shell-header-large">
+    <div className="shell-toolbar"><button className="gateway-capsule" onClick={onSettings} aria-label="Connection settings" title="Connection settings"><span>{subtitle || 'Gateway'}</span><span className={`dot ${dotClass}`} aria-hidden="true" /><span className="sr-only">{connectionLabel(state)}</span></button><div className="shell-header-actions">{right}</div></div>
+    <h1>{title}</h1>
+  </header>;
   return <header className="shell-header">
     <div className="shell-title-row">
       {onBack && <button className="iconbtn" onClick={onBack} aria-label="Back"><ChevronLeft size={22} aria-hidden="true" /></button>}

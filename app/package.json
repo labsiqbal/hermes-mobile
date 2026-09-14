@@ -28,6 +28,9 @@
     "test:unit": "npm run check:appearance && npm run check:chat-browser && npm run check:bots && npm run check:chat-resume && npm run check:shell-state && npm run check:management && npm run check:workspace",
     "test": "npm run test:unit",
     "check:production-browser": "node scripts/check-production-browser.mjs --app-dir .",
+    "check:project-tree:browser": "node scripts/check-project-tree-browser.mjs",
+    "check:project-menu:browser": "node scripts/check-project-menu-browser.mjs",
+    "check:slash-catalog:browser": "node scripts/check-slash-catalog-browser.mjs",
     "check:production-browser:self-test": "node scripts/check-production-browser.mjs --app-dir . --self-test",
     "smoke": "node scripts/smoke.mjs"
   },

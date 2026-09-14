@@ -8,13 +8,13 @@ import { fileURLToPath } from 'node:url';
 import { ChromePipe } from './production-browser-chrome-pipe.mjs';
 import { FIXTURE, installProductionFixtures } from './production-browser-fixtures.mjs';
 
-export const ROOTS = ['Home', 'Chats', 'Bots', 'Cronjobs', 'Manage'];
+export const ROOTS = ['Chats', 'Bots', 'Cronjobs', 'Manage'];
 export const JOURNEYS = ['login-connect', 'root-navigation', 'project-resume', 'workspace-history-draft', 'bot-profile-draft', 'groups', 'activity-runs', 'manage-sections', 'chat-controls-approval', 'chat-owner-blocked-history', 'chat-inflight-resume', 'transport-states', 'responsive', 'palette-focus', 'created-session-navigation', 'manage-navigation-context', 'transport-audit'];
 const NAV = 'nav[aria-label="Primary"], nav.tabbar, .tabbar';
 const CONTROLS = 'button, a[href], summary, input:not([type="hidden"]), textarea, select, [role="button"], [role="tab"]';
 const q = JSON.stringify;
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
-export function assertRoots(roots) { assert.deepEqual(roots, ROOTS, 'Exactly Home / Chats / Bots / Cronjobs / Manage, in that order'); }
+export function assertRoots(roots) { assert.deepEqual(roots, ROOTS, 'Exactly Chats / Bots / Cronjobs / Manage, in that order'); }
 export function assertReceipt(report) {
   for (const id of JOURNEYS) assert.equal(report.journeys.filter(j => j.id === id && j.status === 'passed').length, 1, `Missing or failed journey: ${id}`);
   assert.equal(report.journeys.length, JOURNEYS.length, 'No duplicate/unregistered journeys');
@@ -78,7 +78,7 @@ export async function serveDist(appDir, selfTest = false) {
   await collect(dist);
   files.set('/', index);
   // In-memory negative canary, only reachable in --self-test; never a production result.
-  if (selfTest) files.set('/__qa_canary', Buffer.from('<!doctype html><div id="root"><nav class="tabbar"><button>Home</button><button>Chats</button><button>Bots</button><button>Cronjobs</button><button>Manage</button></nav></div>'));
+  if (selfTest) files.set('/__qa_canary', Buffer.from('<!doctype html><div id="root"><nav class="tabbar"><button>Chats</button><button>Bots</button><button>Cronjobs</button><button>Manage</button></nav></div>'));
   const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.woff2': 'font/woff2' };
   const rejected = [];
   const server = createServer((req, res) => {
@@ -140,6 +140,7 @@ export class Journeys {
     assert.equal(await this.b.evaluate(`document.querySelector(${q(selector)}).value`), value);
   }
   async root(label) {
+    if(label==='Home') label='Chats';
     if(await this.b.evaluate(`!!document.querySelector('.chat-filter-sheet[open]')`)) await this.tap('Done');
     // Recover through real Back controls after another journey fails; never assign UI state.
     for (let n = 0; n < 4 && !(await this.b.evaluate(`!!document.querySelector(${q(NAV)})`)); n++) {
@@ -268,7 +269,7 @@ export async function checkNavigationRegressions(j, browser, fixture, trace) {
       await j.tap('Capabilities','.manage',false);
       await browser.waitFor(`!!document.querySelector('select[aria-label="Management profile"] option[value="qa-bot"]')`);
       await browser.evaluate(`(()=>{const e=document.querySelector('select[aria-label="Management profile"]');e.value='qa-bot';e.dispatchEvent(new Event('change',{bubbles:true}));})()`);
-      await j.tap('Back to Manage');await j.tap('Devices & gateways','body',false); await j.tap('Back');
+      await j.tap('Back to Manage');await j.tap('Settings','body',false); await j.tap('Back');
       await j.tap('Profiles','body',false); await j.text('Profile description');
       assert.equal(await browser.evaluate('document.querySelector(".manage-values dd").textContent'), 'qa-bot');
       await j.type('textarea[aria-label="Profile description"]', 'QA UNCONFIRMED NAVIGATION REVIEW');
@@ -306,7 +307,7 @@ async function checkProduction(options) {
     const trace = () => fixture('return f.trace');
     await j.run('login-connect', async () => {
       await j.tap(FIXTURE.gateway.label, 'body', false);
-      await browser.waitFor(`__productionFixture.trace.some(t=>t.method==='session.list')`);
+      await browser.waitFor(`__productionFixture.trace.some(t=>t.route==='GET /api/sessions')`);
       const wire = await trace();
       assert.ok(wire.some(t => t.route === 'POST /auth/password-login'), 'Real HermesConnection password-login fallback exercised');
       assert.ok(wire.filter(t => t.route === 'POST /api/auth/ws-ticket').length >= 2, 'Ticket -> rejected -> password -> ticket chain');
@@ -319,7 +320,7 @@ async function checkProduction(options) {
       await j.root('Home'); await j.text(FIXTURE.gateway.label);
     });
     await j.run('project-resume', async () => {
-      await j.root('Chats'); await j.tap('QA Project', 'body', false); await j.text('QA Project conversation');
+      await j.root('Chats'); await j.text('QA Project conversation');
       await j.tap('QA Project conversation', 'body', false);
       await j.text('QA restored answer qa-project-session');
       const wire = await trace();
@@ -372,6 +373,7 @@ async function checkProduction(options) {
       if (await browser.evaluate('!!document.querySelector("textarea")')) await j.tap('Back');
       await fixture("f.permits['session.create']=1;");
       await j.root('Bots'); await j.tap('QA Fixture Bot', 'body', false);
+      await j.tap('New bot thread');
       await browser.waitFor('!!document.querySelector("textarea")');
       await j.shot('bot-private-selected');
       assert.notEqual(await browser.evaluate('document.querySelector("textarea").value'), 'QA PROJECT UNSENT DRAFT');
@@ -393,17 +395,17 @@ async function checkProduction(options) {
       await j.root('Bots');
       const beforeRejectedOpen = (await trace()).length;
       await fixture("f.privateCreateResponse={session_id:'',stored_session_id:'',info:{profile_name:'default'}};f.permits['session.create']=1;");
-      await j.tap('QA Fixture Bot', 'body', false); await j.text('Private chat creation returned no session ID.');
+      await j.tap('QA Fixture Bot', 'body', false); await j.tap('New bot thread'); await j.text('Private chat creation returned no session ID.');
       const rejectedOpen = (await trace()).slice(beforeRejectedOpen);
       assert.ok(!rejectedOpen.some(t => t.method === 'session.resume'), 'Invalid private create response must not resume another profile session');
       await fixture("f.privateCreateResponse={session_id:'qa-bot-private-session',stored_session_id:'qa-bot-private-session',info:{profile_name:'default'}};f.permits['session.create']=1;");
-      await j.tap('QA Fixture Bot', 'body', false); await j.text('Private chat creation returned a different profile.');
+      await j.tap('New bot thread'); await j.text('Private chat creation returned a different profile.');
       const mismatchedOpen = (await trace()).slice(beforeRejectedOpen + rejectedOpen.length);
       assert.ok(!mismatchedOpen.some(t => t.method === 'session.resume'), 'Mismatched private profile must not resume another profile session');
       await fixture('delete f.privateCreateResponse;');
     });
     await j.run('groups', async () => {
-      await j.root('Chats'); await j.tap('Groups', 'body', false); await j.text('QA Fixture group');
+      await j.root('Bots'); await j.tap('Groups', '.bots-switch'); await j.text('QA Fixture group');
       await j.tap('QA Fixture group', 'body', false); await j.text('QA group history');
       await browser.waitFor('!!document.querySelector("textarea")'); await j.shot('group-resumed');
       await j.tap('Back'); await j.text('QA Fixture group');
@@ -416,7 +418,7 @@ async function checkProduction(options) {
       assert.equal((await trace()).filter(t => t.method === 'profiles.configure').length, before, 'No deletion before confirmation');
       await j.tap('Cancel'); await j.text('QA Fixture group');
       assert.equal((await trace()).filter(t => t.method === 'profiles.configure').length, before, 'Cancel must not mutate');
-      await j.tap('Back');
+      await j.root('Bots');
     });
     await j.run('activity-runs', async () => {
       await j.root('Cronjobs'); await j.text('QA Fixture Schedule'); await j.tap('Runs'); await j.text('QA tracked run'); await j.tap('QA tracked run', 'body', false);
@@ -425,7 +427,7 @@ async function checkProduction(options) {
     });
     await j.run('manage-sections', async () => {
       await j.root('Manage');
-      await j.tap('Devices & gateways', 'body', false); await j.text('Settings'); await j.tap('Back');
+      await j.tap('Settings', '.manage', false); await j.text('Settings'); await j.tap('Back');
       await j.tap('Profiles', 'body', false); await j.tap('QA Fixture Bot', '.manage', false);
       await j.text('Profile description'); await j.text('qa-bot');
       await j.type('textarea[aria-label="Profile description"]', 'QA reviewed fictional description');

@@ -214,9 +214,12 @@ export interface PathCompletion {
   meta?: string;
 }
 
+export interface SlashCatalogItem { command: string; description: string }
+
 function isFolderCompletion(value: unknown): value is PathCompletion {
   if (!value || typeof value !== "object") return false;
   const text = (value as { text?: unknown }).text;
+  // oxlint-disable-next-line no-control-regex -- Control bytes are deliberately rejected in server paths.
   return typeof text === "string" && /^@folder:[^/\\%\x00-\x1f\x7f:?#*[\]{}]+\/?$/.test(text);
 }
 
@@ -1036,6 +1039,24 @@ export class HermesConnection {
 
   async createSession(options: { title?: string; cwd?: string; model?: string; profile?: string } = {}): Promise<CreateResult> {
     return await this.rpc<CreateResult>("session.create", { ...options });
+  }
+
+  async slashCatalog(sessionId: string, profile: string): Promise<SlashCatalogItem[]> {
+    const result=await this.rpc<{pairs?:unknown;warning?:string}>('commands.catalog',{session_id:sessionId,profile});
+    if(!Array.isArray(result.pairs) || result.pairs.length>10000)throw new Error('Invalid command catalog.');
+    const seen=new Set<string>();
+    return result.pairs.flatMap(row=>{
+      if(!Array.isArray(row) || typeof row[0]!=='string' || typeof row[1]!=='string' || !/^\/[A-Za-z0-9][A-Za-z0-9_.:/-]*$/.test(row[0]) || row[0].length>256 || seen.has(row[0]))return [];
+      seen.add(row[0]);return [{command:row[0],description:row[1].slice(0,1000)}];
+    });
+  }
+
+  /** Only non-mutating, argument-free information commands run through this adapter. */
+  async slashInfo(sessionId:string, profile:string, command:string):Promise<string> {
+    if(!['/help','/status','/version','/whoami','/usage','/commands'].includes(command))throw new Error('This command requires Hermes Desktop.');
+    const result=await this.rpc<{output?:unknown;warning?:unknown}>('slash.exec',{session_id:sessionId,profile,command});
+    if(typeof result.output!=='string')throw new Error('This command needs an interaction that is not available in Mobile.');
+    return result.output;
   }
 
   /** Resolve the connected device's configured working directory, without creating a session. */

@@ -88,6 +88,7 @@ export function Rooms({
 
   useEffect(() => {
     if (!formOpen) return;
+    // oxlint-disable-next-line react/set-state-in-effect -- Fetch the external roster when the picker opens.
     void loadBots();
   }, [formOpen, loadBots]);
 
