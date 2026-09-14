@@ -175,7 +175,11 @@ export async function checkNavigationRegressions(j, browser, fixture, trace) {
     await j.run('created-session-navigation', async () => {
       await j.root('Chats');
       const projectTreeCallsBeforeNewChat = (await trace()).filter(t => t.method === 'projects.tree').length;
+      const createsBeforeDefault = (await trace()).filter(t => t.method === 'session.create').length;
       await fixture("f.permits['session.create']=1;"); await j.tap('New chat');
+      await browser.waitFor("document.querySelector('#working-folder')?.value === '/fictional/qa-project'");
+      assert.equal(await browser.evaluate('document.querySelector(".working-folder .btn").disabled'), false, 'Device default enables Start without typing a path');
+      assert.equal((await trace()).filter(t => t.method === 'session.create').length, createsBeforeDefault, 'Resolving a default must not create a session');
       for (const width of [320, 390, 769]) {
         await browser.viewport(width, 844); await j.auditLayout(`working-folder-${width}`);
         const geometry = await browser.evaluate(`(()=>{const field=document.querySelector('#working-folder').getBoundingClientRect(),start=document.querySelector('.working-folder-actions .btn').getBoundingClientRect(),form=document.querySelector('.working-folder').getBoundingClientRect();return{field:{x:field.x,y:field.y,width:field.width,height:field.height},start:{x:start.x,y:start.y,width:start.width,height:start.height},form:{x:form.x,width:form.width}}})()`);
@@ -187,7 +191,7 @@ export async function checkNavigationRegressions(j, browser, fixture, trace) {
       }
       await browser.viewport(390, 844);
       await browser.waitFor("innerWidth === 390 && !!document.querySelector('#working-folder') && document.querySelector('#working-folder').getBoundingClientRect().width > 0");
-      assert.match(await browser.evaluate('document.querySelector("#working-folder-help").textContent'), /absolute server path.*matching folders/i);
+      assert.match(await browser.evaluate('document.querySelector("#working-folder-help").textContent'), /device.s default folder.*matching folders/i);
       await j.type('#working-folder', '/fictional/qa');
       await browser.waitFor("document.querySelectorAll('.folder-suggestions [role=option]').length === 2");
       assert.deepEqual(await browser.evaluate("[...document.querySelectorAll('.folder-suggestions [role=option]')].map(el=>el.textContent.trim())"), ['/fictional/qa-project/','/fictional/qa-recent/']);
@@ -205,6 +209,24 @@ export async function checkNavigationRegressions(j, browser, fixture, trace) {
       assert.deepEqual((await trace()).filter(t => t.method === 'session.create' && t.params.profile !== 'qa-bot').map(t => t.params.cwd), ['/fictional/qa-project'], 'Selecting a suggestion creates once with trailing slash normalized only at create boundary');
       assert.equal((await trace()).filter(t => t.method === 'projects.tree').length, projectTreeCallsBeforeNewChat, 'New chat must not fetch project registry suggestions');
       await j.tap('Back');
+      await fixture("f.hold.push('GET /api/fs/default-cwd');f.defaultCwd='/fictional/another-device';");
+      await j.tap('New chat');
+      await j.type('#working-folder', '/fictional/manual');
+      await fixture("f.release('GET /api/fs/default-cwd');");
+      await j.text("Starts in this device's default folder");
+      assert.equal(await browser.evaluate('document.querySelector("#working-folder").value'), '/fictional/manual', 'Late default must not overwrite a user edit');
+      await j.tap('Back');
+      await j.tap('New chat');
+      await browser.waitFor("document.querySelector('#working-folder')?.value === '/fictional/another-device'");
+      await j.tap('Back');
+      await fixture("f.unsupported.push('GET /api/fs/default-cwd');");
+      await j.tap('New chat');
+      await j.text('Default folder unavailable');
+      assert.equal(await browser.evaluate('document.querySelector("#working-folder").value'), '', 'Unsupported gateway must not reuse a previous default');
+      await j.type('#working-folder', '/fictional/manual');
+      assert.equal(await browser.evaluate('document.querySelector(".working-folder .btn").disabled'), false, 'Manual entry remains available without endpoint support');
+      await j.tap('Back');
+      await fixture("f.unsupported=[];f.defaultCwd='/fictional/qa-project';");
       await fixture("f.createResponse={session_id:'qa-mismatch',stored_session_id:'qa-mismatch',info:{...f.resume['qa-project-session']?.info,cwd:'/fictional/wrong-folder',profile_name:'default'}};f.permits['session.create']=1;");
       await j.tap('New chat'); await j.type('#working-folder', '/fictional/qa-project'); await j.tap('Start');
       await j.text('did not accept /fictional/qa-project');

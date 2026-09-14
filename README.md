@@ -19,6 +19,7 @@ Tap a screenshot for the full-size image. Captured at 390 × 844 with 100% Stand
 
 ## What you can do
 
+- New chats prefill Working folder from the connected device's `/api/fs/default-cwd` endpoint. Review or change it, then tap Start. Defaults are fetched for each new chat, never copied between devices; a delayed response does not overwrite an edited path. If the endpoint is unavailable or returns an unsupported path, enter an absolute server path manually.
 - Resume chats, read streaming replies and tool activity, attach files, and respond to explicit command approvals. Composer supports `/exit` (close idle one-to-one Mobile runtime; chat remains resumable) and `/model` (open session model sheet); slash palette only lists these safe commands. Skills and other quick commands stay deferred to gateway/desktop support. Model and reasoning controls also sit inside composer's bottom row.
 - Browse Chats with combined Project/Profile filters and local project pins. Groups live under Chats; canonical Bot Chats are also accessible. Pins change display order, not session membership. Deletion is limited to inactive sessions in the verified running profile.
 - Open Bots, inspect Cronjobs and tracked Runs, and use Manage for profile/capability inspection, a reviewed profile-description update, bounded memory/schedule/messaging reads and shared Kanban boards. Manage is not a universal configuration editor.

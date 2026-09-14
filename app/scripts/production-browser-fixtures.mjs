@@ -23,6 +23,7 @@ export function installProductionFixtures(fixture) {
     currentProfiles: [], cronOwner: 'default', resume: persistedServer.resume || {},
     ownerBlocked: {}, historyBySession: persistedServer.historyBySession || {},
     createdHistory: [], normalCreateCount: 0,
+    defaultCwd: '/fictional/qa-project',
     release(method) { this.hold = this.hold.filter(x => x !== method); for (const finish of held.get(method) || []) finish(); held.delete(method); },
     emit(type, session_id, payload) {
       if (type === 'message.complete' && session_id === 'qa-created-session') {
@@ -75,6 +76,7 @@ export function installProductionFixtures(fixture) {
     if (control.unsupported.includes(route)) return json({ error: 'QA fixture unsupported endpoint' }, 404);
     if (control.errors[route]) return json({ error: { message: control.errors[route] } }, 503);
     if (route === 'GET /api/status') return json({ status: 'ok', version: 'fixture-only' });
+    if (route === 'GET /api/fs/default-cwd') return json({ cwd: control.defaultCwd });
     if (route === 'GET /api/sessions') {
       const profile=url.searchParams.get('profile'), offset=Number(url.searchParams.get('offset'));
       if(!profiles.some(p=>p.name===profile)) return fail('Unknown REST session profile');

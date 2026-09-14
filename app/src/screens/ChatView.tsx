@@ -423,6 +423,8 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   const [input, setInput] = useState(savedView.draft);
   const [streaming, setStreaming] = useState(false);
   const [folderInput, setFolderInput] = useState("");
+  const folderEditedRef = useRef(false);
+  const [defaultFolderStatus, setDefaultFolderStatus] = useState("Loading this device's default folder…");
   const [folderSuggestions, setFolderSuggestions] = useState<string[]>([]);
   const [folderSuggestionIndex, setFolderSuggestionIndex] = useState(0);
   const [createFolder, setCreateFolder] = useState<string | null>(null);
@@ -585,6 +587,21 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
       cancelled = true;
     };
   }, [client, mentionEnabled, isGroup]);
+
+  useEffect(() => {
+    if (session || isGroup || liveSid || state !== "open") return;
+    const controller = new AbortController();
+    setDefaultFolderStatus("Loading this device's default folder…");
+    void client.defaultWorkingFolder(controller.signal).then((folder) => {
+      if (controller.signal.aborted) return;
+      if (!safeServerFolder(folder)) throw new Error("Unsupported default folder.");
+      if (!folderEditedRef.current) setFolderInput(folder);
+      setDefaultFolderStatus("Starts in this device's default folder. Change it if needed.");
+    }).catch(() => {
+      if (!controller.signal.aborted) setDefaultFolderStatus("Default folder unavailable. Enter an absolute server path to continue.");
+    });
+    return () => controller.abort();
+  }, [client, isGroup, liveSid, session, state]);
 
   useEffect(() => {
     if (session || isGroup || liveSid || state !== "open") {
@@ -1918,6 +1935,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
                 className="field mono"
                 value={folderInput}
                 onChange={(event) => {
+                  folderEditedRef.current = true;
                   const next = event.target.value;
                   completionRequestRef.current += 1;
                   setFolderInput(next);
@@ -1943,6 +1961,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
                     setFolderSuggestionIndex((current) => (current + (event.key === "ArrowDown" ? 1 : folderSuggestions.length - 1)) % folderSuggestions.length);
                   } else if (event.key === "Enter" || (event.key === "Tab" && !event.shiftKey)) {
                     event.preventDefault();
+                    folderEditedRef.current = true;
                     setFolderInput(folderSuggestions[folderSuggestionIndex]);
                     setFolderSuggestions([]);
                   } else if (event.key === "Escape") {
@@ -1963,10 +1982,12 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
                     className={index === folderSuggestionIndex ? "active" : ""}
                     onPointerDown={(event) => {
                       event.preventDefault();
+                      folderEditedRef.current = true;
                       setFolderInput(suggestion);
                       setFolderSuggestions([]);
                     }}
                     onClick={() => {
+                      folderEditedRef.current = true;
                       setFolderInput(suggestion);
                       setFolderSuggestions([]);
                     }}
@@ -1977,7 +1998,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
               </div>
             )}
             <div id="working-folder-help" className="hint">
-              Enter an absolute server path. Matching folders come from this gateway.
+              {defaultFolderStatus} Matching folders come from this gateway.
             </div>
             <div className="working-folder-actions">
               <button

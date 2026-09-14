@@ -1038,6 +1038,23 @@ export class HermesConnection {
     return await this.rpc<CreateResult>("session.create", { ...options });
   }
 
+  /** Resolve the connected device's configured working directory, without creating a session. */
+  async defaultWorkingFolder(signal?: AbortSignal): Promise<string> {
+    const path = "/api/fs/default-cwd";
+    const response = await fetch(`${this.url}${path}`, {
+      method: "GET",
+      headers: this.authHeaders(),
+      credentials: "include",
+      signal,
+    });
+    if (!response.ok) throw new AuthError(response.status, `GET ${path} → HTTP ${response.status}`);
+    const result: unknown = await response.json();
+    if (!result || typeof result !== "object" || !("cwd" in result) || typeof result.cwd !== "string") {
+      throw new Error("The gateway did not return a default working folder.");
+    }
+    return result.cwd;
+  }
+
   /** Native gateway completion with an explicit absolute lookup root. */
   async completePath(word: string, cwd: string): Promise<PathCompletion[]> {
     const result = await this.rpc<{ items?: PathCompletion[] }>("complete.path", { word, cwd });
