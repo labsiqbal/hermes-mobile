@@ -1,0 +1,68 @@
+import assert from 'node:assert/strict';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { ProductionBrowser, serveDist, domHelpers, Journeys } from './check-production-browser.mjs';
+import { FIXTURE, installProductionFixtures } from './production-browser-fixtures.mjs';
+const output = '/tmp/hermes-mobile-add-bot-evidence';
+await mkdir(output, { recursive: true });
+const host = await serveDist(process.argv[2] || '.');
+const b = new ProductionBrowser({ origin: host.origin, assetPaths: host.assetPaths, output, deadline: 90000, timeout: 5000, chrome: '/usr/bin/google-chrome' });
+const report = { journeys: [], screenshots: [], layout: [], checks: [] };
+try {
+  await b.start();
+  await b.command('Page.addScriptToEvaluateOnNewDocument', { source: `(${installProductionFixtures.toString()})(${JSON.stringify(FIXTURE)});(${domHelpers.toString()})();` });
+  await b.open(host.origin);
+  const j = new Journeys(b, report, output);
+  await j.tap(FIXTURE.gateway.label, 'body', false); await j.root('Bots');
+  await j.tap('Add bot'); await j.tap('Cancel', 'dialog', false);
+  assert.equal(await b.evaluate("__productionFixture.trace.filter(t=>t.method==='profiles.create').length"), 0);
+  await j.tap('Add bot'); await j.type('[aria-label="Bot name"]', 'qa-bot');
+  await j.text('A bot with this name already exists.');
+  assert.ok(await b.evaluate("document.querySelector('dialog button[type=submit]').disabled"));
+  await j.type('[aria-label="Bot name"]', '../invalid');
+  assert.ok(await b.evaluate("document.querySelector('dialog button[type=submit]').disabled"));
+  await j.type('[aria-label="Bot name"]', 'qa-new-helper');
+  await j.type('[aria-label="Bot description"]', 'Fictional research assistant');
+  await j.type('[aria-label="Bot instructions"]', 'Summarize fictional documents.');
+  for (const width of [320, 390, 1440]) {
+    await b.viewport(width, width === 1440 ? 900 : 844); await j.shot('add-bot-' + width);
+    assert.ok(await b.evaluate("document.querySelector('dialog').scrollWidth<=document.querySelector('dialog').clientWidth"));
+  }
+  await b.viewport(390, 844);
+  await b.evaluate("__productionFixture.permits['profiles.create']=1;__productionFixture.hold=['profiles.create']");
+  await j.tap('Create bot', 'dialog', false); await j.text('Creating...');
+  await b.evaluate("document.querySelector('dialog form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}))");
+  assert.equal(await b.evaluate("__productionFixture.trace.filter(t=>t.method==='profiles.create').length"), 1);
+  await b.evaluate("__productionFixture.release('profiles.create')");
+  await j.text('Bot qa-new-helper created.');
+  await b.waitFor("[...document.querySelectorAll('.rowcard')].some(e=>e.textContent.includes('@qa-new-helper'))");
+  assert.deepEqual(await b.evaluate("__productionFixture.trace.find(t=>t.method==='profiles.create').params"), { name: 'qa-new-helper', description: 'Fictional research assistant', soul: 'Summarize fictional documents.', clone_from: 'default', clone_all: false, clone_channels: false, no_alias: true, mirror_credentials: true, share_auth: true });
+  await j.tap('Add bot'); await j.type('[aria-label="Bot name"]', 'qa-no-credentials');
+  await j.clickCSS('.bot-credentials input');
+  assert.equal(await b.evaluate("document.querySelector('[aria-label=\"Source profile\"]').value"), '');
+  await b.evaluate("__productionFixture.permits['profiles.create']=1");
+  await j.tap('Create bot', 'dialog', false); await j.text('Bot qa-no-credentials created.');
+  const fresh = await b.evaluate("__productionFixture.trace.filter(t=>t.method==='profiles.create').at(-1).params");
+  assert.equal(fresh.mirror_credentials, false); assert.equal(fresh.share_auth, false); assert.equal('clone_from' in fresh, false);
+  await j.tap('Add bot'); await j.type('[aria-label="Bot name"]', 'qa-unsupported');
+  await b.evaluate("__productionFixture.unsupported=['profiles.create']");
+  await j.tap('Create bot', 'dialog', false); await j.text('This gateway does not support adding bots.');
+  await j.tap('Cancel', 'dialog', false);
+  await b.evaluate("__productionFixture.unsupported=[];__productionFixture.permits['profiles.create']=1;__productionFixture.botCreateResponse={ok:true,name:'wrong-profile'}");
+  await j.tap('Add bot'); await j.type('[aria-label="Bot name"]', 'qa-unknown');
+  await j.tap('Create bot', 'dialog', false); await j.text('Could not confirm creation.');
+  assert.ok(await b.evaluate("document.querySelector('dialog button[type=submit]').disabled"));
+  await j.tap('Cancel', 'dialog', false);
+  await j.tap('Add bot'); await j.type('[aria-label="Bot name"]', 'qa-cancelled-preflight');
+  await b.evaluate("__productionFixture.hold=['profiles.list']");
+  const writes = await b.evaluate("__productionFixture.trace.filter(t=>t.method==='profiles.create').length");
+  await j.tap('Create bot', 'dialog', false); await j.text('Creating...');
+  await b.evaluate('history.back()'); await b.waitFor("!document.querySelector('dialog')");
+  await b.evaluate("__productionFixture.release('profiles.list')"); await b.settle();
+  assert.equal(await b.evaluate("__productionFixture.trace.filter(t=>t.method==='profiles.create').length"), writes);
+  assert.equal(await b.evaluate("__productionFixture.trace.filter(t=>['session.create','prompt.submit'].includes(t.method)).length"), 0);
+  assert.deepEqual(await b.evaluate('__productionFixture.violations'), []); assert.deepEqual(b.diagnostics, []);
+  report.status = 'passed'; report.checks.push('Cancel/validation; single creation; roster refresh; credential opt-out; unsupported gateway; uncertain result blocks retries; no sessions or prompts; 320/390/1440 layouts');
+} catch (error) { report.status = 'failed'; report.error = error.stack; try { report.dom = await b.evaluate('document.body.innerText'); await b.screenshot(output + '/failure.png'); } catch {} }
+finally { report.cleanup = await b.close(); host.server.closeAllConnections(); await new Promise(r => host.server.close(r)); await writeFile(output + '/report.json', JSON.stringify(report, null, 2)); }
+console.log(JSON.stringify({ status: report.status, error: report.error, output }, null, 2));
+if (report.status !== 'passed') process.exitCode = 1;

@@ -38,6 +38,11 @@
 .project-dialog label { display:block; font-size:13px; margin:16px 0; }
 .project-dialog .field { display:block; width:100%; margin-top:7px; }
 .project-dialog p { overflow-wrap:anywhere; }
+.add-bot-dialog fieldset { border:0; padding:0; margin:0; min-width:0; }
+.add-bot-dialog h2 { color:var(--fg); font-size:18px; }
+.add-bot-dialog .bot-credentials { display:flex; gap:10px; align-items:center; min-height:44px; line-height:1.5; }
+.add-bot-dialog .bot-credentials input { flex:none; width:20px; height:20px; min-width:20px; min-height:20px; margin:0; accent-color:var(--blue); }
+.add-bot-dialog textarea { resize:vertical; min-height:90px; }
 .project-dialog .collection-link { gap:10px; }
 .project-folder-options { max-height:180px; overflow:auto; }
 .project-folder-options button { display:flex; align-items:center; gap:8px; width:100%; min-height:40px; padding:8px; background:transparent; color:var(--fg-dim); border:0; text-align:left; }

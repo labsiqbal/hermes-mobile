@@ -1242,6 +1242,20 @@ export class HermesConnection {
    * canonical_session per profile — the Bots screen needs them for activity
    * status and the Bot Chat open target.
    */
+  async createBot(options: { name: string; description: string; soul: string; cloneFrom: string; useCredentials: boolean }): Promise<{ name: string; soulWritten: boolean }> {
+    if (!/^[a-z0-9][a-z0-9_-]{0,63}$/.test(options.name) || options.name === 'default') throw new Error('Invalid bot name.');
+    // A source profile's .env is part of gateway cloning, even with mirroring off.
+    if (options.cloneFrom && !options.useCredentials) throw new Error('Cloning requires credential reuse consent.');
+    const result = await this.rpc<{ ok?: boolean; name?: string; soul_written?: boolean }>('profiles.create', {
+      name: options.name, description: options.description, soul: options.soul,
+      ...(options.cloneFrom ? { clone_from: options.cloneFrom } : {}),
+      clone_all: false, clone_channels: false, no_alias: true,
+      mirror_credentials: options.useCredentials, share_auth: options.useCredentials,
+    });
+    if (result.ok !== true || result.name !== options.name) throw new Error('Bot creation acknowledgment was not confirmed.');
+    return { name: result.name, soulWritten: result.soul_written === true };
+  }
+
   async profilesList(options: { includeSessions?: boolean } = {}): Promise<ProfileSummary[]> {
     const result = await this.rpc<{ profiles?: ProfileSummary[] }>("profiles.list", {
       include_sessions: options.includeSessions ?? true,

@@ -197,6 +197,15 @@ export function installProductionFixtures(fixture) {
         if(!selected) return fail('Unknown project/profile scope'); return {project:selected};
       }
       case 'profiles.list': return { profiles: control.empty.includes('profiles.list') ? [] : profiles };
+      case 'profiles.create': {
+        if (!(control.permits[method] > 0)) return fail('Bot creation without harness confirmation permit');
+        control.permits[method]--;
+        if (params.clone_channels !== false || params.clone_all !== false || params.no_alias !== true) return fail('Unsafe bot clone options');
+        if (params.clone_from && !params.mirror_credentials) return fail('Cloning without credential consent');
+        if (profiles.some(p => p.name === params.name)) throw { code: 4062, message: 'Name already exists' };
+        profiles.push({ name: params.name, description: params.description, running: false, model: 'fixture-model', provider: 'fixture' });
+        return control.botCreateResponse || { ok: true, name: params.name, soul_written: !!params.soul };
+      }
       case 'profiles.describe': {
         const profile = profiles.find(p => p.name === params.name);
         if (!profile) return fail('Unknown profile description scope');

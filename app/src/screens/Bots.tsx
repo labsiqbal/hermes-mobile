@@ -29,6 +29,7 @@ import { Plus, MessageCircle, RefreshCw } from 'lucide-react';
 import { ManagementClient, SessionReadError } from '../lib/management-client';
 import { chatKey, canonicalChats, isBotThread, readBotThreads, rememberBotThread, uniqueChats } from '../lib/chat-browser';
 import { formatSessionTime } from './chat-list-utils';
+import AddBotDialog from '../components/AddBotDialog';
 
 const ROSTER_POLL_MS = 5_000;
 
@@ -59,6 +60,8 @@ export function BotsScreen({
   const client = clientProp ?? getActiveConnection();
   const [profiles, setProfiles] = useState<ProfileSummary[] | null>(null);
   const [error, setError] = useState("");
+  const [adding, setAdding] = useState(false);
+  const [notice, setNotice] = useState('');
   const /** profile name whose private session is being opened */
     [opening, setOpening] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
@@ -151,6 +154,8 @@ export function BotsScreen({
   return (
     <div className="screen">
       <div className="body flat-list">
+        <div className="chat-section-bar"><h2 className="chat-section-heading">Bots</h2><button className="iconbtn" title="Refresh bots" aria-label="Refresh bots" onClick={() => void load()}><RefreshCw size={18} /></button><button className="iconbtn" title="Add bot" aria-label="Add bot" disabled={profiles === null || client.connectionState !== 'open'} onClick={() => { setNotice(''); setAdding(true); }}><Plus size={20} /></button></div>
+        {notice && <p className="hint" role="status">{notice}</p>}
         {error && <div className="error-line">{error}</div>}
 
         {profiles !== null && bots.length > 0 && (
@@ -193,6 +198,7 @@ export function BotsScreen({
         )}
 
         {profiles === null && !error && <div className="hint">Loading roster…</div>}
+        {adding && profiles && <AddBotDialog client={client} profiles={profiles} device={conn?.label || 'Connected device'} onClose={() => setAdding(false)} onCreated={message => { setAdding(false); setNotice(message); void load(); }} />}
       </div>
     </div>
   );
