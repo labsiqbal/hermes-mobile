@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { connectionLabel, isAppStorageKey } from "../lib/shell-state";
 import type { ConnectionState, ConnectionStore, HermesConnection, SavedConnection } from "../lib/hermes-client";
 import Connections from "./Connections";
-import { ChevronRightIcon } from "../components/icons";
 import { applyScale } from "../lib/appearance";
 
 // Keep-in-sync dengan "version" di package.json — dibaca manual karena
@@ -17,14 +16,12 @@ export function Settings({
   store,
   onConnect,
   onDisconnect,
-  onAppearance,
 }: {
   conn: SavedConnection;
   state: ConnectionState;
   store: ConnectionStore;
   onConnect: (conn: SavedConnection, client: HermesConnection) => void;
   onDisconnect: () => void;
-  onAppearance: () => void;
 }) {
   const [confirmWipe, setConfirmWipe] = useState(false);
   const [wipeError, setWipeError] = useState('');
@@ -98,10 +95,6 @@ export function Settings({
             Erase Hermes Mobile data
           </button>
         </div>
-
-        <button className="collection-link" onClick={onAppearance}>
-          <span>Appearance</span><ChevronRightIcon size={18} />
-        </button>
 
         <div className="section-label">About</div>
         <div className="card">

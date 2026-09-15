@@ -22,6 +22,17 @@ try{
  await j.tap('Delete session QA Recent conversation');await b.evaluate("__productionFixture.permits['session.delete']=1");await j.tap('Delete','dialog');await b.waitFor("!document.querySelector('[data-session-id=qa-recent-session]')");assert.equal(await b.evaluate("__productionFixture.trace.filter(t=>t.method==='session.delete').length"),1);
  await j.tap('Project actions for Renamed project');await j.tap('Unpin','[role=menu]');
  await j.tap('Add project');await j.type('input[aria-label="Project folder"]','/fictional/second');await j.type('input[aria-label="Project name"]','Second');await j.tap('Add project','dialog',false);
+ await j.tap('Collapse all folders');
+ assert.equal(await b.evaluate("document.querySelectorAll('.tree-project-toggle[aria-expanded=true]').length"),0);
+ await b.command('Page.reload');await b.waitFor("!!document.querySelector('[aria-label=\"Expand all folders\"]:not(:disabled)')");
+ assert.equal(await b.evaluate("document.querySelectorAll('.tree-project-toggle[aria-expanded=true]').length"),0);
+ await j.tap('Expand all folders');
+ assert.equal(await b.evaluate("document.querySelectorAll('.tree-project-toggle[aria-expanded=false]').length"),0);
+ await j.tap('Second','.tree-project-heading',false);await j.tap('Collapse all folders');
+ assert.equal(await b.evaluate("document.querySelectorAll('.tree-project-toggle[aria-expanded=true]').length"),0);
+ await j.type('[aria-label="Search conversations"]','Renamed');await j.tap('Collapse all folders');
+ assert.equal(await b.evaluate("document.querySelectorAll('.tree-project-toggle[aria-expanded=true]').length"),0);
+ await j.type('[aria-label="Search conversations"]','');await j.tap('Expand all folders');
  const before=await b.evaluate("[...document.querySelectorAll('.tree-project')].map(e=>e.dataset.folderId)");
  const start=await b.evaluate("(()=>{const r=document.querySelector('.tree-project-toggle').getBoundingClientRect();return {x:r.x+20,y:r.y+20};})()");
  await b.command('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[start]});
@@ -39,6 +50,9 @@ try{
  for(const width of [320,390]){await b.viewport(width,844);await b.settle();await j.shot('tree-'+width);assert.ok(await b.evaluate('document.documentElement.scrollWidth<=innerWidth'));}
  await b.evaluate("[...document.querySelectorAll('nav[aria-label=Primary] button')].find(e=>e.textContent.trim()==='Cronjobs').click()");await j.text('QA Fixture Schedule');await j.shot('cronjobs-spacing');
  await b.viewport(1440,900);await b.waitFor("!!document.querySelector('.desktop-sidebar')");await b.settle();await b.evaluate("[...document.querySelectorAll('nav[aria-label=Primary] button')].find(e=>e.textContent.trim()==='Chats').click()");await j.shot('desktop-tree');
+ await j.clickCSS('.desktop-sidebar [aria-label="Collapse all folders"]');await j.clickCSS('.desktop-sidebar [aria-label="Expand all folders"]');
+ assert.equal(await b.evaluate("document.querySelectorAll('.desktop-sidebar .tree-project-toggle[aria-expanded=false]').length"),0);
+ report.checks.push('Collapse/expand all, mixed state, search override, reload persistence, desktop sidebar');
  report.checks.push('Folder open/closed icons; anchored menu pin/edit/color; cancel and exact confirmed deletion; touch reorder; mobile padding');
  assert.deepEqual(await b.evaluate('__productionFixture.violations'),[]);assert.deepEqual(b.diagnostics,[]);report.status='passed';
 }catch(e){report.status='failed';report.error=e.stack;try{report.dom=await b.evaluate('document.body.innerText');await b.screenshot(output+'/failure.png');}catch{}}

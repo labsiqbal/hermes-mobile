@@ -282,9 +282,9 @@ export async function checkNavigationRegressions(j, browser, fixture, trace) {
       assert.equal(await browser.evaluate('document.querySelector(".manage-values dd").textContent'), 'qa-bot');
       await j.tap('Back to Manage');
       await j.tap('Appearance & preferences','body',false); await j.tap('Connection settings','body',false); await j.tap('Back');
-      await j.text('Model and reasoning controls stay');
-      assert.equal(await browser.evaluate('!!document.querySelector("select")'), false);
-      await j.back(1); await j.text('Settings'); await j.back(); await j.text('Model and reasoning controls stay');
+      await j.text('UI scale');
+      assert.equal(await browser.evaluate('!!document.querySelector("#ui-scale")'), true);
+      await j.back(1); await j.text('Settings'); await j.back(); await j.text('UI scale');
       await j.tap('Back to Manage');
     });
 }
@@ -448,7 +448,7 @@ async function checkProduction(options) {
       };
       // Fixed source-backed families, not candidate-derived coverage. Models stay in chat.
       await j.tap('Profiles','.manage',false);await j.tap('default','.manage',false);await j.tap('Back to Manage');
-      for (const [section, expected] of [['Capabilities','QA Fixture Skill'],['Memory','QA Fixture Memory'],['Schedules & cron','QA Fixture Schedule'],['Messaging','QA Fixture Messaging'],['Webhooks','No webhook request was sent'],['Kanban','QA Fixture Board'],['Appearance & preferences','Model and reasoning controls'],['Native capabilities','SSH & cloud lifecycle']]) {
+      for (const [section, expected] of [['Capabilities','QA Fixture Skill'],['Memory','QA Fixture Memory'],['Schedules & cron','QA Fixture Schedule'],['Messaging','QA Fixture Messaging'],['Webhooks','No webhook request was sent'],['Kanban','QA Fixture Board'],['Appearance & preferences','UI scale'],['Native capabilities','SSH & cloud lifecycle']]) {
         const start = (await trace()).length;
         await j.tap(section, '.manage', false); await j.text(expected);
         const route = { Memory: 'GET /api/learning/graph', Messaging: 'GET /api/messaging/platforms' }[section];

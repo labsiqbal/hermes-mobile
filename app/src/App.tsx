@@ -229,7 +229,7 @@ export default function App() {
           {screen === 'groups' && <Groups client={client!} conn={activeConn!} onOpenGroup={openGroup} />}
           {screen === 'activity' && <Cronjobs client={client!} conn={activeConn!} />}
           {screen === 'manage' && <><button className="collection-link" onClick={()=>destination('activity')}>Cronjobs</button><Manage conn={activeConn!} client={client!} navigationViews={manageViews} onSettings={() => destination('settings')} onBots={() => destination('bots')} onWorkspace={() => destination('workspace')} /></>}
-          {screen === 'settings' && <Settings conn={activeConn!} store={store} state={connState} onConnect={handleConnect} onDisconnect={disconnect} onAppearance={() => destination('appearance')} />}
+          {screen === 'settings' && <Settings conn={activeConn!} store={store} state={connState} onConnect={handleConnect} onDisconnect={disconnect} />}
           {screen === 'appearance' && <Appearance />}
         </ScreenBoundary>
       </div>

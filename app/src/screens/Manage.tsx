@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Brain, CalendarClock, ChevronLeft, ChevronRight, Columns3, FolderOpen, Link, LockKeyhole, MessageCircle, Monitor, RefreshCw, Settings2, Sparkles, Users, type LucideIcon } from 'lucide-react';
 import type { HermesConnection, SavedConnection } from '../lib/hermes-client';
 import { ManagementClient, ManagementError, type Capability, type DescriptionReview, type ManagedProfile, type ProfileDetails } from '../lib/management-client';
 import type { ManageViews, ManagePage as Page } from '../lib/shell-state';
 import './manage.css';
+import { Appearance } from './Appearance';
 
 type Props = { navigationViews?: ManageViews; conn: SavedConnection; client: HermesConnection; onSettings: () => void; onBots: () => void; onWorkspace: () => void };
 const titles: Record<Page, string> = { hub: 'Manage', profiles: 'Profiles', capabilities: 'Capabilities', memory: 'Memory', schedules: 'Schedules & cron', messaging: 'Messaging', webhooks: 'Webhooks', settings: 'Appearance & preferences', native: 'Native capabilities', kanban: 'Kanban' };
@@ -47,7 +48,9 @@ export default function Manage(props: Props) {
 }
 
 function ManagementHub({ conn, manager, onSettings, onBots, onWorkspace, navigationViews }: Props & { manager: ManagementClient }) {
+  const panel = useRef<HTMLDivElement>(null);
   const [page, setPage] = useState<Page>(() => navigationViews?.read(conn).page ?? 'hub');
+  useLayoutEffect(() => { if (panel.current) panel.current.scrollTop = 0; }, [page]);
   const [selection, setSelection] = useState<{ manager: ManagementClient; name: string }>(() => ({manager, name:navigationViews?.read(conn).profile ?? ''}));
   const profile = selection?.manager === manager ? selection.name : '';
   const roster = useCallback((signal: AbortSignal) => manager.profiles(signal), [manager]);
@@ -69,19 +72,19 @@ function ManagementHub({ conn, manager, onSettings, onBots, onWorkspace, navigat
     setSelection({manager, name}); navigationViews?.update(conn, {page, profile:name});
   };
   const needsProfile = ['capabilities', 'memory', 'schedules', 'messaging'].includes(page);
-  return <div className="manage">
+  return <div className="manage" ref={panel}>
     {page === 'hub' ? <div className="manage-hero"><div className="manage-eyebrow">Configure, deliberately</div><h2>Your setup.<br />Clear boundaries.</h2><p>Inspect your gateway. Review a change before it is sent.</p></div> : <><button className="manage-text-button" onClick={() => go('hub')}><ChevronLeft size={18} aria-hidden="true" /> Back to Manage</button><h2 className="manage-page-title">{titles[page]}</h2></>}
     {needsProfile && <div className="manage-scope"><span>Device <strong>{conn.label}</strong></span><label><span>Management profile</span><select aria-label="Management profile" value={selected} onChange={event => chooseProfile(event.target.value)}><option value="">Choose a profile</option>{rows?.map(row => <option key={row.name} value={row.name}>{row.displayName ? `${row.displayName} · ${row.name}` : row.name}</option>)}</select></label><small>This selection only scopes Manage. It does not switch a chat, the gateway, or the CLI default.</small></div>}
     {!rows && !error && <p role="status">Loading profiles…</p>}
     {!!error && <><ErrorNotice error={error} /><button className="manage-text-button" onClick={() => setRefresh(v => v + 1)}>Retry profile list</button></>}
     {page === 'hub' && <>
       <h3 className="manage-section-label">Connections & identity</h3>
-      <Row icon={Settings2} title="Settings" detail="Connections, appearance and this device" onClick={onSettings} />
+      <Row icon={Settings2} title="Settings" detail="Connections and this device" onClick={onSettings} />
       <Row icon={Users} title="Profiles" detail={rows ? `${rows.length} profiles reported by this gateway` : 'Inspect identity and profile descriptions'} onClick={() => go('profiles')} />
       <Row icon={Brain} title="Memory" detail="Read profile notes from MEMORY.md and USER.md" onClick={() => go('memory')} />
       <h3 className="manage-section-label">Intelligence</h3>
       <Row icon={Sparkles} title="Capabilities" detail="Installed skills, toolsets and MCP configuration" onClick={() => go('capabilities')} />
-      <Row icon={Settings2} title="Appearance & preferences" detail="Mobile settings and Desktop-only boundaries" onClick={() => go('settings')} />
+      <Row icon={Settings2} title="Appearance & preferences" detail="UI scale and accent" onClick={() => go('settings')} />
       <h3 className="manage-section-label">Coordination</h3>
       <Row icon={CalendarClock} title="Schedules & cron" detail="Profile-owned jobs, cadence and next run" onClick={() => go('schedules')} />
       <Row icon={MessageCircle} title="Messaging" detail="Channel configuration and reported state" onClick={() => go('messaging')} />
@@ -107,7 +110,7 @@ function ManagementHub({ conn, manager, onSettings, onBots, onWorkspace, navigat
     {page === 'messaging' && selected && <MessagingPanel key={selected} manager={manager} profile={selected} />}
     {page === 'kanban' && <KanbanPanel manager={manager} device={conn.label} />}
     {page === 'webhooks' && <><Notice><strong>Unavailable for profile-scoped management.</strong><p>The pinned upstream webhook endpoint does not accept a profile. This client will not silently read or modify the gateway process’s default subscriptions.</p><p>No webhook request was sent. No state changed.</p></Notice><p>Enablement may restart the gateway upstream. Creating, testing, toggling, deleting and revealing subscription secrets remain unavailable here.</p></>}
-    {page === 'settings' && <><Row icon={Monitor} title="Connection settings" detail="Open this app’s existing saved-device settings" onClick={onSettings} /><Notice>Appearance is currently supplied by the shared mobile theme. Theme, accent, font, language and pet controls are not implemented in Manage.</Notice><h3 className="manage-section-label">Conversation settings</h3><p>Model and reasoning controls stay in the chat they affect. Manage does not rewrite profile model defaults.</p><Notice>Provider keys, billing, safety policies, tool credentials and raw configuration editing are unavailable here. No broad configuration or environment dump is fetched.</Notice><Row icon={LockKeyhole} title="Native & OS features" detail="Notifications, secure storage and Desktop lifecycle" onClick={() => go('native')} /></>}
+    {page === 'settings' && <><Appearance embedded /><Row icon={Monitor} title="Connection settings" detail="Saved devices and browser storage" onClick={onSettings} /><Row icon={LockKeyhole} title="Native & OS features" detail="Notifications, secure storage and Desktop lifecycle" onClick={() => go('native')} /></>}
     {page === 'native' && <><Notice>These are explicit implementation boundaries, not a claim that Hermes lacks the features. This web client has no Electron bridge.</Notice>{[
       ['SSH & cloud lifecycle', 'No tunnel, key management, cloud discovery or remote-process launch is implemented.'],
       ['HUD, Quick Entry & desktop pets', 'Always-on-top windows, global hotkeys and screen-context capture require Desktop OS integration.'],

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Folder, FolderOpen, MoreHorizontal, Pin, Palette, Plus, RefreshCw, Search, SquarePen, Trash2, X } from 'lucide-react';
+import { Folder, FolderOpen, ListCollapse, ListTree, MoreHorizontal, Pin, Palette, Plus, RefreshCw, Search, SquarePen, Trash2, X } from 'lucide-react';
 import { DeleteDialog } from './ChatList';
 import { isActive } from '../lib/active-sessions';
 import type { HermesConnection, SavedConnection, SessionSummary } from '../lib/hermes-client';
@@ -25,6 +25,7 @@ export default function ProjectBrowser({conn,client,onOpenChat,onNewFolderChat,s
   const [pendingDelete,setPendingDelete]=useState<SessionSummary|null>(null);
   const [deleted,setDeleted]=useState(()=>new Set<string>());
   const [query,setQuery]=useState('');
+  const [searchExpanded,setSearchExpanded]=useState(true);
   const [adding,setAdding]=useState(false);
   const [menu,setMenu]=useState<TreeFolder|null>(null);
   const menuAnchor=useRef<HTMLElement|null>(null);
@@ -88,18 +89,25 @@ export default function ProjectBrowser({conn,client,onOpenChat,onNewFolderChat,s
   const match=(row:SessionSummary)=>`${row.title} ${row.preview}`.toLocaleLowerCase().includes(query.toLocaleLowerCase());
   function reorder(from:string,to:string) {const next=moveProject(tree.map(p=>p.id),from,to);setOrder(next);save(':order',next);}
   function toggle(id:string){const next=new Set(collapsed);if(next.has(id))next.delete(id);else next.add(id);setCollapsed(next);save(':collapsed',[...next]);}
+  const hasOpenFolders=tree.some(folder=>!collapsed.has(folder.id) || (!!query && searchExpanded));
+  const bulkLabel=hasOpenFolders?'Collapse all folders':'Expand all folders';
+  function toggleAll() {
+    const next=new Set(collapsed);
+    for(const folder of tree) {if(hasOpenFolders)next.add(folder.id);else next.delete(folder.id);}
+    setSearchExpanded(false);setCollapsed(next);save(':collapsed',[...next]);
+  }
   const canDelete=(row:SessionSummary)=>!loading && !!data && !data.failedProfiles.includes(row.profile || '') && row.profile===data.profile && client.connectionState==='open' && ![row.id,row.resolved_id].filter(Boolean).includes(selectedId) && !isActive(conn.id,row.id,row.resolved_id);
   function renderRow(row:SessionSummary) {return <div key={chatKey(row)} className="project-session-wrap"><button className="project-session" aria-current={selectedId===row.id?'page':undefined} title={row.title || 'Untitled'} data-session-id={row.id} onClick={()=>onOpenChat(row)}><span>{row.title || 'Untitled'}</span></button><button className="iconbtn session-trash" title={canDelete(row)?'Delete session':'Only inactive sessions in the running profile can be deleted'} aria-label={`Delete session ${row.title || 'Untitled'}`} disabled={!canDelete(row)} onClick={()=>setPendingDelete(row)}><Trash2 size={15}/></button></div>;}
   return <div className="project-browser">
-    <label className="project-search"><Search size={16}/><input aria-label="Search conversations" placeholder="Search" value={query} onChange={e=>setQuery(e.target.value)}/></label>
-    <div className="project-section-title"><h2>Projects</h2><button className="iconbtn" title="Refresh projects" aria-label="Refresh projects" disabled={loading} onClick={()=>void load()}><RefreshCw size={15}/></button><button className="iconbtn" title="Add project" aria-label="Add project" onClick={()=>setAdding(true)}><Plus size={17}/></button></div>
+    <label className="project-search"><Search size={16}/><input aria-label="Search conversations" placeholder="Search" value={query} onChange={e=>{setQuery(e.target.value);setSearchExpanded(true);}}/></label>
+    <div className="project-section-title"><h2>Projects</h2><button className="iconbtn" title={bulkLabel} aria-label={bulkLabel} disabled={loading || !tree.length} onClick={toggleAll}>{hasOpenFolders?<ListCollapse size={17}/>:<ListTree size={17}/>}</button><button className="iconbtn" title="Refresh projects" aria-label="Refresh projects" disabled={loading} onClick={()=>void load()}><RefreshCw size={15}/></button><button className="iconbtn" title="Add project" aria-label="Add project" onClick={()=>setAdding(true)}><Plus size={17}/></button></div>
     {error && <p className="error-line" role="alert">{error}</p>}
     {!!data?.readFailures.length && <p className="hint" role="status">Some history is unavailable. Refresh to retry.</p>}
     {loading && !data && <p className="hint" role="status">Loading projects...</p>}
     <div className="project-tree">{tree.map(folder=>{
       const rows=folder.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()) ? folder.rows : folder.rows.filter(match);
       if(query && !rows.length && !folder.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()))return null;
-      const open=!collapsed.has(folder.id) || !!query;
+      const open=!collapsed.has(folder.id) || (!!query && searchExpanded);
       return <section key={folder.id} data-folder-id={folder.id} className={`tree-project${dragging===folder.id?' dragging':''}${dropTarget===folder.id?' drop-target':''}`} onDragOver={e=>{if(dragging){e.preventDefault();setDropTarget(folder.id);e.dataTransfer.dropEffect='move';}}} onDrop={e=>{e.preventDefault();if(dragging)reorder(dragging,folder.id);setDragging(null);setDropTarget(null);}}>
         <div className="tree-project-heading" draggable onDragStart={e=>{setDragging(folder.id);e.dataTransfer.setData('text/plain',folder.id);e.dataTransfer.effectAllowed='move';}} onDragEnd={()=>{setDragging(null);setDropTarget(null);}}
           onPointerDown={e=>{if(e.pointerType!=='touch' || !(e.target as HTMLElement).closest('.tree-project-toggle'))return;const element=e.currentTarget;const pointer=e.pointerId;suppressClick.current=false;const state={id:folder.id,pointer,active:false,y:e.clientY,scrolling:false,timer:setTimeout(()=>{if(state.scrolling)return;state.active=true;setDragging(folder.id);element.setPointerCapture(pointer);},350)};touchDrag.current=state;}}
