@@ -2,11 +2,12 @@
 
 | Need | Open |
 |---|---|
-| Purpose, setup, operator deployment and security | [README](README.md) |
+| What it is, install, add a device, tabs | [README](README.md) |
+| Same-origin Tailscale serve | [deploy/serve.sh](deploy/serve.sh) |
+| Isolated static publisher | [deploy/publish-static.py](deploy/publish-static.py) |
+| Optional headless bot relay | [relay-daemon/](relay-daemon/) |
 | Project rules | [AGENTS](AGENTS.md) |
 | PWA | [Application](app/) |
-| Relay service | [Relay](relay-daemon/) |
-| Deployment source | [Deploy](deploy/) |
 
 One Git root: labsiqbal/hermes-mobile. Intended GitHub actor: labsiqbal.
 Deployment is a self-hosted private gateway setup; actual host and running
