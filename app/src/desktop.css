@@ -103,6 +103,6 @@
   .project-browser .iconbtn { width:44px; min-width:44px; }
   .project-browser { padding:16px 24px; }
   #root .shell-header { padding-left:24px; padding-right:24px; }
-  #root .body,#root .cronjobs-body { padding-left:24px; padding-right:24px; }
+  #root .body:not(.manage),#root .cronjobs-body { padding-left:24px; padding-right:24px; }
   .project-popover button { min-height:44px; }
 }
