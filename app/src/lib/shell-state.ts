@@ -140,7 +140,7 @@ export class ConversationViews {
 }
 /** Erase only this app's documented namespaces, never the origin's whole storage. */
 export function connectionLabel(state: ConnectionState): string {
-  return state === 'open' ? 'Connected' : state === 'connecting' ? 'Connecting…' : state === 'error' ? 'Connection error' : state === 'closed' ? 'Disconnected' : 'Not connected';
+  return state === 'open' ? 'Connected' : state === 'connecting' ? 'Connecting…' : state === 'auth-required' ? 'Sign in required' : state === 'error' ? 'Connection error' : state === 'closed' ? 'Disconnected' : 'Not connected';
 }
 
 export function isAppStorageKey(key: string): boolean {

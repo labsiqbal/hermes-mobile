@@ -17,8 +17,10 @@ export function installProductionFixtures(fixture) {
     try { persistedServer = JSON.parse(persistedInflight); } catch { /* fixture-only malformed state */ }
   }
   const trace = [], violations = [], sockets = [], held = new Map();
+  // Non-auth journeys start with a fictional session. check-auth-browser owns
+  // native cookie-jar coverage; login journeys explicitly expire this fixture.
   const control = {
-    trace, violations, mode: 'normal', authenticated: false, approval: false,
+    trace, violations, mode: 'normal', authenticated: f.authenticated ?? true, approval: false,
     hold: [], errors: {}, unsupported: [], permits: {}, empty: [],
     currentProfiles: [], cronOwner: 'default', resume: persistedServer.resume || {},
     ownerBlocked: {}, historyBySession: persistedServer.historyBySession || {},
@@ -40,7 +42,7 @@ export function installProductionFixtures(fixture) {
   const preferences=f.preservePreferences ? Object.entries(localStorage).filter(([key])=>key.startsWith('hermes-mobile.chat-project-pins:') || key.startsWith('hermes-mobile.project-folders:')) : [];
   localStorage.clear();
   preferences.forEach(([key,value])=>localStorage.setItem(key,value));
-  localStorage.setItem('hermes-mobile.connections.v1', JSON.stringify([f.gateway]));
+  localStorage.setItem('hermes-mobile.connections.v1', JSON.stringify([{ id: f.gateway.id, label: f.gateway.label, url: f.gateway.url, username: f.gateway.username }]));
   localStorage.setItem('hermes-mobile.api-server-key', 'FICTIONAL-RUNS-KEY');
   localStorage.setItem('hermes-mobile.tracked-runs.v1', JSON.stringify([{ id: 'qa-run', label: 'QA tracked run', added_at: 1700000000 }]));
   const room = { roomId: 'qa-room', name: 'QA Fixture group', members: [{ name: 'qa-bot', handle: 'qa-bot', connectionId: f.gateway.id, connectionLabel: f.gateway.label }], log: [{ kind: 'user', text: 'QA group history', at: 1700000000000, thread: 'qa-thread' }], revision: 1 };

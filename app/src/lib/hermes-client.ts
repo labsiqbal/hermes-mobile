@@ -18,10 +18,8 @@
  *   4. RPC: {jsonrpc:"2.0", id, method, params} → response {id, result|error}
  *      Events: {method:"event", params:{type, session_id, payload}}.
  *
- * Credential storage note: ConnectionStore persists username+password in
- * `localStorage` (or an injected StorageLike). This is a deliberate v1
- * trade-off — the app is only meant to be reached over a private tailnet.
- * Encrypted secure storage is not implemented; use a trusted private device.
+ * Credential persistence and gateway cookie requirements:
+ * see README.md, "Security notes (v1)".
  */
 
 import { GROUPS_META_KEY, type GroupRegistry } from "./group-store";
@@ -36,7 +34,6 @@ export interface SavedConnection {
   /** Base URL of the gateway, e.g. "https://node.tailnet.ts.net" or "http://100.x.x.x:9119". */
   url: string;
   username: string;
-  password: string;
 }
 
 export interface SessionSummary {
@@ -259,7 +256,7 @@ export interface GatewayEvent {
   seq?: number;
 }
 
-export type ConnectionState = "idle" | "connecting" | "open" | "closed" | "error";
+export type ConnectionState = "idle" | "connecting" | "open" | "closed" | "error" | "auth-required";
 
 export class RpcError extends Error {
   readonly code: number;
@@ -345,6 +342,17 @@ function defaultStorage(): StorageLike {
 
 const STORE_KEY = "hermes-mobile.connections.v1";
 
+/** Host + username identity only. Never copies a password or other extra keys. */
+function persistableConnection(value: unknown): SavedConnection | null {
+  if (!value || typeof value !== "object") return null;
+  const rec = value as Record<string, unknown>;
+  if (typeof rec.id !== "string" || rec.id.length === 0) return null;
+  if (typeof rec.url !== "string" || rec.url.length === 0) return null;
+  if (typeof rec.username !== "string") return null;
+  const label = typeof rec.label === "string" && rec.label.length > 0 ? rec.label : rec.url;
+  return { id: rec.id, label, url: rec.url, username: rec.username };
+}
+
 export class ConnectionStore {
   private storage: StorageLike;
 
@@ -356,15 +364,37 @@ export class ConnectionStore {
     try {
       const raw = this.storage.getItem(STORE_KEY);
       const parsed = raw ? JSON.parse(raw) : [];
-      return Array.isArray(parsed) ? (parsed as SavedConnection[]) : [];
+      if (!Array.isArray(parsed)) {
+        this.storage.removeItem(STORE_KEY);
+        return [];
+      }
+      const cleaned: SavedConnection[] = [];
+      for (const item of parsed) {
+        const conn = persistableConnection(item);
+        if (conn) cleaned.push(conn);
+      }
+      const serialized = JSON.stringify(cleaned);
+      if (raw !== null && raw !== serialized) {
+        try {
+          this.storage.setItem(STORE_KEY, serialized);
+        } catch {
+          // Quota exhaustion can prevent replacement while removal still works.
+          try { this.storage.removeItem(STORE_KEY); } catch { /* storage denied */ }
+        }
+      }
+      return cleaned;
     } catch {
+      // Corrupt records cannot be recovered safely; leave other app data alone.
+      try { this.storage.removeItem(STORE_KEY); } catch { /* storage denied */ }
       return [];
     }
   }
 
   save(conn: SavedConnection): void {
-    const all = this.list().filter((c) => c.id !== conn.id);
-    all.push(conn);
+    const clean = persistableConnection(conn);
+    if (!clean) return;
+    const all = this.list().filter((c) => c.id !== clean.id);
+    all.push(clean);
     this.storage.setItem(STORE_KEY, JSON.stringify(all));
   }
 
@@ -572,6 +602,7 @@ export class HermesConnection {
   async login(username?: string, password?: string): Promise<void> {
     const user = username ?? this.username;
     const pass = password ?? this.password;
+    this.password = undefined;
     if (!user || !pass) throw new AuthError(0, "username and password are required");
     const attempt = () =>
       fetch(`${this.url}/auth/password-login`, {
@@ -598,7 +629,6 @@ export class HermesConnection {
         .join("; ");
     }
     this.username = user;
-    this.password = pass;
   }
 
   /** Single-use 30s WS ticket. */
@@ -622,7 +652,12 @@ export class HermesConnection {
   async connect(): Promise<void> {
     this.stopped = false;
     if (this.state === "open" || this.state === "connecting") return;
-    await this.openSocket();
+    try {
+      await this.openSocket();
+    } finally {
+      // A typed password is only for this sign-in, never a reconnect credential.
+      this.password = undefined;
+    }
     // oxlint-disable-next-line typescript/no-this-alias -- Registry stores the live instance.
     activeConnection = this;
   }
@@ -630,6 +665,7 @@ export class HermesConnection {
   /** Permanently close; no further reconnects. */
   disconnect(): void {
     this.stopped = true;
+    this.password = undefined;
     if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
     this.reconnectTimer = null;
     this.teardownSocket();
@@ -746,11 +782,13 @@ export class HermesConnection {
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = null;
       if (this.stopped) return;
-      this.openSocket().catch(() => {
-        // Re-authentication can fail before a WebSocket exists, so there is
-        // no close event to schedule the next attempt. Keep the retry loop
-        // alive for both HTTP/auth failures and socket-handshake failures.
+      this.openSocket().catch(error => {
         if (this.stopped) return;
+        if (error instanceof AuthError && (error.status === 401 || error.status === 403)) {
+          this.disconnect();
+          this.setState("auth-required");
+          return;
+        }
         this.setState("error");
         this.scheduleReconnect();
       });

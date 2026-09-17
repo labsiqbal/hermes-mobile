@@ -1,5 +1,5 @@
 import { Component, lazy, Suspense, useCallback, useEffect, useMemo, useState, useSyncExternalStore, type ComponentProps, type ReactNode } from 'react';
-import { ConnectionStore, HermesConnection, type SavedConnection, type SessionSummary } from './lib/hermes-client';
+import { AuthError, ConnectionStore, HermesConnection, type SavedConnection, type SessionSummary } from './lib/hermes-client';
 import { ConversationViews, ManageViews, ShellNavigation, conversationKey, type ShellRoute, type ShellScreen } from './lib/shell-state';
 import { markActive, markInactive, recordSessionEvent } from './lib/active-sessions';
 import { rememberBotThread } from './lib/chat-browser';
@@ -61,6 +61,7 @@ export default function App() {
   const subscribeState = useCallback((notify: () => void) => client?.addStateHandler(notify) ?? (() => {}), [client]);
   const connState = useSyncExternalStore(subscribeState, () => client?.connectionState ?? 'idle');
   const [restoreError, setRestoreError] = useState('');
+  const [restoreSignIn, setRestoreSignIn] = useState<SavedConnection | null>(null);
   const [retry, setRetry] = useState(0);
   const [palette, setPalette] = useState(false);
   const [openedSessions,setOpenedSessions]=useState<{gateway:string;session:SessionSummary}[]>([]);
@@ -70,6 +71,11 @@ export default function App() {
   const gatewayId = route.gateway?.id;
   const gatewayUrl = route.gateway?.url;
   const matched = !!activeConn && !!client && activeConn.id === route.gateway?.id && activeConn.url === route.gateway?.url;
+
+  const signInTarget = matched
+    ? connState === 'auth-required' ? activeConn : null
+    : restoreSignIn?.id === gatewayId && restoreSignIn?.url === gatewayUrl ? restoreSignIn : null;
+  const needsSignIn = !!signInTarget;
 
   function go(next: ShellRoute, replace = false) {
     setPalette(false);
@@ -113,10 +119,13 @@ export default function App() {
     let adopted = false;
     // This is an asynchronous gateway restoration result, including a removed registry entry.
     queueMicrotask(() => {
-      if (!cancelled) setRestoreError(target ? '' : 'This saved gateway was removed or changed. Choose a device to continue.');
+      if (!cancelled) {
+        setRestoreSignIn(null);
+        setRestoreError(target ? '' : 'This saved gateway was removed or changed. Choose a device to continue.');
+      }
     });
     if (!target) return () => { cancelled = true; };
-    const fresh = new HermesConnection({url:target.url, username:target.username, password:target.password});
+    const fresh = new HermesConnection({url:target.url, username:target.username});
     fresh.connect().then(() => {
       if (cancelled) { fresh.disconnect(); return; }
       adopted = true;
@@ -124,7 +133,12 @@ export default function App() {
       setActiveConn(target); setClient(fresh);
     }).catch(error => {
       fresh.disconnect();
-      if (!cancelled) setRestoreError(error instanceof Error ? error.message : String(error));
+      if (cancelled) return;
+      if (error instanceof AuthError && (error.status === 401 || error.status === 403)) {
+        setRestoreSignIn(target);
+      } else {
+        setRestoreError(error instanceof Error ? error.message : String(error));
+      }
     });
     return () => { cancelled = true; if (!adopted) fresh.disconnect(); };
   }, [gatewayId, gatewayUrl, matched, store, client, retry]);
@@ -142,7 +156,7 @@ export default function App() {
 
   function adopt(conn: SavedConnection, connected: HermesConnection) {
     if (client !== connected) client?.disconnect();
-    setActiveConn(conn); setClient(connected); setRestoreError('');
+    setActiveConn(conn); setClient(connected); setRestoreError(''); setRestoreSignIn(null);
   }
   function handleConnect(conn: SavedConnection, connected: HermesConnection) {
     adopt(conn, connected);
@@ -166,7 +180,7 @@ export default function App() {
     go({screen:'chat',gateway:route.gateway,profile:'default',conversation:{id:`draft:${crypto.randomUUID()}`,session:null},initialFolder:folder.path,returnTo:'chats'});
   }
   const projectGateway=JSON.stringify([activeConn?.id,activeConn?.url]);
-  const projectBrowser=matched && <ProjectBrowser key={projectGateway} conn={activeConn!} client={client!} onOpenChat={session=>openChat(session,'chats')} onNewFolderChat={newFolderChat} selectedId={route.conversation?.session?.id} openedSessions={openedSessions.filter(row=>row.gateway===projectGateway).map(row=>row.session)} />;
+  const projectBrowser=matched && !needsSignIn && <ProjectBrowser key={projectGateway} conn={activeConn!} client={client!} onOpenChat={session=>openChat(session,'chats')} onNewFolderChat={newFolderChat} selectedId={route.conversation?.session?.id} openedSessions={openedSessions.filter(row=>row.gateway===projectGateway).map(row=>row.session)} />;
 
   const isRoot = ROOTS.includes(screen) && !(screen==='bots' && route.botProfile) || screen==='home' || screen==='groups';
   // Root collections span profiles; Manage owns its explicit profile selection.
@@ -184,6 +198,11 @@ export default function App() {
   let content;
   if (!route.gateway) {
     content = <div className="screen"><Header title="Hermes" subtitle="Your personal relay" state="idle" right={search} /><div className="shell-body shell-detail"><Connections store={store} onConnect={handleConnect} /></div></div>;
+  } else if (needsSignIn) {
+    content = <div className="screen"><Header title="Sign in" subtitle={signInTarget!.label} state="auth-required" /><main className="body connections-body"><p role="alert">Your session expired. Sign in to continue.</p><Connections key={JSON.stringify([signInTarget!.id, signInTarget!.url])} store={store} embedded initialUnlockId={signInTarget!.id} onConnect={(conn, connected) => {
+      if (conn.id === gatewayId && conn.url === gatewayUrl) adopt(conn, connected);
+      else handleConnect(conn, connected);
+    }} /></main></div>;
   } else if (!matched) {
     content = <div className="screen"><Header title={TITLES[screen]} subtitle="Restoring gateway context" state={restoreError ? 'error' : 'connecting'} onBack={back} /><main className="body restore-body"><p role={restoreError ? 'alert' : 'status'}>{restoreError || 'Connecting to the saved gateway before opening this view…'}</p>{restoreError && <button className="btn btn-primary" onClick={() => setRetry(value => value + 1)}>Retry connection</button>}<button className="btn btn-ghost" onClick={disconnect}>Choose another device</button></main></div>;
   } else if (screen === 'chat' || (screen === 'workspace' && route.conversation)) {
@@ -236,5 +255,5 @@ export default function App() {
       {isRoot && <TabBar active={screen==='groups' ? 'bots' : screen==='home' ? 'chats' : screen as NavId} onNavigate={destination} />}
     </div>;
   }
-  return <><div className={desktop&&matched?'desktop-layout':'app-layout'}>{desktop&&matched&&<aside className="desktop-sidebar"><div className="sidebar-brand">Hermes<button className="iconbtn" title="New chat" aria-label="New chat" onClick={()=>openChat(null)}><SquarePen size={18}/></button></div>{projectBrowser}</aside>}<div className="desktop-main">{content}</div></div>{palette && <CommandPalette onClose={() => setPalette(false)} onNavigate={destination} connected={matched} />}</>;
+  return <><div className={desktop&&matched&&!needsSignIn?'desktop-layout':'app-layout'}>{desktop&&matched&&!needsSignIn&&<aside className="desktop-sidebar"><div className="sidebar-brand">Hermes<button className="iconbtn" title="New chat" aria-label="New chat" onClick={()=>openChat(null)}><SquarePen size={18}/></button></div>{projectBrowser}</aside>}<div className="desktop-main">{content}</div></div>{palette && <CommandPalette onClose={() => setPalette(false)} onNavigate={destination} connected={matched} />}</>;
 }
