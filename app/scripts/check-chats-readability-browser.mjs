@@ -58,14 +58,15 @@ try {
     await browser.evaluate(`(()=>{const e=document.querySelector('#ui-scale');e.value='${scale}';e.dispatchEvent(new Event('change',{bubbles:true}));})()`);await browser.settle();await j.tap('Back to Manage');await j.root('Chats');
     await browser.waitFor(`document.querySelector('[aria-label="Refresh projects"]')?.disabled===false`);
     if(await browser.evaluate(`!!__qaDOM.find('Expand all folders')`)) await j.tap('Expand all folders');
-    await browser.waitFor(`document.querySelectorAll('.project-session').length>=2`);
+    await browser.waitFor(`document.querySelectorAll('.project-session').length===30`);
     for(const width of [320,390,430]) {
       const tag=`${scale}-${width}`;
       await browser.viewport(width,844);await browser.waitFor(`innerWidth===${width}&&document.querySelector('#root').getBoundingClientRect().height===844`);await browser.settle();
       await browser.evaluate(`document.querySelector('.project-browser').scrollTop=0`);await browser.settle();
       const top=await browser.evaluate(measure);report.layout.push({name:`${tag}-top`,...top});await j.shot(`${tag}-top`);
       await check(`${tag}: readable project session titles and 44px row targets`,async()=>{
-        assert.equal(top.width,width);assert.ok(top.rows.length>=2,q(top.rows.map(r=>r.id)));assert.equal(top.overflow,false);
+        assert.equal(top.width,width);assert.deepEqual(top.rows.map(r=>r.id).sort(),Array.from({length:30},(_,i)=>`reading-${i}`).sort());assert.equal(top.overflow,false);
+        assert.ok(top.scrollHeight>top.body.height,q(top));
         for(const r of top.rows) {
           assert.ok(r.titleText.trim(),q(r));
           assert.ok(r.open.height>=44&&r.open.left>=0&&r.open.right<=width,q(r));
@@ -77,7 +78,7 @@ try {
       await browser.evaluate(`(()=>{const b=document.querySelector('.project-browser');b.scrollTop=b.scrollHeight;})()`);await browser.settle();
       await check(`${tag}: last row reachable with no shell displacement`,async()=>{
         const end=await browser.evaluate(measure);report.layout.push({name:`${tag}-end`,...end});
-        const last=end.rows.at(-1);assert.ok(last.row.bottom<=end.tabs.top+1,q(end));assert.deepEqual(end.header,top.header);assert.deepEqual(end.tabs,top.tabs);
+        const last=end.rows.at(-1);assert.ok(end.scrollTop>top.scrollTop,q(end));assert.ok(last.row.top>=end.body.top&&last.row.bottom<=Math.min(end.body.bottom,end.tabs.top)+1,q(end));assert.deepEqual(end.header,top.header);assert.deepEqual(end.tabs,top.tabs);
       });
     }
   }
