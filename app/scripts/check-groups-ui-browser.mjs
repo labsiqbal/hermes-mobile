@@ -39,7 +39,7 @@ try {
   await check('Disappeared selected profile fails before any write',async()=>{await browser.evaluate(`__productionFixture.removed=__productionFixture.profiles.splice(__productionFixture.profiles.findIndex(p=>p.name==='qa-plain-1'),1)[0];__productionFixture.trace.length=0;`);await j.tap('Create Group (2)');await j.text('no longer available');assert.equal(await browser.evaluate(`__productionFixture.trace.filter(t=>t.method==='profiles.configure').length`),0);await browser.evaluate(`__productionFixture.profiles.push(__productionFixture.removed);`);});
   await check('Exact members and gateway identity; verified registry before navigation',async()=>{await browser.evaluate(`__productionFixture.permits['profiles.configure']=3;__productionFixture.trace.length=0;`);await j.tap('Create Group (2)');await browser.waitFor(`location.hash==='#chat'`);const writes=await browser.evaluate(`__productionFixture.trace.filter(t=>t.method==='profiles.configure').map(t=>t.params)`);assert.equal(writes.length,3);assert.deepEqual(writes.slice(0,2).map(w=>w.name),['qa-plain-0','qa-plain-1']);const registry=writes[2].ui_meta['hermes-bots-groups'];const room=Object.values(registry.rooms).find(r=>r.roomId!=='qa-room');assert.deepEqual(room.members.map(m=>[m.name,m.connectionId,m.connectionLabel]),[['qa-plain-0',FIXTURE.gateway.id,FIXTURE.gateway.label],['qa-plain-1',FIXTURE.gateway.id,FIXTURE.gateway.label]]);assert.equal(writes[2].name,'default');assert.deepEqual(writes[2].ui_meta_expected_revisions,{'hermes-bots-groups':1});assert.ok((await browser.evaluate(`__productionFixture.trace.map(t=>t.method)`)).lastIndexOf('profiles.list')>2);});
   for(const scale of [75,100,125]) {
-   await j.root('Manage');if(await browser.evaluate(`!!__qaDOM.find('Back to Manage')`))await j.tap('Back to Manage');await j.tap('Devices & gateways','body',false);await j.tap('Appearance','body',false);await change('#ui-scale',scale);
+   await j.root('Manage');if(await browser.evaluate(`!!__qaDOM.find('Back to Manage')`))await j.tap('Back to Manage');await j.tap('Appearance & preferences','body',false);await change('#ui-scale',scale);
    for(const [w,h] of [[320,844],[390,844],[320,480]]) {
     await resize(w,h);const tag=`${scale}-${w}-${h}`;
     for(const root of ['Home','Chats','Bots','Cronjobs','Manage']) {await j.root(root);await audit(root+'-'+tag,w===390&&h===844&&scale===100);}
@@ -52,13 +52,13 @@ try {
      if(section==='Kanban')await j.tap('QA Fixture Board','.manage',false);
      await audit(section+'-'+tag,w===390&&h===844&&scale===100);await j.tap('Back to Manage');
     }
-    await j.tap('Devices & gateways','body',false);await audit('Settings-'+tag,w===390&&scale===100);await j.tap('Appearance','body',false);await audit('Appearance-'+tag);
+    await j.tap('Appearance & preferences','body',false);await audit('Appearance-'+tag);await j.tap('Connection settings','body',false);await audit('Settings-'+tag,w===390&&scale===100);await j.tap('Back');await j.tap('Back to Manage');
     await groups();await audit('Groups-create-'+tag,w===390&&h===844||w===320&&h===480&&scale===125);
     await check('All roster rows retain height '+tag,async()=>assert.ok(await browser.evaluate(`[...document.querySelectorAll('.body .rowcard')].every(e=>e.getBoundingClientRect().height>=44)`)));
     await browser.evaluate(`__qaDOM.find('Create Group (0)').scrollIntoView({block:'center'})`);await browser.settle();await audit('Groups-actions-'+tag,w===390&&h===844||w===320&&h===480&&scale===125);
     await check('Create/Cancel targets and text width '+tag,async()=>{const m=await browser.evaluate(`[...document.querySelectorAll('.group-create-actions button')].map(e=>{const r=e.getBoundingClientRect();return{width:r.width,height:r.height,left:r.left,right:r.right}})`);assert.equal(m.length,2);assert.ok(m[0].width>=140&&m.every(r=>r.height>=44&&r.left>=0&&r.right<=w));});
     await j.tap('Cancel');await audit('Groups-list-'+tag);
-    await j.root('Chats');await browser.waitFor(`!document.querySelector('[aria-label="Refresh Chats"]').disabled`);await j.tap('Filter chats');await audit('Chats-filter-sheet-'+tag,true);
+    await j.root('Chats');await browser.waitFor(`document.querySelector('[aria-label="Refresh projects"]')?.disabled===false`);await audit('Chats-projects-'+tag,true);
     await check('Sheet select gutter '+tag,async()=>{const m=await browser.evaluate(`[...document.querySelectorAll('.chat-filters select')].map(e=>{const s=getComputedStyle(e);return{inset:s.backgroundPosition,padding:parseFloat(s.paddingRight),width:e.getBoundingClientRect().width,font:parseFloat(s.fontSize)}})`);assert.equal(m.length,2);for(const s of m){assert.match(s.inset,/100% - (12|15)px/);assert.ok(s.padding>=32&&s.width>=240&&s.font>=16);}});
     await j.tap('Done');
    }

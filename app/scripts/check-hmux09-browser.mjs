@@ -18,7 +18,7 @@ try {
   await browser.open(host.origin+'/');
   const j=new Journeys(browser,report,output);
   const resize=async w=>{await browser.viewport(w,844);await browser.waitFor(`innerWidth===${w}&&document.querySelector('#root').getBoundingClientRect().height===844`);await browser.settle();};
-  const settings=async()=>{await j.root('Manage');await j.tap('Devices & gateways','body',false);};
+  const settings=async()=>{await j.root('Manage');if(await browser.evaluate('!!__qaDOM.find("Back to Manage")'))await j.tap('Back to Manage');await j.tap('Appearance & preferences','body',false);};
   const appearance=async()=>{await settings();await j.tap('Appearance','body',false);await browser.waitFor('location.hash==="#appearance"');};
   const change=async(selector,value)=>{await browser.evaluate(`(()=>{const e=document.querySelector(${q(selector)});const set=Object.getOwnPropertyDescriptor(e instanceof HTMLSelectElement?HTMLSelectElement.prototype:HTMLInputElement.prototype,'value').set;set.call(e,${q(String(value))});e.dispatchEvent(new Event('change',{bubbles:true}));e.dispatchEvent(new Event('input',{bubbles:true}));})()`);await browser.settle();};
   const key=async(key,code,virtual)=>{await browser.command('Input.dispatchKeyEvent',{type:'keyDown',key,code,windowsVirtualKeyCode:virtual});await browser.command('Input.dispatchKeyEvent',{type:'keyUp',key,code,windowsVirtualKeyCode:virtual});await browser.settle();};
@@ -45,7 +45,7 @@ try {
     assert.equal(await browser.evaluate('localStorage.getItem("hermes-mobile.ui-scale")'),String(scale));
     for(const width of [320,390]) {
       await resize(width);await appearance();await audit(`appearance-${scale}-${width}`);
-      await j.root('Chats');await browser.waitFor(`document.querySelector('[aria-label="Refresh Chats"]')?.disabled===false`);await j.tap('Filter chats');await audit(`chats-selects-${scale}-${width}`);await j.tap('Done');
+      await j.root('Chats');await browser.waitFor(`document.querySelector('[aria-label="Refresh projects"]')?.disabled===false`);await audit(`chats-projects-${scale}-${width}`);
       await j.root('Manage');if(await browser.evaluate(`!!__qaDOM.find('Back to Manage')`))await j.tap('Back to Manage');await j.tap('Capabilities','.manage',false);await browser.waitFor('document.querySelector("select")?.options.length>1');await audit(`manage-select-${scale}-${width}`);await j.tap('Back to Manage');
       await j.root('Cronjobs');await browser.waitFor('document.querySelector("select")?.options.length>1');await audit(`cronjobs-select-${scale}-${width}`);
     }

@@ -36,7 +36,7 @@ try {
   const select=async(label,value)=>{if(label.endsWith('filter'))return j.selectChatFilter(label,value);await browser.evaluate(`(()=>{const e=document.querySelector('select[aria-label='+${q(JSON.stringify(label))}+']');if(!e||![...e.options].some(o=>o.value===${q(value)}))throw Error('Missing profile option');e.value=${q(value)};e.dispatchEvent(new Event('change',{bubbles:true}));})()`);await browser.settle();};
  const rows=()=>browser.evaluate("[...document.querySelectorAll('.chat-session-row')].map(e=>[e.dataset.profile,e.dataset.sessionId])");
  const projectOrder=()=>browser.evaluate("[...document.querySelectorAll('[data-project-id]')].map(e=>JSON.parse(e.dataset.projectId))");
- const waitLoaded=()=>browser.waitFor("document.querySelector('[aria-label=\"Refresh Chats\"]')?.disabled===false && !!document.querySelector('[data-project-id]')");
+ const waitLoaded=()=>browser.waitFor("document.querySelector('[aria-label=\"Refresh projects\"]')?.disabled===false && !!document.querySelector('.project-session')");
  await j.tap(fixture.gateway.label,'body',false);await j.text('QA Project conversation');await j.root('Chats');await waitLoaded();
  await check('flat no-search real projects; synthetic Home rows retained in Recent',async()=>{
   assert.equal(await browser.evaluate("!!document.querySelector('.chatlist input[type=search]')"),false);
@@ -95,7 +95,7 @@ try {
   const writes=(await f('return f.trace')).filter(t=>t.method==='session.delete');
   assert.deepEqual(writes.map(w=>w.params),[{session_id:'qa-a4',profile:'default'}]);
   const detail=(await f('return f.trace')).filter(t=>t.route==='GET /api/sessions/qa-a4');assert.equal(detail.length,2);
-  await j.tap('Refresh Chats');await waitLoaded();assert.equal((await rows()).filter(([,id])=>id==='qa-a4').length,0);
+  await j.tap('Refresh projects');await waitLoaded();assert.equal((await rows()).filter(([,id])=>id==='qa-a4').length,0);
  });
  await check('disconnect cancels pending confirmation; reconnect refreshes hydration',async()=>{
   await j.tap('Delete session QA Older project chat');await j.text('Delete this session?');await f('f.offline();');await browser.waitFor("!document.querySelector('dialog[open]')");
@@ -104,9 +104,9 @@ try {
   assert.equal((await f('return f.trace')).filter(t=>t.method==='session.delete').length,1);
  });
  await check('unsupported projects retain owner-verified history in Recent',async()=>{
-  await f("f.unsupported.push('projects.tree');");await j.tap('Refresh Chats');await browser.waitFor("document.querySelector('[aria-label=\"Refresh Chats\"]').disabled===false");
+  await f("f.unsupported.push('projects.tree');");await j.tap('Refresh projects');await browser.waitFor("document.querySelector('[aria-label=\"Refresh projects\"]').disabled===false");
   assert.ok((await rows()).some(([p,id])=>p==='default'&&id==='qa-project-session'));await j.text('History is incomplete');await j.tap('Read details');await j.text('RPC projects.tree');
-  await f("f.unsupported=[];");await j.tap('Refresh Chats');await waitLoaded();
+  await f("f.unsupported=[];");await j.tap('Refresh projects');await waitLoaded();
  });
  await check('model inside-card placement and compact 44px target at mobile widths',async()=>{
   await j.tap('QA Project conversation','.chat-session-row',false);await j.text('QA restored answer qa-project-session');

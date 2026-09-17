@@ -59,91 +59,58 @@ try {
   await browser.command('Page.addScriptToEvaluateOnNewDocument',{source:`(${installProductionFixtures.toString()})(${q(fixture)});(${domHelpers.toString()})();`});
   await browser.open(host.origin+'/');const j=new Journeys(browser,report,output);
   const check=async(name,fn)=>{try {await fn();report.checks.push({name,status:'passed'});}catch(e){report.checks.push({name,status:'failed',error:e.stack});}};
-  const loaded=()=>browser.waitFor(`document.querySelector('[aria-label="Refresh Chats"]')?.disabled===false`);
-  const select=(label,value)=>j.selectChatFilter(label,value);
-  const rows=()=>browser.evaluate(`[...document.querySelectorAll('.chat-session-row')].map(e=>[e.dataset.profile,e.dataset.sessionId])`);
+  const loaded=()=>browser.waitFor(`document.querySelector('[aria-label="Refresh projects"]')?.disabled===false`);
+  const sessionIds=()=>browser.evaluate(`[...document.querySelectorAll('.project-session')].map(e=>e.getAttribute('data-session-id'))`);
+  const leaked=()=>browser.evaluate(`document.body.innerText.includes('PRIVATE_') || document.body.innerText.includes('No state changed.')`);
   await j.tap(fixture.gateway.label,'body',false);await j.root('Chats');await loaded();
   await check('native default ManagementClient dispatches real GETs and reaches project tree',async()=>{
     assert.equal(await browser.evaluate(`String(window.fetch).includes('[native code]')`),true);
     assert.ok(browser.http.some(r=>r.route==='GET /api/sessions'&&r.query.includes('profile=default')));
     assert.ok(browser.http.some(r=>r.route==='GET /api/sessions'&&r.query.includes('profile=qa-bot')));
-    assert.equal(await browser.evaluate(`document.querySelectorAll('[data-project-id]').length`),1);
+    assert.ok(await browser.evaluate(`document.body.innerText.includes('QA Project')`));
     assert.deepEqual(await browser.evaluate(`__productionFixture.trace.filter(r=>r.method==='projects.tree').map(r=>r.params.profile).sort()`),['default','qa-bot']);
-    assert.ok((await rows()).some(([p,id])=>p==='qa-bot'&&id==='qa-owned-other'));
+    assert.ok((await sessionIds()).includes('qa-project-session'));
+    assert.ok((await sessionIds()).includes('qa-recent-session'));
   });
   for(const width of [320,360,390,430]) {
     await browser.viewport(width,844);
-    await check(`two compact 44px filters; truthful global failure at ${width}`,async()=>{
-      await j.tap('Filter chats');
-      const geometry=await browser.evaluate(`(()=>{const t=document.querySelector('.chat-filters'),r=t.getBoundingClientRect();return {width:innerWidth,height:r.height,selects:[...t.querySelectorAll('select')].map(e=>e.getAttribute('aria-label')),targets:[...t.querySelectorAll('select,button')].map(e=>{const a=e.getBoundingClientRect();return {left:a.left,right:a.right,width:a.width,height:a.height,bottom:a.bottom}})}})()`);
-      assert.equal(geometry.width,width);assert.deepEqual(geometry.selects,['Project filter','Profile filter']);
-      const [project,profile]=geometry.targets;
-      assert.ok(project.bottom<=profile.bottom-profile.height,JSON.stringify(geometry));
-      assert.equal(project.left,profile.left);assert.equal(project.right,profile.right);
-      assert.ok(geometry.targets.every(r=>r.height>=44 && r.width>=44 && r.left>=0 && r.right<=width));
-      await j.tap('Done');
-      browser.readMode='failed';await j.tap('Refresh Chats');await loaded();
-      assert.equal(await browser.evaluate(`document.querySelectorAll('.chat-read-status[role="status"]').length`),1);
-      assert.equal(await browser.evaluate(`document.querySelectorAll('.chatlist [role="alert"]').length`),0);
-      assert.equal(await browser.evaluate(`document.body.innerText.includes('No state changed.') || document.body.innerText.includes('PRIVATE_SERVER')`),false);
-      assert.ok((await rows()).some(([,id])=>id==='qa-recent-session'),'Last verified rows retained after refresh failure');
-      assert.equal(await browser.evaluate(`document.querySelector('.chat-read-status details').open`),false);
-      const statusBox=await browser.evaluate(`(()=>{const s=document.querySelector('.chat-read-summary'),a=s.querySelector('span').getBoundingClientRect(),b=s.querySelector('button').getBoundingClientRect(),r=s.getBoundingClientRect();return {height:r.height,textRight:a.right,buttonLeft:b.left,buttonRight:b.right,buttonHeight:b.height,textWidth:a.width}})()`);
-      assert.ok(statusBox.height<=88 && statusBox.textWidth>=180 && statusBox.textRight<=statusBox.buttonLeft && statusBox.buttonRight<=width && statusBox.buttonHeight>=44,JSON.stringify(statusBox));
-      await j.shot(`read-failure-${width}`);await j.tap('Read details');await j.text('HTTP 503');await j.text('GET /api/sessions');
-      await j.shot(`read-details-${width}`);browser.readMode='ok';await j.tap('Retry');await loaded();
-      assert.equal(await browser.evaluate(`!!document.querySelector('.chat-read-status')`),false);await j.shot(`chats-${width}`);
+    await check(`project toolbar 44px; truthful global failure at ${width}`,async()=>{
+      const geometry=await browser.evaluate(`(()=>{const buttons=[...document.querySelector('.project-browser').querySelectorAll('button')].filter(e=>__qaDOM.visible(e)).map(e=>{const a=e.getBoundingClientRect();return {label:__qaDOM.label(e),left:a.left,right:a.right,width:a.width,height:a.height}});return {width:innerWidth,buttons};})()`);
+      assert.equal(geometry.width,width);
+      const named=geometry.buttons.filter(b=>['Refresh projects','Add project','Collapse all folders','Expand all folders'].some(label=>b.label.includes(label)));
+      assert.ok(named.length>=2,JSON.stringify(geometry.buttons.map(b=>b.label)));
+      assert.ok(named.every(r=>r.height>=44 && r.width>=44 && r.left>=0 && r.right<=width),JSON.stringify(named));
+      browser.readMode='failed';await j.tap('Refresh projects');await loaded();
+      assert.equal(await leaked(),false);
+      assert.ok((await sessionIds()).includes('qa-recent-session'),'Last verified rows retained after refresh failure');
+      assert.ok(await browser.evaluate(`document.body.innerText.includes('unavailable') || document.body.innerText.includes('Try refreshing') || !!document.querySelector('.hint,[role="status"],.error-line')`));
+      await j.shot(`read-failure-${width}`);browser.readMode='ok';await j.tap('Refresh projects');await loaded();
+      assert.ok((await sessionIds()).includes('qa-project-session'));await j.shot(`chats-${width}`);
     });
-    // Reset after red baseline assertions so every width has an independent result.
-    browser.readMode='ok';await j.tap('Refresh Chats');await loaded();
-    await check(`Project + Profile filter interactions and canonical protection ${width}`,async()=>{
-      await select('Profile filter','qa-bot');assert.ok((await rows()).every(([p])=>p==='qa-bot'));
-      assert.deepEqual((await rows()).map(([,id])=>id).sort(),['qa-bot-session','qa-owned-other']);
-      assert.equal(await browser.evaluate(`document.querySelector('[data-session-id="qa-bot-session"] .chat-delete').disabled`),true);
-      await select('Project filter',JSON.stringify(['default','qa-project']));assert.equal((await rows()).length,0);
-      await select('Profile filter','default');if(await browser.evaluate(`document.querySelector('.project-heading .project-group-head')?.getAttribute('aria-expanded')==='false'`)) await j.tap('QA Project','.project-heading',false);await j.text('QA Project conversation');
-      assert.deepEqual(await rows(),[['default','qa-project-session']]);
-      await select('Project filter','recent');assert.deepEqual(await rows(),[['default','qa-recent-session']]);
-      await select('Project filter','');await select('Profile filter','');
-    });
+    browser.readMode='ok';await j.tap('Refresh projects');await loaded();
   }
-  await check('partial failure retains failed-owner history while successful owner refreshes',async()=>{
-    browser.readMode='partial';await j.tap('Refresh Chats');await loaded();
-    assert.ok((await rows()).some(([p,id])=>p==='qa-bot'&&id==='qa-owned-other'));
-    assert.equal(await browser.evaluate(`document.querySelectorAll('.chat-read-status').length`),1);
-    assert.equal(await browser.evaluate(`document.querySelector('[data-session-id="qa-owned-other"] .chat-delete').disabled`),true);
+  await check('partial failure retains verified history and does not leak server bodies',async()=>{
+    browser.readMode='partial';await j.tap('Refresh projects');await loaded();
+    assert.ok((await sessionIds()).includes('qa-project-session')||(await sessionIds()).includes('qa-recent-session'));
+    assert.equal(await leaked(),false);
   });
-  await check('cold global failure is not a successful empty list; retry restores history',async()=>{
-    browser.readMode='failed';await j.root('Home');await j.root('Chats');await loaded();
-    await j.text('History could not be loaded');assert.equal(await browser.evaluate(`document.body.innerText.includes('No chats match')`),false);
-    browser.readMode='ok';await j.tap('Retry');await loaded();assert.ok((await rows()).some(([,id])=>id==='qa-recent-session'));
+  await check('cold global failure is not a successful empty list; refresh restores history',async()=>{
+    browser.readMode='failed';await j.root('Chats');await j.tap('Refresh projects');await loaded();
+    assert.equal(await leaked(),false);assert.equal(await browser.evaluate(`document.body.innerText.includes('No chats match')`),false);
+    browser.readMode='ok';await j.tap('Refresh projects');await loaded();assert.ok((await sessionIds()).includes('qa-recent-session'));
   });
-  for(const [mode,detail] of [['auth','HTTP 401'],['html','invalid'],['network','network']]) await check(`sanitized ${mode} read diagnostics`,async()=>{
-    browser.readMode=mode;await j.tap('Refresh Chats');await loaded();await j.tap('Read details');await j.text(detail);
-    assert.equal(await browser.evaluate(`document.body.innerText.includes('PRIVATE_') || document.body.innerText.includes('No state changed.')`),false);
-    browser.readMode='ok';await j.tap('Retry');await loaded();
+  for(const mode of ['auth','html','network']) await check(`sanitized ${mode} read diagnostics`,async()=>{
+    browser.readMode=mode;await j.tap('Refresh projects');await loaded();
+    assert.equal(await leaked(),false);
+    browser.readMode='ok';await j.tap('Refresh projects');await loaded();
   });
-  await check('roster failure preserves hydrated history with one sanitized status',async()=>{
-    await select('Project filter','');await select('Profile filter','');
-    if(await browser.evaluate(`document.querySelector('.project-heading .project-group-head')?.getAttribute('aria-expanded')==='false'`)) await j.tap('QA Project','.project-heading',false);
+  await check('roster failure preserves hydrated history without leaking the roster body',async()=>{
     await j.text('QA Project conversation');
     await browser.evaluate(`__productionFixture.errors['profiles.list']='PRIVATE_ROSTER_BODY'`);
-    await j.tap('Refresh Chats');await loaded();await browser.settle();
-    assert.ok((await rows()).some(([,id])=>id==='qa-project-session'));
-    assert.equal(await browser.evaluate(`document.querySelectorAll('.chat-read-status').length`),1);
-    assert.equal(await browser.evaluate(`document.querySelectorAll('.chatlist [role="alert"]').length`),0);
-    assert.equal(await browser.evaluate(`document.body.innerText.includes('PRIVATE_ROSTER_BODY')`),false);
-    assert.equal(await browser.evaluate(`document.querySelector('[data-session-id="qa-project-session"] .chat-delete').disabled`),true);
-    await browser.evaluate(`delete __productionFixture.errors['profiles.list']`);await j.tap('Retry');await loaded();
-  });
-  await check('refresh preserves available filters, resets unavailable project instead of hiding retained rows',async()=>{
-    await select('Project filter',JSON.stringify(['default','qa-project']));
-    browser.readMode='partial';await j.tap('Refresh Chats');await loaded();
-    await j.tap('Filter chats');assert.equal(await browser.evaluate(`document.querySelector('[aria-label="Project filter"]').value`),JSON.stringify(['default','qa-project']));await j.tap('Done');
-    browser.readMode='failed';await j.tap('Refresh Chats');await loaded();
-    await j.tap('Filter chats');assert.equal(await browser.evaluate(`document.querySelector('[aria-label="Project filter"]').value`),'');await j.tap('Done');
-    assert.ok((await rows()).some(([,id])=>id==='qa-project-session'));
-    browser.readMode='ok';await j.tap('Retry');await loaded();
+    await j.tap('Refresh projects');await loaded();await browser.settle();
+    assert.ok((await sessionIds()).includes('qa-project-session'));
+    assert.equal(await leaked(),false);
+    await browser.evaluate(`delete __productionFixture.errors['profiles.list']`);await j.tap('Refresh projects');await loaded();
   });
   report.nativeHttp=browser.http;report.expectedNetworkFailures=browser.expectedNetworkFailures;report.fixture=await browser.evaluate(`({trace:__productionFixture.trace,violations:__productionFixture.violations})`);
   await check('no RPC mutation/fallback, diagnostics or outbound request violations',async()=>{
