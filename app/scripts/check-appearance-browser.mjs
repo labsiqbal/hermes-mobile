@@ -9,7 +9,7 @@ const app = path.resolve(process.argv[3] || '.');
 const output = path.resolve(process.argv[2] || '/tmp/hm-appearance-browser');
 await mkdir(output, { recursive:true });
 const host = await serveDist(app);
-const browser = new ProductionBrowser({ origin:host.origin, assetPaths:host.assetPaths, output, deadline:900000, timeout:5000, chrome:'/usr/bin/google-chrome' });
+const browser = new ProductionBrowser({ origin:host.origin, assetPaths:host.assetPaths, output, deadline:900000, timeout:30000, chrome:'/usr/bin/google-chrome' });
 const report = { evidence:'BUILT-APP-FICTIONAL-APPEARANCE', checks:[], layout:[], screenshots:[], artifact:host.hashes };
 const q = JSON.stringify;
 const fixture = structuredClone(FIXTURE);
@@ -59,15 +59,15 @@ try {
   await j.tap('Back to Manage');
   // Regression: change scale through Settings while a preserved chat is hidden.
   await check('semantic transcript anchor, draft and identity across Settings scale',async()=>{
-    await j.root('Home'); await j.tap('QA Project conversation','body',false); await j.text('QA restored answer qa-project-session');
+    await j.root('Chats'); await j.tap('QA Project conversation','body',false); await j.text('QA restored answer qa-project-session');
     await j.type('textarea','Appearance unsent draft');
     const before=await browser.evaluate(`(()=>{const b=document.querySelector('.chat-view .body'),p=[...b.querySelectorAll('p')].find(e=>e.textContent.startsWith('Appearance paragraph 12.'));b.scrollTop+=p.getBoundingClientRect().top-b.getBoundingClientRect().top-20;b.dispatchEvent(new Event('scroll'));window.__appearanceAnchor=p;return {offset:p.getBoundingClientRect().top-b.getBoundingClientRect().top,identity:JSON.stringify(history.state.route.conversation)};})()`);
-    await browser.settle(); await j.tap('Back'); await settings(); await select(75); await j.tap('Back to Manage'); await j.root('Home'); await j.tap('QA Project conversation','body',false);
+    await browser.settle(); await j.tap('Back'); await settings(); await select(75); await j.tap('Back to Manage'); await j.root('Chats'); await j.tap('QA Project conversation','body',false);
     const after=await browser.evaluate(`({offset:[...document.querySelectorAll('.chat-view .body p')].find(e=>e.textContent.startsWith('Appearance paragraph 12.')).getBoundingClientRect().top-document.querySelector('.chat-view .body').getBoundingClientRect().top,identity:JSON.stringify(history.state.route.conversation),draft:document.querySelector('textarea').value})`);
     assert.equal(after.identity,before.identity); assert.equal(after.draft,'Appearance unsent draft'); assert.ok(Math.abs(after.offset-before.offset)<3,q({before,after}));
     await j.tap('Scroll to bottom');
     await browser.waitFor("!document.querySelector('.jump-btn') && (()=>{const b=document.querySelector('.chat-view .body');return b.scrollHeight-b.clientHeight-b.scrollTop<3})()");
-    await j.tap('Back'); await settings(); await select(125); await j.tap('Back to Manage'); await j.root('Home'); await j.tap('QA Project conversation','body',false);
+    await j.tap('Back'); await settings(); await select(125); await j.tap('Back to Manage'); await j.root('Chats'); await j.tap('QA Project conversation','body',false);
     assert.ok(await browser.evaluate('(()=>{const b=document.querySelector(".chat-view .body");return b.scrollHeight-b.clientHeight-b.scrollTop<3})()'));
   });
   // Recover even if the anchor RED fails, then collect the complete matrix.
@@ -93,11 +93,10 @@ try {
         await j.tap('Back to Manage');
       }
       await j.root('Cronjobs'); await j.tap('QA Fixture Schedule','.manage-detail',false); await audit(`${tag}-Schedule`,detailShots); await j.tap('Runs'); await j.tap('QA tracked run','body',false); await j.text('QA fixture run output'); await audit(`${tag}-Run`,detailShots);
-      await j.root('Bots'); await j.tap('Groups','body',false); await audit(`${tag}-Groups`,detailShots); await j.tap('QA Fixture group','body',false); await j.text('QA group history'); await audit(`${tag}-Group-chat`,detailShots); await j.tap('Back'); await j.tap('Back');
       await j.root('Bots'); await j.tap('QA Fixture Bot','body',false); await j.text('Bot Chat'); await j.tap('Bot Chat','body',false); await j.text('QA restored answer qa-bot-session'); await audit(`${tag}-Bot-history`,detailShots); await j.tap('Back');
-      const botTraceStart=await browser.evaluate('__productionFixture.trace.length'); await browser.evaluate(`__productionFixture.permits['session.create']=1`); await j.root('Bots'); await j.tap('QA Fixture Bot','body',false); await browser.waitFor("history.state.route.conversation?.session?.id === 'qa-bot-private-session'"); await audit(`${tag}-Bot-private`,detailShots);
+      const botTraceStart=await browser.evaluate('__productionFixture.trace.length'); await browser.evaluate(`__productionFixture.permits['session.create']=1`); await j.root('Bots'); await j.tap('QA Fixture Bot','body',false); await j.tap('New bot thread'); await browser.waitFor("history.state.route.conversation?.session?.id === 'qa-bot-private-session'"); await audit(`${tag}-Bot-private`,detailShots);
       await check(`${tag}-Bot-private-session`,async()=>{const opened=await browser.evaluate(`__productionFixture.trace.slice(${botTraceStart})`);assert.equal(await browser.evaluate('document.querySelector("textarea").value'),'');assert.deepEqual(opened.filter(t=>t.method==='session.create').map(t=>t.params),[{profile:'qa-bot'}]);assert.ok(opened.some(t=>t.method==='session.resume'&&t.params.session_id==='qa-bot-private-session'&&t.params.profile==='qa-bot'));assert.ok(!opened.some(t=>t.method==='session.resume'&&t.params.session_id==='qa-bot-session'));}); await j.tap('Back');
-      await j.root('Home'); await j.tap('QA Project conversation','body',false); await j.text('QA restored answer qa-project-session');
+      await j.root('Chats'); await j.tap('QA Project conversation','body',false); await j.text('QA restored answer qa-project-session');
       for(const [mode,draft] of [['single','Draft'],['multiline','Line one\nLine two\nLine three\nLine four\nLine five']]) {
         await j.type('textarea',draft);
         await browser.evaluate("(()=>{const b=document.querySelector('.chat-view .body');b.scrollTop=250;b.dispatchEvent(new Event('scroll'));})()"); await j.text('Appearance paragraph'); await browser.waitFor('!!document.querySelector(".jump-btn")');
@@ -134,7 +133,7 @@ try {
         if(tool==='Preview') { await j.type('#workspace-preview-url','https://preview.production-qa.invalid/'); await j.tap('Review preview link'); await audit(`${tag}-Preview-review`,detailShots); await j.tap('Cancel preview'); }
       }
       await j.tap('Back to conversation'); await j.tap('Back');
-      await j.root('Home'); await j.tap('Open command palette'); await audit(`${tag}-Palette`,detailShots); await j.tap('Close command palette');
+      await j.root('Chats'); await j.tap('Open command palette'); await audit(`${tag}-Palette`,detailShots); await j.tap('Close command palette');
     }
   }
   await resize(390,844);

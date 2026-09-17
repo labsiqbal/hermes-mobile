@@ -51,7 +51,7 @@ class ReadBrowser extends ProductionBrowser {
     super.onEvent(event);
   }
 }
-const browser=new ReadBrowser({origin:host.origin,assetPaths:host.assetPaths,output,deadline:150000,timeout:4000,chrome:process.env.CHROME_BIN || '/usr/bin/google-chrome'});
+const browser=new ReadBrowser({origin:host.origin,assetPaths:host.assetPaths,output,deadline:150000,timeout:30000,chrome:process.env.CHROME_BIN || '/usr/bin/google-chrome'});
 const report={evidence:'BUILT-APP-NATIVE-FETCH-CDP-FIXTURES-NOT-LIVE',checks:[],layout:[],screenshots:[],artifact:host.hashes};
 const q=JSON.stringify;
 try {

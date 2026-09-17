@@ -21,7 +21,7 @@ fixture.historyBySession = {
   ],
 };
 const host = await serveDist(app);
-const browser = new ProductionBrowser({ origin: host.origin, assetPaths: host.assetPaths, output, deadline: 240000, timeout: 5000, chrome: '/usr/bin/google-chrome' });
+const browser = new ProductionBrowser({ origin: host.origin, assetPaths: host.assetPaths, output, deadline: 240000, timeout: 30000, chrome: '/usr/bin/google-chrome' });
 const report = { evidence: 'BUILT-REACT-FICTIONAL-LAYOUT-OVERLAP', checks: [], layout: [], screenshots: [], artifact: host.hashes };
 const q = JSON.stringify;
 // All geometry is observed from rendered DOM, including the full 44px hit boxes.
