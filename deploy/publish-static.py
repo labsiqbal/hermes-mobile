@@ -4,6 +4,43 @@
 CLI fixes the production boundary. run_release exposes only filesystem/HTTP/route
 seams for isolated tests. No build, configuration changes, pruning or rollback.
 """
+# Operator instructions for updating an existing deployment:
+#
+# Build in an isolated checkout/output directory, never the served app/dist:
+# Vite cleanup can remove assets still needed by open clients. Commit/push alone
+# does not update a Tailscale filesystem mount. Keep old hashed assets available.
+#
+# At initial setup, the operator creates ~/.config/hermes-mobile/publisher.json
+# with mode 0600 and exactly these keys (replace the fictional values):
+# {"root": "/absolute/path/to/served/dist",
+#  "origin": "https://gateway.example.invalid:8451"}
+# The origin has no trailing slash. Keep installation URLs, tailnet addresses,
+# route snapshots, credentials and receipts outside public Git/PRs/screenshots.
+# Missing configuration fails closed; do not bypass it with target overrides.
+#
+# Review source and isolated build, then freeze a JSON manifest mapping every
+# artifact-relative POSIX path to its lowercase SHA-256. Keep artifact and
+# manifest outside the live tree, and manifest outside the artifact. Record the
+# manifest digest and independently review the live index.html digest and the
+# complete Serve-route digest. The route digest hashes the UTF-8 encoding of
+# json.dumps(route, sort_keys=True, separators=(",", ":")) for the full route JSON.
+#
+# From the reviewed checkout, with approved absolute artifact/manifest paths:
+# python3 -B deploy/publish-static.py \
+#   --artifact "$APPROVED_ARTIFACT" \
+#   --manifest "$FROZEN_MANIFEST" \
+#   --manifest-sha256 "$APPROVED_MANIFEST_SHA256" \
+#   --expected-entry-sha256 "$EXPECTED_ENTRY_SHA256" \
+#   --expected-route-sha256 "$EXPECTED_ROUTE_SHA256"
+#
+# Require exit 0 and status=dry_run, then separate operator approval before
+# appending --publish with identical arguments. Arrange exclusive release access.
+# Do not weaken configuration/guards, build in the live tree, or use serve.sh to
+# bypass refusal. Changed stable support files and unequal collisions need review.
+# Only exit 0 with status=published and stage=complete confirms publication checks.
+# Failure may leave added assets or an already-switched entry: stop and inspect,
+# never assume rollback or retry automatically. Authenticated app operations and
+# physical-device behavior require separate verification.
 import argparse
 import fcntl
 import hashlib

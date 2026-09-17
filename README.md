@@ -8,7 +8,7 @@ The gateway runs the agent (`hermes serve`). This repo is the PWA client. Reach 
 
 ## Install
 
-You need an authenticated Hermes gateway with basic username/password, reachable from the phone.
+You need an authenticated Hermes gateway with basic username/password, reachable from the phone, plus Node and npm (use the Node version in [CI](.github/workflows/check.yml)). Run these commands from a fresh repository checkout, never a currently served build directory. For existing deployments, use the [static publisher's operator instructions](deploy/publish-static.py).
 
 ```bash
 cd app
@@ -20,8 +20,10 @@ cd ..
 Serve `app/dist` **on the same origin** as the gateway (Hermes only allows localhost CORS). On a tailnet:
 
 ```bash
-# set dashboard.public_url on the gateway to this HTTPS origin, then:
-sudo ./deploy/serve.sh "$PWD/app/dist" <your-node>.<tailnet>.ts.net:9119 8451
+# replace your-node.your-tailnet.ts.net with your node's DNS name;
+# set dashboard.public_url to https://your-node.your-tailnet.ts.net:8451
+# and restart the gateway before running:
+sudo ./deploy/serve.sh "$PWD/app/dist" your-node.your-tailnet.ts.net:9119 8451
 ```
 
 Open that URL on the phone and Add to Home Screen. Any reverse proxy that can mount `/`, `/api`, and `/auth` on one origin also works. Recipe: [`deploy/serve.sh`](deploy/serve.sh).
@@ -40,7 +42,7 @@ HERMES_BACKEND=http://your-gateway-host:9119 npm run dev -- --host 127.0.0.1
 3. Enter a label, the gateway URL (`https://node.tailnet.ts.net:8451` or a LAN URL), username, and password.
 4. Save, then tap the device to connect.
 
-Use a trusted private phone. Credentials stay in this browser's `localStorage`.
+Use a trusted private phone. Credentials are stored in plaintext in this browser's `localStorage`; a private tailnet does not protect them from XSS, browser extensions, or other users of the same browser profile.
 
 ## Tabs
 
@@ -60,6 +62,6 @@ Open a chat to compose, attach files, pick a model, and stream a reply. See the 
 
 ## Limitations
 
-Unofficial and self-hosted only. Not Hermes Desktop parity and not a hosted SaaS. Missing gateway routes fail visibly. Optional dictation uses the browser speech API. Secure credential storage is not implemented.
+Unofficial and self-hosted only. Not Hermes Desktop parity and not a hosted SaaS. Missing gateway routes fail visibly. Optional dictation asks for consent and adds text to the draft without sending it; the browser may process audio remotely. Secure credential storage is not implemented.
 
 MIT - see [LICENSE](LICENSE). Hermes Agent is upstream at NousResearch/hermes-agent.

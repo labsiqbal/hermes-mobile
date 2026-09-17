@@ -9,6 +9,10 @@
 #
 # Prereq: ~/.hermes/config.yaml → dashboard.public_url must match the public
 # origin below (host part), then restart the Hermes dashboard/serve service.
+# Use the address Hermes actually binds, not loopback if it binds a tailnet IP.
+# This recipe is for first-time setup. Obtain operator approval before changing
+# gateway configuration, restarting services, or exposing a listener. For an
+# existing mount, follow publish-static.py's operator instructions instead.
 #
 # Usage: sudo ./deploy/serve.sh <dist-dir> <backend-host:port> [https-port]
 set -euo pipefail
