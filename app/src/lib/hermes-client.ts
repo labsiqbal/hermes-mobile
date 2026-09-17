@@ -424,6 +424,7 @@ export interface HermesConnectionOptions {
   /** Base URL, e.g. "http://gateway.example.invalid:9119". Trailing slash stripped. */
   url: string;
   username?: string;
+  /** Optional initial sign-in fallback; discarded after connect/login, never reused for reconnect. */
   password?: string;
   /** Skip password login and use this bearer token for REST auth instead. */
   bearerToken?: string;
@@ -648,7 +649,7 @@ export class HermesConnection {
 
   // ── Socket lifecycle ─────────────────────────────────────────────────────
 
-  /** Open (and keep open) the gateway socket. Resolves on `gateway.ready`. */
+  /** Open the gateway socket; reconnect until stopped or auth is required. Resolves on `gateway.ready`. */
   async connect(): Promise<void> {
     this.stopped = false;
     if (this.state === "open" || this.state === "connecting") return;
@@ -680,9 +681,9 @@ export class HermesConnection {
 
   private async openSocket(): Promise<void> {
     this.setState("connecting");
-    // Mint the ticket first — the session cookie often outlives a reconnect,
-    // so only fall back to password login when it has actually expired (401).
-    // Logging in on every reconnect trips the gateway auth rate limit (429).
+    // Reuse the session before trying an optional initial sign-in password on
+    // 401/403. Reconnect has no password fallback and must request sign-in if
+    // rejected; repeated password logins can trip the gateway rate limit (429).
     let ticket: string;
     if (!this.bearerToken && this.username && this.password) {
       try {
