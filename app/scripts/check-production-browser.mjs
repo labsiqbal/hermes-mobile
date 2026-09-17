@@ -163,7 +163,7 @@ export class Journeys {
     await this.b.command('Page.navigateToHistoryEntry', { entryId: target.id }); await this.b.settle();
   }
   async auditLayout(name) {
-    const metrics = await this.b.evaluate(`(()=>{const items=[...document.querySelectorAll(${q(CONTROLS)})].filter(el=>__qaDOM.visible(el)).map(el=>{const r=el.getBoundingClientRect();return{label:__qaDOM.label(el),x:r.x,y:r.y,w:r.width,h:r.height,disabled:!!el.disabled};}).filter(r=>r.x<innerWidth&&r.x+r.w>0&&r.y<innerHeight&&r.y+r.h>0); return{viewport:[innerWidth,innerHeight],pageWidth:document.documentElement.scrollWidth,bodyWidth:document.body.scrollWidth,controls:items};})()`);
+    const metrics = await this.b.evaluate(`(()=>{const items=[...document.querySelectorAll(${q(CONTROLS)})].filter(el=>__qaDOM.visible(el)).map(el=>{const label=el.matches('input[type="checkbox"],input[type="radio"]')?[...el.labels].find(label=>label.control===el&&__qaDOM.visible(label)):null;const target=label||el,r=target.getBoundingClientRect();return{label:__qaDOM.label(el),target:label?'associated-label':'control',x:r.x,y:r.y,w:r.width,h:r.height,disabled:!!el.disabled};}).filter(r=>r.x<innerWidth&&r.x+r.w>0&&r.y<innerHeight&&r.y+r.h>0); return{viewport:[innerWidth,innerHeight],pageWidth:document.documentElement.scrollWidth,bodyWidth:document.body.scrollWidth,controls:items};})()`);
     this.report.layout.push({ name, ...metrics });
     assert.ok(metrics.pageWidth <= metrics.viewport[0] + 1 && metrics.bodyWidth <= metrics.viewport[0] + 1, `Horizontal page overflow: ${name}`);
     assert.ok(metrics.controls.length, `No reachable controls: ${name}`);

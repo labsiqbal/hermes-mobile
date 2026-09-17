@@ -83,21 +83,29 @@ try {
       browser.readMode='failed';await j.tap('Refresh projects');await loaded();
       assert.equal(await leaked(),false);
       assert.ok((await sessionIds()).includes('qa-recent-session'),'Last verified rows retained after refresh failure');
-      assert.ok(await browser.evaluate(`document.body.innerText.includes('unavailable') || document.body.innerText.includes('Try refreshing') || !!document.querySelector('.hint,[role="status"],.error-line')`));
+      await j.text('Some history is unavailable. Refresh to retry.');
+      assert.equal(await browser.evaluate('[...document.querySelectorAll(".session-trash")].every(e=>e.disabled)'),true);
       await j.shot(`read-failure-${width}`);browser.readMode='ok';await j.tap('Refresh projects');await loaded();
       assert.ok((await sessionIds()).includes('qa-project-session'));await j.shot(`chats-${width}`);
     });
     browser.readMode='ok';await j.tap('Refresh projects');await loaded();
   }
   await check('partial failure retains verified history and does not leak server bodies',async()=>{
+    assert.ok((await sessionIds()).includes('qa-owned-other'));
     browser.readMode='partial';await j.tap('Refresh projects');await loaded();
-    assert.ok((await sessionIds()).includes('qa-project-session')||(await sessionIds()).includes('qa-recent-session'));
+    assert.ok((await sessionIds()).includes('qa-owned-other'),'Failed-owner history remains readable');
+    assert.equal(await browser.evaluate(`document.querySelector('[data-session-id="qa-owned-other"]').closest('.project-session-wrap').querySelector('.session-trash').disabled`),true);
+    await j.text('Some history is unavailable. Refresh to retry.');
     assert.equal(await leaked(),false);
   });
   await check('cold global failure is not a successful empty list; refresh restores history',async()=>{
-    browser.readMode='failed';await j.root('Chats');await j.tap('Refresh projects');await loaded();
+    browser.readMode='failed';await browser.command('Page.reload');await browser.settle();await j.root('Chats');await loaded();
+    await j.text('Some history is unavailable. Refresh to retry.');
+    assert.deepEqual(await sessionIds(),[],'Cold failure has no verified cached history');
+    assert.equal(await browser.evaluate('document.querySelectorAll(".tree-project").length'),0);
     assert.equal(await leaked(),false);assert.equal(await browser.evaluate(`document.body.innerText.includes('No chats match')`),false);
-    browser.readMode='ok';await j.tap('Refresh projects');await loaded();assert.ok((await sessionIds()).includes('qa-recent-session'));
+    browser.readMode='ok';await j.tap('Refresh projects');await loaded();assert.ok((await sessionIds()).includes('qa-recent-session'));assert.ok((await sessionIds()).includes('qa-owned-other'));
+    assert.equal(await browser.evaluate(`document.body.innerText.includes('Some history is unavailable')`),false);
   });
   for(const mode of ['auth','html','network']) await check(`sanitized ${mode} read diagnostics`,async()=>{
     browser.readMode=mode;await j.tap('Refresh projects');await loaded();

@@ -19,7 +19,7 @@ const b=row('qa-b','QA Second conversation'), c=row('qa-c','QA Third conversatio
 const overlap=row('qa-project-session','QA Other profile conversation','qa-bot');
 const misleading=row('qa-misleading','Bot Chat');
 fixture.sessions.push(...a.slice(1),b,c,overlap,misleading,fixture.bot);
-const project=(id,label,profile,rows,extra={})=>({id,label,profile,...extra,sessionCount:rows.length,previewSessions:rows.slice(0,3),repos:[{id:`${id}-repo`,groups:[{id:'lane',sessions:rows}]}]});
+const project=(id,label,profile,rows,extra={})=>{for(const row of rows){row.cwd=`/fictional/${profile}/${id}`;row.git_repo_root=row.cwd;}return {id,label,profile,...extra,sessionCount:rows.length,previewSessions:rows.slice(0,3),repos:[{id:`${id}-repo`,groups:[{id:'lane',sessions:rows}]}]};};
 fixture.projects=[project('__no_project__','Home','default',[fixture.sessions[1]],{isNoProject:true}),project('qa-project','QA Project','default',a),project('qa-second','QA Second','default',[b]),project('qa-third','QA Third','default',[c]),project('empty','Empty registry project','default',[]),project('qa-project','QA Other project','qa-bot',[overlap])];
 fixture.overviewOmitIds=['qa-older'];
 const host=await serveDist(app);
@@ -33,58 +33,49 @@ try {
  const j=new Journeys(browser,report,output);
  const f=expression=>browser.evaluate(`(()=>{const f=__productionFixture;${expression}})()`);
  const check=async(name,fn)=>{await fn();report.checks.push({name,status:'passed'});};
-  const select=async(label,value)=>{if(label.endsWith('filter'))return j.selectChatFilter(label,value);await browser.evaluate(`(()=>{const e=document.querySelector('select[aria-label='+${q(JSON.stringify(label))}+']');if(!e||![...e.options].some(o=>o.value===${q(value)}))throw Error('Missing profile option');e.value=${q(value)};e.dispatchEvent(new Event('change',{bubbles:true}));})()`);await browser.settle();};
- const rows=()=>browser.evaluate("[...document.querySelectorAll('.chat-session-row')].map(e=>[e.dataset.profile,e.dataset.sessionId])");
- const projectOrder=()=>browser.evaluate("[...document.querySelectorAll('[data-project-id]')].map(e=>JSON.parse(e.dataset.projectId))");
+  const select=async(label,value)=>{await browser.evaluate(`(()=>{const e=document.querySelector('select[aria-label='+${q(JSON.stringify(label))}+']');if(!e||![...e.options].some(o=>o.value===${q(value)}))throw Error('Missing profile option');e.value=${q(value)};e.dispatchEvent(new Event('change',{bubbles:true}));})()`);await browser.settle();};
+ const rows=()=>browser.evaluate("[...document.querySelectorAll('.project-session')].map(e=>e.dataset.sessionId)");
+ const projectOrder=()=>browser.evaluate("[...document.querySelectorAll('[data-folder-id]')].map(e=>JSON.parse(e.dataset.folderId))");
  const waitLoaded=()=>browser.waitFor("document.querySelector('[aria-label=\"Refresh projects\"]')?.disabled===false && !!document.querySelector('.project-session')");
  await j.tap(fixture.gateway.label,'body',false);await j.text('QA Project conversation');await j.root('Chats');await waitLoaded();
- await check('flat no-search real projects; synthetic Home rows retained in Recent',async()=>{
-  assert.equal(await browser.evaluate("!!document.querySelector('.chatlist input[type=search]')"),false);
+ const pin=async(name,action)=>{await j.tap(`Project actions for ${name}`);await j.tap(action,'[role="menu"]');};
+ await check('project tree keeps synthetic Home history in recent chats',async()=>{
+  assert.equal(await browser.evaluate(`!!document.querySelector('[aria-label="Search conversations"]')`),true);
   assert.deepEqual(await projectOrder(),[['default','qa-project'],['default','qa-second'],['default','qa-third'],['qa-bot','qa-project']]);
-  assert.ok((await rows()).some(([p,id])=>p==='default'&&id==='qa-recent-session'));
-  assert.equal(await browser.evaluate("[...document.querySelectorAll('.project-group')].every(e=>getComputedStyle(e).backgroundColor==='rgba(0, 0, 0, 0)'&&getComputedStyle(e).borderRadius==='0px')"),true);
+  assert.deepEqual(await browser.evaluate('[...document.querySelectorAll(".tree-recent .project-session")].map(e=>e.dataset.sessionId).sort()'),['qa-misleading','qa-recent-session']);
  });
  await check('multiple pins independent unpin and same-gateway remount persistence',async()=>{
-  await j.tap('Pin project QA Third');await j.tap('Pin project QA Second');
+  await pin('QA Third','Pin');await pin('QA Second','Pin');
   assert.deepEqual((await projectOrder()).slice(0,2),[['default','qa-second'],['default','qa-third']]);
-  await j.root('Home');await j.root('Chats');await waitLoaded();
-  assert.equal(await browser.evaluate("document.querySelectorAll('.project-pin[aria-pressed=true]').length"),2);
+  await j.root('Bots');await j.root('Chats');await waitLoaded();
+  assert.deepEqual((await projectOrder()).slice(0,2),[['default','qa-second'],['default','qa-third']]);
   await browser.command('Page.reload');await browser.settle();await waitLoaded();
-  assert.equal(await browser.evaluate("document.querySelectorAll('.project-pin[aria-pressed=true]').length"),2);
-  await j.tap('Unpin project QA Second');
+  assert.deepEqual((await projectOrder()).slice(0,2),[['default','qa-second'],['default','qa-third']]);
+  await pin('QA Second','Unpin');
   assert.deepEqual((await projectOrder()).slice(0,3),[['default','qa-third'],['default','qa-project'],['default','qa-second']]);
  });
- await check('hydration exceeds preview and reconciles older Recent membership',async()=>{
-  await j.tap('QA Project','.project-heading',false);
+ await check('automatic hydration exceeds preview and reconciles recent membership',async()=>{
   await j.text('QA Project fourth');await j.text('QA Older project chat');
-  assert.equal((await rows()).filter(([p,id])=>p==='default'&&id==='qa-older').length,1);
-  assert.equal((await rows()).filter(([p,id])=>p==='default'&&id==='qa-project-session').length,1);
+  assert.equal((await rows()).filter(id=>id==='qa-older').length,1);
+  assert.equal(await browser.evaluate('document.querySelectorAll(".tree-recent [data-session-id=qa-older]").length'),0);
+  assert.equal((await rows()).filter(id=>id==='qa-project-session').length,2);
  });
- await check('Project + Profile combine, overlapping ids stay owned',async()=>{
-  await select('Project filter',JSON.stringify(['default','qa-project']));await select('Profile filter','qa-bot');
-  assert.equal((await rows()).length,0);
-  await select('Project filter',JSON.stringify(['qa-bot','qa-project']));await j.tap('QA Other project','.project-heading',false);await j.text('QA Other profile conversation');
-  assert.deepEqual(await rows(),[['qa-bot','qa-project-session']]);
-  assert.equal(await browser.evaluate("document.querySelector('.chat-delete').disabled"),true);
-  await j.tap('QA Other profile conversation','.chat-session-row',false);await j.text('QA restored answer qa-project-session');
+ await check('search preserves overlapping session ownership and draft on history navigation',async()=>{
+  await j.type('[aria-label="Search conversations"]','QA Other profile conversation');
+  assert.deepEqual(await rows(),['qa-project-session']);
+  assert.equal(await browser.evaluate('document.querySelector(".session-trash").disabled'),true);
+  await j.tap('QA Other profile conversation','.project-session-wrap',false);await j.text('QA restored answer qa-project-session');
   assert.equal(await browser.evaluate('history.state.route.profile'),'qa-bot');
   await j.type('textarea','OTHER PROFILE DRAFT');await j.tap('Back');await j.back(1);await j.text('QA restored answer qa-project-session');
   assert.equal(await browser.evaluate('document.querySelector("textarea").value'),'OTHER PROFILE DRAFT');await j.tap('Back');await waitLoaded();
+  await j.type('[aria-label="Search conversations"]','');
  });
- await check('Two filters retain canonical identity without title heuristic or duplicate',async()=>{
-  await j.tap('Filter chats');
-  assert.equal(await browser.evaluate("document.querySelectorAll('.chat-filters select').length"),2);
-  assert.equal(await browser.evaluate("!!document.querySelector('select[aria-label=\"Chat type\"]')"),false);
-  await j.tap('Done');
-  await select('Project filter','recent');await select('Profile filter','qa-bot');
-  assert.deepEqual(await rows(),[['qa-bot','qa-bot-session']]);
-  assert.equal(await browser.evaluate("document.querySelector('.chat-delete').disabled"),true);
-  await select('Profile filter','default');
-  assert.ok((await rows()).some(([,id])=>id==='qa-misleading'));
-  assert.equal(await browser.evaluate("!!document.querySelector('[data-session-id=qa-misleading] .chip')"),false);
-  assert.equal(await browser.evaluate("document.querySelector('[data-session-id=qa-misleading] .chat-delete').disabled"),false);
-  await select('Profile filter','qa-bot');await j.tap('Bot Chat','.chat-session-row',false);await j.text('QA restored answer qa-bot-session');
-  assert.equal(await browser.evaluate('history.state.route.profile'),'qa-bot');await j.tap('Back');await waitLoaded();
+ await check('canonical bot history belongs in Bots; a matching title stays an ordinary chat',async()=>{
+  assert.ok(!(await rows()).includes('qa-bot-session'));
+  assert.ok((await rows()).includes('qa-misleading'));
+  assert.equal(await browser.evaluate('document.querySelector("[data-session-id=qa-misleading]").closest(".project-session-wrap").querySelector(".session-trash").disabled'),false);
+  await j.root('Bots');await j.tap('QA Fixture Bot','body',false);await j.tap('Bot Chat','body',false);await j.text('QA restored answer qa-bot-session');
+  assert.equal(await browser.evaluate('history.state.route.profile'),'qa-bot');await j.tap('Back');await j.root('Chats');await waitLoaded();
  });
  await check('cancel deletion does not dispatch; confirmation frozen exact owner/id',async()=>{
   await j.tap('Delete session QA Recent conversation');await j.text('Delete this session?');await j.tap('Cancel','dialog');
@@ -95,21 +86,23 @@ try {
   const writes=(await f('return f.trace')).filter(t=>t.method==='session.delete');
   assert.deepEqual(writes.map(w=>w.params),[{session_id:'qa-a4',profile:'default'}]);
   const detail=(await f('return f.trace')).filter(t=>t.route==='GET /api/sessions/qa-a4');assert.equal(detail.length,2);
-  await j.tap('Refresh projects');await waitLoaded();assert.equal((await rows()).filter(([,id])=>id==='qa-a4').length,0);
+  await j.tap('Refresh projects');await waitLoaded();assert.equal((await rows()).filter(id=>id==='qa-a4').length,0);
  });
- await check('disconnect cancels pending confirmation; reconnect refreshes hydration',async()=>{
-  await j.tap('Delete session QA Older project chat');await j.text('Delete this session?');await f('f.offline();');await browser.waitFor("!document.querySelector('dialog[open]')");
+ await check('disconnect disables pending deletion; cancellation and reconnect retain history',async()=>{
+  await j.tap('Delete session QA Older project chat');await j.text('Delete this session?');await f('f.offline();');await browser.waitFor("__qaDOM.find('Delete','dialog')?.disabled===true");await j.tap('Cancel','dialog');
   await f('f.online();');await browser.waitFor("!document.querySelector('.connection-notice')");await waitLoaded();
   assert.equal(await browser.evaluate("!!document.querySelector('dialog[open]')"),false);
   assert.equal((await f('return f.trace')).filter(t=>t.method==='session.delete').length,1);
  });
  await check('unsupported projects retain owner-verified history in Recent',async()=>{
   await f("f.unsupported.push('projects.tree');");await j.tap('Refresh projects');await browser.waitFor("document.querySelector('[aria-label=\"Refresh projects\"]').disabled===false");
-  assert.ok((await rows()).some(([p,id])=>p==='default'&&id==='qa-project-session'));await j.text('History is incomplete');await j.tap('Read details');await j.text('RPC projects.tree');
+  assert.ok((await rows()).includes('qa-project-session'));await j.text('Some history is unavailable. Refresh to retry.');
+  assert.equal(await browser.evaluate('document.querySelectorAll(".tree-project").length'),0);
+  assert.equal(await browser.evaluate('[...document.querySelectorAll(".session-trash")].every(e=>e.disabled)'),true);
   await f("f.unsupported=[];");await j.tap('Refresh projects');await waitLoaded();
  });
  await check('model inside-card placement and compact 44px target at mobile widths',async()=>{
-  await j.tap('QA Project conversation','.chat-session-row',false);await j.text('QA restored answer qa-project-session');
+  await j.tap('QA Project conversation','.project-session-wrap',false);await j.text('QA restored answer qa-project-session');
   for(const width of [360,390,430]) {
    await browser.viewport(width,844);await j.auditLayout(`model-${width}`);
    const geometry=await browser.evaluate("(()=>{const p=document.querySelector('.model-pill'),c=document.querySelector('.composer-pill'),a=p.getBoundingClientRect(),b=c.getBoundingClientRect();return{contained:a.top>=b.top&&a.bottom<=b.bottom&&a.left>=b.left&&a.right<=b.right,height:a.height,width:a.width,header:!!p.closest('header'),parent:p.parentElement.parentElement.className}})()");

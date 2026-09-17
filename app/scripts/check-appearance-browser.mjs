@@ -30,17 +30,9 @@ try {
     assert.equal(await browser.evaluate('document.documentElement.dataset.uiScale'),String(scale));
   };
   const settings = async () => { await j.root('Manage'); if(await browser.evaluate('!!__qaDOM.find("Back to Manage")')) await j.tap('Back to Manage'); await j.tap('Appearance & preferences','body',false); await j.text('UI scale'); };
-  const auditLayout = async name => {
-    const metrics = await browser.evaluate(`(()=>{const items=[...document.querySelectorAll('button, a[href], summary, input:not([type="hidden"]), textarea, select, [role="button"], [role="tab"]')].filter(el=>__qaDOM.visible(el)).map(el=>{const label=el.matches('input[type="checkbox"],input[type="radio"]')?[...el.labels].find(label=>label.control===el&&__qaDOM.visible(label)):null;const target=label||el,r=target.getBoundingClientRect();return{label:__qaDOM.label(el),target:label?'associated-label':'control',x:r.x,y:r.y,w:r.width,h:r.height,disabled:!!el.disabled};}).filter(r=>r.x<innerWidth&&r.x+r.w>0&&r.y<innerHeight&&r.y+r.h>0); return{viewport:[innerWidth,innerHeight],pageWidth:document.documentElement.scrollWidth,bodyWidth:document.body.scrollWidth,controls:items};})()`);
-    report.layout.push({ name, ...metrics });
-    assert.ok(metrics.pageWidth <= metrics.viewport[0] + 1 && metrics.bodyWidth <= metrics.viewport[0] + 1, `Horizontal page overflow: ${name}`);
-    assert.ok(metrics.controls.length, `No reachable controls: ${name}`);
-    const bad = metrics.controls.filter(r => !r.disabled && (r.w < 43.5 || r.h < 43.5 || !r.label));
-    assert.deepEqual(bad, [], `Visible enabled controls need names and 44px touch targets: ${name}`);
-  };
   const audit = async (name, shot=false) => {
     await check(name,async()=>{
-      await auditLayout(name);
+      await j.auditLayout(name);
       const m=await browser.evaluate(`(()=>{const v=__qaDOM.visible,header=[...document.querySelectorAll('header')].filter(v)[0],tabs=[...document.querySelectorAll('.shell-tabbar')].filter(v),r=header?.getBoundingClientRect();return {header:r&&[r.top,r.bottom],tabs:tabs.map(e=>{const r=e.getBoundingClientRect();return [r.top,r.bottom]}),zoom:getComputedStyle(document.documentElement).zoom,transform:getComputedStyle(document.documentElement).transform};})()`);
       assert.ok(m.header&&m.header[0]>=0&&m.header[1]<=await browser.evaluate('innerHeight'));
       assert.equal(m.zoom,'1'); assert.equal(m.transform,'none');
