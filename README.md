@@ -14,6 +14,7 @@ You need an authenticated Hermes gateway with basic username/password, reachable
 cd app
 npm ci --include=dev
 npm run build
+cd ..
 ```
 
 Serve `app/dist` **on the same origin** as the gateway (Hermes only allows localhost CORS). On a tailnet:
@@ -55,7 +56,7 @@ Current app: **Chats / Bots / Cronjobs / Manage**. Screenshots are the built Rea
 | [<img src="screenshots/cronjobs.png" width="260" alt="Hermes Mobile Cronjobs: read-only scheduled jobs and a Runs button">](screenshots/cronjobs.png) | [<img src="screenshots/manage.png" width="260" alt="Hermes Mobile Manage hub: settings, profiles, memory, and capabilities">](screenshots/manage.png) |
 | Read-only schedules. **Runs** is a separate execution journal. | Inspect profiles, appearance, skills, memory, messaging, Kanban. Not a Desktop settings editor. |
 
-Open a chat to compose, attach files, pick a model, and stream a reply.
+Open a chat to compose, attach files, pick a model, and stream a reply. See the [conversation and appearance gallery](screenshots/README.md) for details.
 
 ## Limitations
 
