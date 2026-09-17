@@ -71,6 +71,8 @@ export default function App() {
   const gatewayUrl = route.gateway?.url;
   const matched = !!activeConn && !!client && activeConn.id === route.gateway?.id && activeConn.url === route.gateway?.url;
 
+  const needsSignIn = matched && connState === 'auth-required';
+
   function go(next: ShellRoute, replace = false) {
     setPalette(false);
     setRoute(navigation.go(next, replace));
@@ -166,7 +168,7 @@ export default function App() {
     go({screen:'chat',gateway:route.gateway,profile:'default',conversation:{id:`draft:${crypto.randomUUID()}`,session:null},initialFolder:folder.path,returnTo:'chats'});
   }
   const projectGateway=JSON.stringify([activeConn?.id,activeConn?.url]);
-  const projectBrowser=matched && <ProjectBrowser key={projectGateway} conn={activeConn!} client={client!} onOpenChat={session=>openChat(session,'chats')} onNewFolderChat={newFolderChat} selectedId={route.conversation?.session?.id} openedSessions={openedSessions.filter(row=>row.gateway===projectGateway).map(row=>row.session)} />;
+  const projectBrowser=matched && !needsSignIn && <ProjectBrowser key={projectGateway} conn={activeConn!} client={client!} onOpenChat={session=>openChat(session,'chats')} onNewFolderChat={newFolderChat} selectedId={route.conversation?.session?.id} openedSessions={openedSessions.filter(row=>row.gateway===projectGateway).map(row=>row.session)} />;
 
   const isRoot = ROOTS.includes(screen) && !(screen==='bots' && route.botProfile) || screen==='home' || screen==='groups';
   // Root collections span profiles; Manage owns its explicit profile selection.
@@ -184,6 +186,11 @@ export default function App() {
   let content;
   if (!route.gateway) {
     content = <div className="screen"><Header title="Hermes" subtitle="Your personal relay" state="idle" right={search} /><div className="shell-body shell-detail"><Connections store={store} onConnect={handleConnect} /></div></div>;
+  } else if (needsSignIn) {
+    content = <div className="screen"><Header title="Sign in" subtitle={activeConn!.label} state={connState} /><main className="body connections-body"><p role="alert">Your session expired. Sign in to continue.</p><Connections key={activeConn!.id} store={store} embedded initialUnlockId={activeConn!.id} onConnect={(conn, connected) => {
+      if (conn.id === gatewayId && conn.url === gatewayUrl) adopt(conn, connected);
+      else handleConnect(conn, connected);
+    }} /></main></div>;
   } else if (!matched) {
     content = <div className="screen"><Header title={TITLES[screen]} subtitle="Restoring gateway context" state={restoreError ? 'error' : 'connecting'} onBack={back} /><main className="body restore-body"><p role={restoreError ? 'alert' : 'status'}>{restoreError || 'Connecting to the saved gateway before opening this view…'}</p>{restoreError && <button className="btn btn-primary" onClick={() => setRetry(value => value + 1)}>Retry connection</button>}<button className="btn btn-ghost" onClick={disconnect}>Choose another device</button></main></div>;
   } else if (screen === 'chat' || (screen === 'workspace' && route.conversation)) {
@@ -236,5 +243,5 @@ export default function App() {
       {isRoot && <TabBar active={screen==='groups' ? 'bots' : screen==='home' ? 'chats' : screen as NavId} onNavigate={destination} />}
     </div>;
   }
-  return <><div className={desktop&&matched?'desktop-layout':'app-layout'}>{desktop&&matched&&<aside className="desktop-sidebar"><div className="sidebar-brand">Hermes<button className="iconbtn" title="New chat" aria-label="New chat" onClick={()=>openChat(null)}><SquarePen size={18}/></button></div>{projectBrowser}</aside>}<div className="desktop-main">{content}</div></div>{palette && <CommandPalette onClose={() => setPalette(false)} onNavigate={destination} connected={matched} />}</>;
+  return <><div className={desktop&&matched&&!needsSignIn?'desktop-layout':'app-layout'}>{desktop&&matched&&!needsSignIn&&<aside className="desktop-sidebar"><div className="sidebar-brand">Hermes<button className="iconbtn" title="New chat" aria-label="New chat" onClick={()=>openChat(null)}><SquarePen size={18}/></button></div>{projectBrowser}</aside>}<div className="desktop-main">{content}</div></div>{palette && <CommandPalette onClose={() => setPalette(false)} onNavigate={destination} connected={matched} />}</>;
 }

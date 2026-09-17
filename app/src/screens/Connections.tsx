@@ -14,6 +14,7 @@ interface Props {
   /** Rendered inside the app shell (header already shows title) — skip the
    *  internal appbar. Standalone (pre-connect picker) keeps it. */
   embedded?: boolean;
+  initialUnlockId?: string;
 }
 
 type TestResult = { ok: boolean; text: string } | null;
@@ -44,14 +45,14 @@ function DeviceGlyph({ label }: { label: string }) {
   );
 }
 
-export default function Connections({ store, onConnect, embedded }: Props) {
+export default function Connections({ store, onConnect, embedded, initialUnlockId }: Props) {
   const [connections, setConnections] = useState<SavedConnection[]>(() => store.list());
   const [showForm, setShowForm] = useState(connections.length === 0);
   const [label, setLabel] = useState("");
   const [url, setUrl] = useState("");
   const [username, setUsername] = useState("");
   const [testing, setTesting] = useState(false);
-  const [unlockId, setUnlockId] = useState<string | null>(null);
+  const [unlockId, setUnlockId] = useState<string | null>(initialUnlockId ?? null);
   const [unlockPassword, setUnlockPassword] = useState("");
   const [testResult, setTestResult] = useState<TestResult>(null);
   const [busyId, setBusyId] = useState<string | null>(null);

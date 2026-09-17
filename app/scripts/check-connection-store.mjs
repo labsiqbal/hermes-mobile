@@ -106,3 +106,66 @@ assert.equal(ticketCall.init.headers.Cookie.includes("session=cookie-value"), tr
 assert.equal(JSON.stringify(store.list()).includes("typed-password"), false);
 
 console.log("connection store check: PASS (password never persisted; session continues from cookie)");
+
+const nativeSetTimeout = globalThis.setTimeout;
+const nativeClearTimeout = globalThis.clearTimeout;
+const timers = new Map();
+let timerId = 0;
+let socket;
+class FixtureSocket extends EventTarget {
+  readyState = 1;
+  constructor() {
+    super();
+    socket = this;
+    queueMicrotask(() => this.dispatchEvent(new MessageEvent('message', {
+      data: JSON.stringify({ method: 'event', params: { type: 'gateway.ready' } }),
+    })));
+  }
+  close() {
+    this.readyState = 3;
+    this.dispatchEvent(new Event('close'));
+  }
+}
+globalThis.WebSocket = FixtureSocket;
+globalThis.setTimeout = callback => { timers.set(++timerId, callback); return timerId; };
+globalThis.clearTimeout = id => timers.delete(id);
+async function advanceReconnect() {
+  const [id, callback] = timers.entries().next().value;
+  timers.delete(id);
+  callback();
+  await new Promise(resolve => setImmediate(resolve));
+}
+try {
+  for (const status of [401, 403, 503]) {
+    let responseStatus = 200;
+    globalThis.fetch = async () => new Response(JSON.stringify({ ticket: 'fixture-ticket' }), { status: responseStatus });
+    const resumed = new HermesConnection({ url: remembered.url, username: remembered.username });
+    const states = [];
+    resumed.addStateHandler(state => states.push(state));
+    await resumed.connect();
+    assert.equal(resumed.connectionState, 'open');
+    responseStatus = status;
+    socket.close();
+    await advanceReconnect();
+    if (status === 503) {
+      assert.equal(resumed.connectionState, 'error');
+      assert.equal(timers.size, 1, 'Transient outages must still retry');
+      responseStatus = 200;
+      await advanceReconnect();
+      assert.equal(resumed.connectionState, 'open');
+    } else {
+      assert.equal(resumed.connectionState, 'auth-required');
+      assert.equal(states.at(-1), 'auth-required', 'UI subscribers receive the authentication requirement');
+      assert.equal(timers.size, 0, 'Authentication failures must stop retrying');
+      responseStatus = 200;
+      await resumed.connect();
+      assert.equal(resumed.connectionState, 'open', 'A renewed session can reconnect');
+    }
+    resumed.disconnect();
+    assert.equal(timers.size, 0);
+  }
+} finally {
+  globalThis.setTimeout = nativeSetTimeout;
+  globalThis.clearTimeout = nativeClearTimeout;
+}
+console.log('reconnect check: PASS (401/403 require sign-in; transient outages recover)');

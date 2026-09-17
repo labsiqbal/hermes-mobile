@@ -260,7 +260,7 @@ export interface GatewayEvent {
   seq?: number;
 }
 
-export type ConnectionState = "idle" | "connecting" | "open" | "closed" | "error";
+export type ConnectionState = "idle" | "connecting" | "open" | "closed" | "error" | "auth-required";
 
 export class RpcError extends Error {
   readonly code: number;
@@ -774,11 +774,13 @@ export class HermesConnection {
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = null;
       if (this.stopped) return;
-      this.openSocket().catch(() => {
-        // Re-authentication can fail before a WebSocket exists, so there is
-        // no close event to schedule the next attempt. Keep the retry loop
-        // alive for both HTTP/auth failures and socket-handshake failures.
+      this.openSocket().catch(error => {
         if (this.stopped) return;
+        if (error instanceof AuthError && (error.status === 401 || error.status === 403)) {
+          this.disconnect();
+          this.setState("auth-required");
+          return;
+        }
         this.setState("error");
         this.scheduleReconnect();
       });
