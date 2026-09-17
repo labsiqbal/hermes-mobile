@@ -8,12 +8,12 @@ Connect to your own Hermes gateway (`hermes serve`) over a Tailscale tailnet or 
 
 ## Screenshots
 
-**Actual app UI shown with demo data.** These captures use the current built React app with fictional conversations and simulated gateway responses, not a design mockup or an authenticated production session. The on-screen “Connected” status belongs to that simulation.
+**Actual app UI shown with demo data.** These captures use an earlier built React app with fictional conversations and simulated gateway responses, not a design mockup or an authenticated production session. The on-screen “Connected” status belongs to that simulation. The Chats capture predates the folder tree; see [What you can do](#what-you-can-do) for current navigation.
 
 | Chat and composer | Chats | Appearance |
 | --- | --- | --- |
 | [<img src="screenshots/chat.png" width="260" alt="Hermes Mobile chat showing a fictional reading plan and an unsent draft, with attachment and model controls in the composer">](screenshots/chat.png) | [<img src="screenshots/chats.png" width="260" alt="Hermes Mobile Chats screen with project and profile filters, a Reading notes project, and fictional recent conversations">](screenshots/chats.png) | [<img src="screenshots/appearance.png" width="260" alt="Hermes Mobile Appearance screen showing 100% Standard UI scale and local scratch accent controls">](screenshots/appearance.png) |
-| Resume a conversation and draft a reply. | Browse sessions by project and profile. | Adjust the interface on this device. |
+| Resume a conversation and draft a reply. | Earlier Chats layout with fictional history. | Adjust the interface on this device. |
 
 Tap a screenshot for the full-size image. Captured at 390 × 844 with 100% Standard UI scale; no real credentials, gateway addresses or private conversations are shown.
 

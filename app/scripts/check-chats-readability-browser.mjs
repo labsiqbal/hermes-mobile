@@ -35,7 +35,6 @@ const browser=new ProductionBrowser({origin:host.origin,assetPaths:host.assetPat
 const report={evidence:'BUILT-APP-FICTIONAL-CHATS-READABILITY-NOT-PHONE-OR-LIVE',artifact:host.hashes,runnerSha256:createHash('sha256').update(await readFile(fileURLToPath(import.meta.url))).digest('hex'),checks:[],layout:[],screenshots:[]};
 const q=JSON.stringify;
 const check=async(name,fn)=>{try{await fn();report.checks.push({name,status:'passed'});}catch(e){report.checks.push({name,status:'failed',error:e.stack});}};
-// DOM geometry is shared unchanged by RED and GREEN; no candidate-only selector is required.
 const measure=`(()=>{
   const rect=e=>{const r=e.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};};
   const b=document.querySelector('.project-browser'),br=rect(b);

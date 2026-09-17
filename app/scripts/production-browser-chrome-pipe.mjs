@@ -73,7 +73,7 @@ export class ChromePipe {
       void this.close().catch(error => console.error(error.message));
     }, this.options.deadline);
     try {
-      // Cold browser startup on CI needs its own budget; page/RPC deadlines stay strict.
+      // Cold browser startup on CI needs a budget before a renderer session exists.
       this.version = await this.send('Browser.getVersion', {}, undefined,
         Math.max(30000, this.options.timeout));
     } catch (error) {
