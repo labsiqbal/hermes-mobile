@@ -33,7 +33,7 @@ Tap a screenshot for the full-size image. Captured at 390 × 844 with 100% Stand
 
 The app has **Chats / Bots / Cronjobs / Manage**, with contextual Workspace tools and no Home tab. Connection management is under Settings; appearance controls are in Manage's Appearance & preferences. The multiline composer also supports optional browser dictation into the draft, never automatic sending. Dictation requests consent first and depends on browser support; the browser's speech service may process audio remotely ([SpeechRecognition](https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition)). It does not have complete Hermes Desktop feature parity or production certification. Gateway support varies by operation; unsupported routes fail visibly.
 
-This browser remembers gateway host and username only. The gateway password is never written to `localStorage`, `sessionStorage`, or IndexedDB; after password login the session stays in the gateway cookie. Use a trusted private device. Native integrations and physical-device signoff remain open; see [security notes](#security-notes-v1).
+Native integrations and physical-device signoff remain open. See [security notes](#security-notes-v1) for browser credential handling and device trust requirements.
 
 ## Requirements
 
@@ -65,6 +65,8 @@ HERMES_BACKEND=http://your-gateway-host:9119 npm run dev -- --host 127.0.0.1
 ```
 
 Open the printed `localhost` URL. This example explicitly binds development to loopback. The Vite dev server proxies `/api` + `/auth` (including the WebSocket upgrade) to the backend, so dev is same-origin. For phone access, deploy your own same-origin HTTPS endpoint using the operator setup below; the loopback development server is not a hosted demo.
+
+In the connection picker, enter the gateway URL and username, optionally add a label, then tap Save. Test checks gateway reachability and version only; it does not validate login. Select the saved device and enter the password when Sign in appears. Reload reuses an existing gateway session. If that session expires and cannot be renewed during reload or reconnect, Sign in appears again; signing in to the same device preserves the destination conversation. Temporary gateway failures remain retryable.
 
 The optional live smoke test authenticates, creates a real session and sends a real prompt, which may incur provider cost. It reads local gateway credentials and is not part of the offline/CI release gate. Run it only with explicit operator approval:
 
@@ -166,7 +168,9 @@ Bot Mode (agent-to-agent delegation across gateways) normally relies on the Herm
 
 ## Security notes (v1)
 
-- Gateway host and username may be remembered in this browser. The gateway password is not stored in JavaScript-readable storage (`localStorage`, `sessionStorage`, IndexedDB). After `POST /auth/password-login`, session/refresh tokens stay in the Secure HttpOnly SameSite cookie set by the gateway. A private tailnet does **not** protect this device from XSS, browser extensions, or another person using the same browser profile. Use only a trusted private browser/device.
+- Saved gateway connections retain host URL and username plus a local ID and display label. The app never writes the gateway password to `localStorage`, `sessionStorage`, or IndexedDB; a live client may retain the entered password in memory for reauthentication until the page reloads. Existing saved records are sanitized when read, removing legacy passwords and extra fields from storage when the browser permits the rewrite.
+- Gateway sessions use browser-managed cookies, not tokens persisted in JavaScript-readable storage. The gateway owns cookie issuance and must set Secure, HttpOnly and appropriate SameSite attributes for the HTTPS deployment. Erasing Hermes Mobile data in Settings does not clear gateway session cookies; clear the site's cookies in the browser to remove that session.
+- The separate tracked-runs API key still lives in plaintext `localStorage` under `hermes-mobile.api-server-key`. A private tailnet does **not** protect browser storage or live credentials from XSS, browser extensions, or another person using the same browser profile. Use only a trusted private browser/device.
 - Agent/API traffic targets configured gateways. Separately, explicit external-preview actions can open a user-reviewed URL in an isolated tab; normal browser cookie rules still apply.
 
 ## License

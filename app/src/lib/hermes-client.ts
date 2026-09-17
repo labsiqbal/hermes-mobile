@@ -18,12 +18,8 @@
  *   4. RPC: {jsonrpc:"2.0", id, method, params} → response {id, result|error}
  *      Events: {method:"event", params:{type, session_id, payload}}.
  *
- * Credential storage note: ConnectionStore remembers host URL and username
- * only. The gateway password is never written to localStorage, sessionStorage,
- * or IndexedDB. After POST /auth/password-login, the session stays in the
- * gateway cookie (Secure, HttpOnly, SameSite) and is sent with credentials:
- * include. Reconnect uses that cookie; a missing session asks for the password
- * again instead of reading one from JS-readable storage.
+ * Credential persistence and gateway cookie requirements:
+ * see README.md, "Security notes (v1)".
  */
 
 import { GROUPS_META_KEY, type GroupRegistry } from "./group-store";

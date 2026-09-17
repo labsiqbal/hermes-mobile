@@ -24,9 +24,8 @@
  *     first (forward-compatible with a future list endpoint) and otherwise
  *     falls back to polling the caller's locally tracked run ids.
  *
- * Credential storage note: the tracked-runs API key lives in `localStorage`
- * under `hermes-mobile.api-server-key`. Gateway password login is separate:
- * ConnectionStore never persists that password.
+ * Credential storage and device trust requirements:
+ * see README.md, "Security notes (v1)".
  */
 
 // ---------------------------------------------------------------------------

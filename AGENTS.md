@@ -12,9 +12,8 @@ GitHub repository: labsiqbal/hermes-mobile; intended actor: labsiqbal.
 Read README security and operator setup before deployment. Live smoke tests need
 explicit authorization because they create sessions and may incur provider cost.
 Preserve existing runtime and credentials during documentation work.
-ConnectionStore remembers host URL and username only; never persist the gateway
-password. Session continues from the cookie after password login. See
-`app/src/lib/hermes-client.ts` and README security notes.
+Before changing authentication or connection storage, read the
+[README security contract](README.md#security-notes-v1).
 
 ## Maintaining this file
 
