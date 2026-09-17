@@ -1,6 +1,6 @@
 # hermes-mobile app
 
-Vite + React + TypeScript PWA. See the [repo README](../README.md) for architecture and deployment.
+Vite + React + TypeScript PWA. See the [repo README](../README.md) for install and adding a device.
 
 ```bash
 npm install
