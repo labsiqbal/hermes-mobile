@@ -54,8 +54,8 @@ try {
   await browser.open(host.origin+'/');const j=new Journeys(browser,report,output);
   await j.tap(fixture.gateway.label,'body',false);
   for(const scale of [75,100,125]) {
-    await j.root('Manage');await j.tap('Devices & gateways','body',false);await j.tap('Appearance','body',false);
-    await browser.evaluate(`(()=>{const e=document.querySelector('#ui-scale');e.value='${scale}';e.dispatchEvent(new Event('change',{bubbles:true}));})()`);await browser.settle();await j.tap('Back');await j.root('Chats');
+    await j.root('Manage');if(await browser.evaluate('!!__qaDOM.find("Back to Manage")'))await j.tap('Back to Manage');await j.tap('Appearance & preferences','body',false);
+    await browser.evaluate(`(()=>{const e=document.querySelector('#ui-scale');e.value='${scale}';e.dispatchEvent(new Event('change',{bubbles:true}));})()`);await browser.settle();await j.tap('Back to Manage');await j.root('Chats');
     await browser.waitFor(`document.querySelector('[aria-label="Refresh Chats"]')?.disabled===false`);
     for(const label of ['Website','Infrastructure','Operations']) {
       if(await browser.evaluate(`__qaDOM.find(${q(label)},'.project-heading',false)?.getAttribute('aria-expanded')==='false'`)) await j.tap(label,'.project-heading',false);
