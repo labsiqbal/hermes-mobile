@@ -163,7 +163,7 @@ export class Journeys {
     await this.b.command('Page.navigateToHistoryEntry', { entryId: target.id }); await this.b.settle();
   }
   async auditLayout(name) {
-    const metrics = await this.b.evaluate(`(()=>{const items=[...document.querySelectorAll(${q(CONTROLS)})].filter(el=>__qaDOM.visible(el)).map(el=>{const r=el.getBoundingClientRect();return{label:__qaDOM.label(el),x:r.x,y:r.y,w:r.width,h:r.height,disabled:!!el.disabled};}).filter(r=>r.x<innerWidth&&r.x+r.w>0&&r.y<innerHeight&&r.y+r.h>0); return{viewport:[innerWidth,innerHeight],pageWidth:document.documentElement.scrollWidth,bodyWidth:document.body.scrollWidth,controls:items};})()`);
+    const metrics = await this.b.evaluate(`(()=>{const items=[...document.querySelectorAll(${q(CONTROLS)})].filter(el=>__qaDOM.visible(el)).map(el=>{const label=el.matches('input[type="checkbox"],input[type="radio"]')?[...el.labels].find(label=>label.control===el&&__qaDOM.visible(label)):null;const target=label||el,r=target.getBoundingClientRect();return{label:__qaDOM.label(el),target:label?'associated-label':'control',x:r.x,y:r.y,w:r.width,h:r.height,disabled:!!el.disabled};}).filter(r=>r.x<innerWidth&&r.x+r.w>0&&r.y<innerHeight&&r.y+r.h>0); return{viewport:[innerWidth,innerHeight],pageWidth:document.documentElement.scrollWidth,bodyWidth:document.body.scrollWidth,controls:items};})()`);
     this.report.layout.push({ name, ...metrics });
     assert.ok(metrics.pageWidth <= metrics.viewport[0] + 1 && metrics.bodyWidth <= metrics.viewport[0] + 1, `Horizontal page overflow: ${name}`);
     assert.ok(metrics.controls.length, `No reachable controls: ${name}`);
@@ -317,7 +317,7 @@ async function checkProduction(options) {
     await j.run('root-navigation', async () => {
       await j.roots();
       for (const root of ROOTS) { await j.root(root); await j.roots(); await j.shot(`root-${root.toLowerCase()}`); }
-      await j.root('Home'); await j.text(FIXTURE.gateway.label);
+      await j.root('Chats'); await j.text(FIXTURE.gateway.label);
     });
     await j.run('project-resume', async () => {
       await j.root('Chats'); await j.text('QA Project conversation');
@@ -502,7 +502,7 @@ async function checkProduction(options) {
       await j.tap('Bots & routines', '.manage', false); await j.text('QA Fixture Bot');
     });
     await j.run('chat-controls-approval', async () => {
-      await j.root('Home'); await j.tap('QA Project conversation', 'body', false); await j.text('QA restored answer qa-project-session');
+      await j.root('Chats'); await j.tap('QA Project conversation', 'body', false); await j.text('QA restored answer qa-project-session');
       await j.tap('Attach'); await j.text('Image'); await j.text('File'); await j.tap('Attach');
       await j.clickCSS('.model-pill'); await j.text('QA Fixture Provider');
       await j.type('input[placeholder="Search models…"]', 'fixture-alternative'); await j.text('fixture-alternative');
@@ -521,7 +521,7 @@ async function checkProduction(options) {
       await j.tap('Back');
     });
     await j.run('chat-owner-blocked-history', async () => {
-      await j.root('Home');
+      await j.root('Chats');
       await fixture("f.ownerBlocked['qa-project-session']=true;");
       const before = (await trace()).length;
       await j.tap('QA Project conversation', 'body', false);
@@ -542,23 +542,23 @@ async function checkProduction(options) {
       await j.tap('Retry session'); await j.text('QA restored answer qa-project-session'); await j.tap('Back');
     });
     await j.run('chat-inflight-resume', async () => {
-      await j.root('Home'); await j.tap('QA Project conversation', 'body', false);
+      await j.root('Chats'); await j.tap('QA Project conversation', 'body', false);
       await fixture("f.resume['qa-project-session']={running:true,status:'streaming',inflight:{assistant:''}};f.emit('message.start','qa-project-session',{});f.emit('tool.start','qa-project-session',{tool_id:'qa-tool',name:'fixture_tool',context:'private command omitted'});");
       await j.text('Working · fixture_tool');
       await fixture("f.emit('tool.complete','qa-project-session',{tool_id:'qa-tool',name:'fixture_tool',summary:'fixture tool summary',duration_s:0.2});");
       await j.text('fixture tool summary');
       // Leave through real browser history, then reopen. App-level event cache
       // must restore activity/thinking without fabricating unseen history.
-      await j.tap('Back'); await j.root('Home');
+      await j.tap('Back'); await j.root('Chats');
       await j.text('QA Project conversation'); await j.tap('QA Project conversation', 'body', false);
       await j.text('fixture tool summary'); await j.text('Thinking…');
       assert.ok(!/private command omitted/.test(await browser.evaluate('document.body.innerText')), 'Tool context remains hidden');
-      await j.tap('Back'); await j.root('Home');
+      await j.tap('Back'); await j.root('Chats');
       await j.tap('QA Project conversation', 'body', false);
       await j.text('fixture tool summary'); await j.text('Thinking…');
       assert.ok(!/private command omitted/.test(await browser.evaluate('document.body.innerText')), 'Second reentry retains completed tool summary without context');
       await j.shot('chat-inflight-restored');
-      await j.tap('Back'); await j.root('Home');
+      await j.tap('Back'); await j.root('Chats');
       await fixture("f.hold=['GET /api/sessions/qa-project-session/messages'];");
       await j.tap('QA Project conversation', 'body', false);
       await browser.waitFor("__productionFixture.trace.some(t=>t.route==='GET /api/sessions/qa-project-session/messages')");
@@ -570,7 +570,7 @@ async function checkProduction(options) {
       // event cache survives; gateway inflight state alone must restore thought.
       await browser.evaluate("localStorage.setItem('hermes-mobile.qa-inflight-resume', JSON.stringify({resume:{'qa-project-session':{running:true,status:'streaming',inflight:{assistant:'',streaming:true}}},historyBySession:{'qa-project-session':[{role:'user',content:'QA restored question qa-project-session'},{role:'assistant',content:'QA fixture resumed reply'}]}}));");
       await browser.open(browser.origin + '/');
-      await j.tap(FIXTURE.gateway.label, 'body', false); await j.root('Home');
+      await j.tap(FIXTURE.gateway.label, 'body', false); await j.root('Chats');
       await j.tap('QA Project conversation', 'body', false); await j.text('Thinking…');
       assert.equal(await browser.evaluate('document.body.innerText.includes("QA fixture resumed reply")'), true, 'Fresh reopen retains server history while active thinking comes from session.resume');
       await j.shot('chat-inflight-fresh-cacheless');
@@ -581,12 +581,12 @@ async function checkProduction(options) {
     await j.run('transport-states', async () => {
       await fixture("f.hold=['profiles.list'];"); await j.root('Bots'); await j.text('Loading'); await j.shot('state-loading');
       await fixture("f.release('profiles.list');"); await j.text('QA Fixture Bot');
-      await j.root('Home'); await fixture("f.errors['profiles.list']='QA fixture roster error';"); await j.root('Bots'); await j.text('QA fixture roster error'); await j.shot('state-error');
-      await fixture("delete f.errors['profiles.list'];"); await j.root('Home');
+      await j.root('Chats'); await fixture("f.errors['profiles.list']='QA fixture roster error';"); await j.root('Bots'); await j.text('QA fixture roster error'); await j.shot('state-error');
+      await fixture("delete f.errors['profiles.list'];"); await j.root('Chats');
       await fixture("f.unsupported=['profiles.list'];"); await j.root('Bots'); await j.text('QA fixture method not supported'); await j.shot('state-unsupported');
-      await fixture("f.unsupported=[];f.empty=['profiles.list'];"); await j.root('Home'); await j.root('Bots');
+      await fixture("f.unsupported=[];f.empty=['profiles.list'];"); await j.root('Chats'); await j.root('Bots');
       await browser.waitFor('/no profiles|no bots|empty/i.test(document.body.innerText)'); await j.shot('state-empty');
-      await fixture('f.empty=[];'); await j.root('Home');
+      await fixture('f.empty=[];'); await j.root('Chats');
       await fixture('f.offline();');
       await browser.waitFor('/offline|disconnected|closed|reconnect|connecting/i.test(document.body.innerText) || !!document.querySelector("[title*=closed],[title*=offline],[aria-label*=closed],[aria-label*=offline]")');
       await j.shot('state-offline'); await fixture('f.online();');
@@ -602,7 +602,7 @@ async function checkProduction(options) {
           catch (error) { failures.push(`${root}-${width}x${height}: ${error.message}`); }
         }
         try {
-          await j.root('Home'); await j.tap('QA Project conversation','body',false); await j.text('QA restored answer qa-project-session');
+          await j.root('Chats'); await j.tap('QA Project conversation','body',false); await j.text('QA restored answer qa-project-session');
           await j.shot(`chat-${width}x${height}`); await j.auditLayout(`Chat-${width}x${height}`);
           await j.tap('Workspace','body',false); await j.text('CONVERSATION WORKSPACE');
           await j.shot(`workspace-${width}x${height}`); await j.auditLayout(`Workspace-${width}x${height}`);
@@ -613,7 +613,7 @@ async function checkProduction(options) {
       assert.deepEqual(failures, [], 'Every requested viewport/root must pass');
     });
     await j.run('palette-focus', async () => {
-      await browser.viewport(390,844); await j.root('Home');
+      await browser.viewport(390,844); await j.root('Chats');
       const palette = await browser.evaluate(`[...document.querySelectorAll('button')].filter(e=>__qaDOM.visible(e)).map(e=>__qaDOM.label(e)).find(n=>/command|palette|quick actions/i.test(n))`);
       if (!palette) { report.palette = 'No command palette control present; optional gate not applicable.'; return; }
       await browser.evaluate(`__qaDOM.find(${q(palette)}).focus()`);
@@ -658,6 +658,12 @@ async function checkProduction(options) {
 
 async function selfTest(options) {
   const cases = [];
+  const transport = new ChromePipe({ output: options.output, timeout: 5000 });
+  transport.send = async (_method, _params, _sessionId, timeout) => timeout;
+  assert.equal(await transport.command('Page.navigate', { url: 'file:///fixture.html' }), 30000);
+  assert.equal(await transport.command('Runtime.evaluate', { expression: 'true' }), 5000);
+  assert.equal(await transport.command('Page.navigate', { url: 'file:///fixture.html' }, 100), 100);
+  cases.push({ name: 'cold navigation budget preserves ordinary and explicit deadlines', status: 'passed' });
   const reject = (name, fn) => { assert.throws(fn); cases.push({ name, status: 'passed' }); };
   assertRoots(ROOTS); cases.push({ name: 'positive exact-root control', status: 'passed' });
   reject('legacy roots rejected', () => assertRoots(['Board','Chats','Groups','Bots','Runs','Settings']));

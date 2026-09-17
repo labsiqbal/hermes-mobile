@@ -18,8 +18,7 @@ try {
   await browser.open(host.origin+'/');
   const j=new Journeys(browser,report,output);
   const resize=async w=>{await browser.viewport(w,844);await browser.waitFor(`innerWidth===${w}&&document.querySelector('#root').getBoundingClientRect().height===844`);await browser.settle();};
-  const settings=async()=>{await j.root('Manage');await j.tap('Devices & gateways','body',false);};
-  const appearance=async()=>{await settings();await j.tap('Appearance','body',false);await browser.waitFor('location.hash==="#appearance"');};
+  const appearance=async()=>{await j.root('Manage');if(await browser.evaluate('!!__qaDOM.find("Back to Manage")'))await j.tap('Back to Manage');await j.tap('Appearance & preferences','body',false);};
   const change=async(selector,value)=>{await browser.evaluate(`(()=>{const e=document.querySelector(${q(selector)});const set=Object.getOwnPropertyDescriptor(e instanceof HTMLSelectElement?HTMLSelectElement.prototype:HTMLInputElement.prototype,'value').set;set.call(e,${q(String(value))});e.dispatchEvent(new Event('change',{bubbles:true}));e.dispatchEvent(new Event('input',{bubbles:true}));})()`);await browser.settle();};
   const key=async(key,code,virtual)=>{await browser.command('Input.dispatchKeyEvent',{type:'keyDown',key,code,windowsVirtualKeyCode:virtual});await browser.command('Input.dispatchKeyEvent',{type:'keyUp',key,code,windowsVirtualKeyCode:virtual});await browser.settle();};
   const audit=async tag=>{
@@ -33,19 +32,20 @@ try {
   };
   await j.tap(FIXTURE.gateway.label,'body',false);
   await resize(390);
-  await settings();
-  await check('Settings only exposes Appearance submenu',async()=>{assert.equal(await browser.evaluate('!!document.querySelector("#ui-scale")||!!document.querySelector(".scratch-accent")'),false);});
-  await browser.evaluate(`__qaDOM.find('Appearance','body',false).scrollIntoView({block:'center'})`);await browser.settle();await j.shot('settings-submenu-100-390');
-  await j.tap('Appearance','body',false);
-  await check('Appearance shared header and existing choices',async()=>{assert.equal(await browser.evaluate('document.querySelector("header h1").textContent'),'Appearance');assert.deepEqual(await browser.evaluate('[...document.querySelector("#ui-scale").options].map(e=>e.text)'),['75% Compact','100% Standard','125% Large']);assert.equal(await browser.evaluate('!!document.querySelector(".shell-tabbar")'),false);});
-  await j.back();assert.equal(await browser.evaluate('location.hash'),'#settings');await j.back(1);assert.equal(await browser.evaluate('location.hash'),'#appearance');await j.tap('Back');assert.equal(await browser.evaluate('location.hash'),'#settings');
-  report.checks.push({name:'Native Back/Forward and shared header Back restore Settings',status:'passed'});
+  await appearance();
+  await check('Manage embeds Appearance with existing choices',async()=>{assert.equal(await browser.evaluate('document.querySelector("header h1").textContent'),'Manage');assert.deepEqual(await browser.evaluate('[...document.querySelector("#ui-scale").options].map(e=>e.text)'),['75% Compact','100% Standard','125% Large']);assert.equal(await browser.evaluate('!!document.querySelector(".shell-tabbar")'),true);assert.equal(await browser.evaluate('location.hash'),'#manage');});
+  await j.shot('manage-appearance-100-390');
+  await j.tap('Connection settings','body',false);
+  await check('Connection settings excludes embedded appearance controls',async()=>{assert.equal(await browser.evaluate('location.hash'),'#settings');assert.equal(await browser.evaluate('!!document.querySelector("#ui-scale")'),false);});
+  await j.back();await j.text('UI scale');assert.equal(await browser.evaluate('location.hash'),'#manage');await j.back(1);assert.equal(await browser.evaluate('location.hash'),'#settings');await j.tap('Back');await j.text('UI scale');assert.equal(await browser.evaluate('location.hash'),'#manage');
+  await j.tap('Back to Manage');assert.equal(await browser.evaluate('!!document.querySelector("#ui-scale")'),false);
+  report.checks.push({name:'Native Back/Forward and Settings Back restore Manage Appearance',status:'passed'});
   for(const scale of [75,100,125]) {
     await appearance();await change('#ui-scale',scale);
     assert.equal(await browser.evaluate('localStorage.getItem("hermes-mobile.ui-scale")'),String(scale));
     for(const width of [320,390]) {
       await resize(width);await appearance();await audit(`appearance-${scale}-${width}`);
-      await j.root('Chats');await browser.waitFor(`document.querySelector('[aria-label="Refresh Chats"]')?.disabled===false`);await j.tap('Filter chats');await audit(`chats-selects-${scale}-${width}`);await j.tap('Done');
+      await j.root('Chats');await browser.waitFor(`document.querySelector('[aria-label="Refresh projects"]')?.disabled===false`);await j.auditLayout(`chats-projects-${scale}-${width}`);
       await j.root('Manage');if(await browser.evaluate(`!!__qaDOM.find('Back to Manage')`))await j.tap('Back to Manage');await j.tap('Capabilities','.manage',false);await browser.waitFor('document.querySelector("select")?.options.length>1');await audit(`manage-select-${scale}-${width}`);await j.tap('Back to Manage');
       await j.root('Cronjobs');await browser.waitFor('document.querySelector("select")?.options.length>1');await audit(`cronjobs-select-${scale}-${width}`);
     }
@@ -58,7 +58,7 @@ try {
   await j.clickCSS('input[type="checkbox"]');
   await change('input[type="color"]','#aa66cc');
   const accent=()=>browser.evaluate('document.documentElement.style.getPropertyValue("--scratch-accent")');
-  assert.equal(await accent(),'#aa66cc');await j.tap('Back');await j.tap('Appearance','body',false);assert.equal(await accent(),'#aa66cc');
+  assert.equal(await accent(),'#aa66cc');await j.tap('Back to Manage');await j.tap('Appearance & preferences','body',false);assert.equal(await accent(),'#aa66cc');
   await j.tap('Restore authored defaults');assert.equal(await accent(),'');assert.equal(await browser.evaluate('document.querySelector("#ui-scale").value'),'125');
   await change('input[type="color"]','#aa66cc');
   await browser.open(host.origin+'/');await browser.waitFor('document.documentElement.dataset.uiScale==="125"');assert.equal(await accent(),'');
@@ -68,7 +68,7 @@ try {
   assert.deepEqual(await browser.evaluate('({appearance:getComputedStyle(document.querySelector("#ui-scale")).appearance,image:getComputedStyle(document.querySelector("#ui-scale")).backgroundImage})'),{appearance:'auto',image:'none'});
   await browser.command('Emulation.setEmulatedMedia',{features:[]});
   report.checks.push({name:'forced colors restores platform arrow',status:'passed'});
-  await j.tap('Back');await browser.evaluate('localStorage.setItem("unrelated-app","keep")');await j.tap('Erase Hermes Mobile data');await j.tap('Erase & reload');await browser.waitFor('document.documentElement.dataset.uiScale==="100"');
+  await j.tap('Connection settings','body',false);await browser.evaluate('localStorage.setItem("unrelated-app","keep")');await j.tap('Erase Hermes Mobile data');await j.tap('Erase & reload');await browser.waitFor('document.documentElement.dataset.uiScale==="100"');
   assert.equal(await browser.evaluate('localStorage.getItem("hermes-mobile.ui-scale")'),null);assert.equal(await browser.evaluate('localStorage.getItem("unrelated-app")'),'keep');
   report.checks.push({name:'existing Settings erase resets scale, preserves unrelated storage',status:'passed'});
   report.fixture=await browser.evaluate('({trace:__productionFixture.trace,violations:__productionFixture.violations})');
