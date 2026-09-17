@@ -1,21 +1,19 @@
 # Hermes Mobile
 
-Read ~/workspace/AGENTS.md for shared rules. For a specialist method or
-delegation, read ~/workspace/.standards/agent-operations.md; load only the
-selected role guide. Project scope, queue and delivery rules remain local.
+This repository owns the mobile PWA and optional relay, not the upstream
+[Hermes Agent gateway](https://github.com/NousResearch/hermes-agent).
+Read [README.md](README.md) for installation and adding a device;
+[MAP.md](MAP.md) for source, checks, and deployment entry points.
 
-Type: coding · Ownership: own · Delivery mode: no-mistakes
-
-Follow ~/workspace/.standards/. This repository owns the mobile PWA and relay,
-not the Hermes gateway. Read [README.md](README.md) for install and adding a
-device; [MAP.md](MAP.md) for operator serve/publisher paths.
-GitHub repository: labsiqbal/hermes-mobile; intended actor: labsiqbal.
-Live smoke tests need explicit authorization because they create sessions and
-may incur provider cost. Preserve existing runtime and credentials during
+Live gateway tests need explicit operator authorization: they can create
+sessions, trigger agent actions, and incur provider costs. Use fictional
+fixtures for offline checks. Keep credentials and private runtime data out of
+commits and screenshots; preserve existing runtime and credentials during
 documentation work.
-Public README screenshots must match the current built app (Chats / Bots /
-Cronjobs / Manage, no Home). Recapture with fictional fixtures; do not copy
-from PRs or keep Home-tab images.
+
+Public README screenshots must match the current built app. Recapture with
+fictional fixtures rather than copying images from PRs; see the current tabs
+in [README.md](README.md).
 
 ## Maintaining this file
 
