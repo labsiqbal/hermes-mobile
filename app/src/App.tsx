@@ -1,5 +1,5 @@
 import { Component, lazy, Suspense, useCallback, useEffect, useMemo, useState, useSyncExternalStore, type ComponentProps, type ReactNode } from 'react';
-import { ConnectionStore, HermesConnection, type SavedConnection, type SessionSummary } from './lib/hermes-client';
+import { AuthError, ConnectionStore, HermesConnection, type SavedConnection, type SessionSummary } from './lib/hermes-client';
 import { ConversationViews, ManageViews, ShellNavigation, conversationKey, type ShellRoute, type ShellScreen } from './lib/shell-state';
 import { markActive, markInactive, recordSessionEvent } from './lib/active-sessions';
 import { rememberBotThread } from './lib/chat-browser';
@@ -61,6 +61,7 @@ export default function App() {
   const subscribeState = useCallback((notify: () => void) => client?.addStateHandler(notify) ?? (() => {}), [client]);
   const connState = useSyncExternalStore(subscribeState, () => client?.connectionState ?? 'idle');
   const [restoreError, setRestoreError] = useState('');
+  const [restoreSignIn, setRestoreSignIn] = useState<SavedConnection | null>(null);
   const [retry, setRetry] = useState(0);
   const [palette, setPalette] = useState(false);
   const [openedSessions,setOpenedSessions]=useState<{gateway:string;session:SessionSummary}[]>([]);
@@ -71,7 +72,10 @@ export default function App() {
   const gatewayUrl = route.gateway?.url;
   const matched = !!activeConn && !!client && activeConn.id === route.gateway?.id && activeConn.url === route.gateway?.url;
 
-  const needsSignIn = matched && connState === 'auth-required';
+  const signInTarget = matched
+    ? connState === 'auth-required' ? activeConn : null
+    : restoreSignIn?.id === gatewayId && restoreSignIn?.url === gatewayUrl ? restoreSignIn : null;
+  const needsSignIn = !!signInTarget;
 
   function go(next: ShellRoute, replace = false) {
     setPalette(false);
@@ -115,7 +119,10 @@ export default function App() {
     let adopted = false;
     // This is an asynchronous gateway restoration result, including a removed registry entry.
     queueMicrotask(() => {
-      if (!cancelled) setRestoreError(target ? '' : 'This saved gateway was removed or changed. Choose a device to continue.');
+      if (!cancelled) {
+        setRestoreSignIn(null);
+        setRestoreError(target ? '' : 'This saved gateway was removed or changed. Choose a device to continue.');
+      }
     });
     if (!target) return () => { cancelled = true; };
     const fresh = new HermesConnection({url:target.url, username:target.username});
@@ -126,7 +133,12 @@ export default function App() {
       setActiveConn(target); setClient(fresh);
     }).catch(error => {
       fresh.disconnect();
-      if (!cancelled) setRestoreError(error instanceof Error ? error.message : String(error));
+      if (cancelled) return;
+      if (error instanceof AuthError && (error.status === 401 || error.status === 403)) {
+        setRestoreSignIn(target);
+      } else {
+        setRestoreError(error instanceof Error ? error.message : String(error));
+      }
     });
     return () => { cancelled = true; if (!adopted) fresh.disconnect(); };
   }, [gatewayId, gatewayUrl, matched, store, client, retry]);
@@ -144,7 +156,7 @@ export default function App() {
 
   function adopt(conn: SavedConnection, connected: HermesConnection) {
     if (client !== connected) client?.disconnect();
-    setActiveConn(conn); setClient(connected); setRestoreError('');
+    setActiveConn(conn); setClient(connected); setRestoreError(''); setRestoreSignIn(null);
   }
   function handleConnect(conn: SavedConnection, connected: HermesConnection) {
     adopt(conn, connected);
@@ -187,7 +199,7 @@ export default function App() {
   if (!route.gateway) {
     content = <div className="screen"><Header title="Hermes" subtitle="Your personal relay" state="idle" right={search} /><div className="shell-body shell-detail"><Connections store={store} onConnect={handleConnect} /></div></div>;
   } else if (needsSignIn) {
-    content = <div className="screen"><Header title="Sign in" subtitle={activeConn!.label} state={connState} /><main className="body connections-body"><p role="alert">Your session expired. Sign in to continue.</p><Connections key={activeConn!.id} store={store} embedded initialUnlockId={activeConn!.id} onConnect={(conn, connected) => {
+    content = <div className="screen"><Header title="Sign in" subtitle={signInTarget!.label} state="auth-required" /><main className="body connections-body"><p role="alert">Your session expired. Sign in to continue.</p><Connections key={JSON.stringify([signInTarget!.id, signInTarget!.url])} store={store} embedded initialUnlockId={signInTarget!.id} onConnect={(conn, connected) => {
       if (conn.id === gatewayId && conn.url === gatewayUrl) adopt(conn, connected);
       else handleConnect(conn, connected);
     }} /></main></div>;

@@ -26,7 +26,7 @@
     "check:chat-cron:browser": "node scripts/check-chat-cron-browser.mjs && node scripts/check-chat-review-browser.mjs",
     "check:appearance": "node scripts/check-appearance.mjs",
     "check:appearance:browser": "node scripts/check-appearance-browser.mjs",
-    "test:unit": "npm run check:appearance && npm run check:chat-browser && npm run check:bots && npm run check:chat-resume && npm run check:connection-store && npm run check:shell-state && npm run check:management && npm run check:workspace",
+    "test:unit": "npm run check:appearance && npm run check:chat-browser && npm run check:bots && npm run check:chat-resume && npm run check:connection-store && npm run check:auth-restore && npm run check:shell-state && npm run check:management && npm run check:workspace",
     "test": "npm run test:unit",
     "check:production-browser": "node scripts/check-production-browser.mjs --app-dir .",
     "check:project-tree:browser": "node scripts/check-project-tree-browser.mjs",
@@ -35,7 +35,8 @@
     "check:add-bot:browser": "node scripts/check-add-bot-browser.mjs",
     "check:bots-layout:browser": "node scripts/check-bots-layout-browser.mjs",
     "check:production-browser:self-test": "node scripts/check-production-browser.mjs --app-dir . --self-test",
-    "smoke": "node scripts/smoke.mjs"
+    "smoke": "node scripts/smoke.mjs",
+    "check:auth-restore": "node scripts/check-auth-restore.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.41.0",
@@ -51,6 +52,7 @@
     "@vitejs/plugin-react": "^6.1.0",
     "esbuild": "^0.28.2",
     "oxlint": "^1.79.0",
+    "react-test-renderer": "^19.2.8",
     "typescript": "~6.0.2",
     "vite": "^8.2.2",
     "yaml": "^2.9.0"
