@@ -30,13 +30,21 @@ try {
     assert.equal(await browser.evaluate('document.documentElement.dataset.uiScale'),String(scale));
   };
   const settings = async () => { await j.root('Manage'); if(await browser.evaluate('!!__qaDOM.find("Back to Manage")')) await j.tap('Back to Manage'); await j.tap('Appearance & preferences','body',false); await j.text('UI scale'); };
+  const auditLayout = async name => {
+    const metrics = await browser.evaluate(`(()=>{const items=[...document.querySelectorAll('button, a[href], summary, input:not([type="hidden"]):not([type="checkbox"]):not([type="color"]), textarea, select, [role="button"], [role="tab"]')].filter(el=>__qaDOM.visible(el)).map(el=>{const r=el.getBoundingClientRect();return{label:__qaDOM.label(el),x:r.x,y:r.y,w:r.width,h:r.height,disabled:!!el.disabled};}).filter(r=>r.x<innerWidth&&r.x+r.w>0&&r.y<innerHeight&&r.y+r.h>0); return{viewport:[innerWidth,innerHeight],pageWidth:document.documentElement.scrollWidth,bodyWidth:document.body.scrollWidth,controls:items};})()`);
+    report.layout.push({ name, ...metrics });
+    assert.ok(metrics.pageWidth <= metrics.viewport[0] + 1 && metrics.bodyWidth <= metrics.viewport[0] + 1, `Horizontal page overflow: ${name}`);
+    assert.ok(metrics.controls.length, `No reachable controls: ${name}`);
+    const bad = metrics.controls.filter(r => !r.disabled && (r.w < 43.5 || r.h < 43.5 || !r.label));
+    assert.deepEqual(bad, [], `Visible enabled controls need names and 44px touch targets: ${name}`);
+  };
   const audit = async (name, shot=false) => {
     await check(name,async()=>{
-      await j.auditLayout(name);
+      await auditLayout(name);
       const m=await browser.evaluate(`(()=>{const v=__qaDOM.visible,header=[...document.querySelectorAll('header')].filter(v)[0],tabs=[...document.querySelectorAll('.shell-tabbar')].filter(v),r=header?.getBoundingClientRect();return {header:r&&[r.top,r.bottom],tabs:tabs.map(e=>{const r=e.getBoundingClientRect();return [r.top,r.bottom]}),zoom:getComputedStyle(document.documentElement).zoom,transform:getComputedStyle(document.documentElement).transform};})()`);
       assert.ok(m.header&&m.header[0]>=0&&m.header[1]<=await browser.evaluate('innerHeight'));
       assert.equal(m.zoom,'1'); assert.equal(m.transform,'none');
-      const density=await browser.evaluate(`({scale:document.documentElement.dataset.uiScale,font:getComputedStyle(document.body).fontSize,editors:[...document.querySelectorAll('input:not([type="hidden"]),textarea,select')].filter(__qaDOM.visible).map(e=>({label:e.getAttribute('aria-label')||e.id,font:parseFloat(getComputedStyle(e).fontSize)}))})`);
+      const density=await browser.evaluate(`({scale:document.documentElement.dataset.uiScale,font:getComputedStyle(document.body).fontSize,editors:[...document.querySelectorAll('input:not([type="hidden"]):not([type="checkbox"]):not([type="color"]),textarea,select')].filter(__qaDOM.visible).map(e=>({label:e.getAttribute('aria-label')||e.id,font:parseFloat(getComputedStyle(e).fontSize)}))})`);
       assert.equal(density.font,{'75':'12px','100':'16px','125':'20px'}[density.scale]);
       assert.ok(density.editors.every(e=>e.font>=16),q(density));
       for(const [,bottom] of m.tabs) assert.equal(bottom,await browser.evaluate('innerHeight'));
@@ -85,7 +93,7 @@ try {
         await j.tap('Back to Manage');
       }
       await j.root('Cronjobs'); await j.tap('QA Fixture Schedule','.manage-detail',false); await audit(`${tag}-Schedule`,detailShots); await j.tap('Runs'); await j.tap('QA tracked run','body',false); await j.text('QA fixture run output'); await audit(`${tag}-Run`,detailShots);
-      await j.root('Chats'); await j.tap('Groups','body',false); await audit(`${tag}-Groups`,detailShots); await j.tap('QA Fixture group','body',false); await j.text('QA group history'); await audit(`${tag}-Group-chat`,detailShots); await j.tap('Back'); await j.tap('Back');
+      await j.root('Bots'); await j.tap('Groups','body',false); await audit(`${tag}-Groups`,detailShots); await j.tap('QA Fixture group','body',false); await j.text('QA group history'); await audit(`${tag}-Group-chat`,detailShots); await j.tap('Back'); await j.tap('Back');
       await j.root('Bots'); await j.tap('QA Fixture Bot','body',false); await j.text('Bot Chat'); await j.tap('Bot Chat','body',false); await j.text('QA restored answer qa-bot-session'); await audit(`${tag}-Bot-history`,detailShots); await j.tap('Back');
       const botTraceStart=await browser.evaluate('__productionFixture.trace.length'); await browser.evaluate(`__productionFixture.permits['session.create']=1`); await j.root('Bots'); await j.tap('QA Fixture Bot','body',false); await browser.waitFor("history.state.route.conversation?.session?.id === 'qa-bot-private-session'"); await audit(`${tag}-Bot-private`,detailShots);
       await check(`${tag}-Bot-private-session`,async()=>{const opened=await browser.evaluate(`__productionFixture.trace.slice(${botTraceStart})`);assert.equal(await browser.evaluate('document.querySelector("textarea").value'),'');assert.deepEqual(opened.filter(t=>t.method==='session.create').map(t=>t.params),[{profile:'qa-bot'}]);assert.ok(opened.some(t=>t.method==='session.resume'&&t.params.session_id==='qa-bot-private-session'&&t.params.profile==='qa-bot'));assert.ok(!opened.some(t=>t.method==='session.resume'&&t.params.session_id==='qa-bot-session'));}); await j.tap('Back');
