@@ -83,7 +83,7 @@ jobs:
         timeout-minutes: 4
         run: npm run check:layout-overlap:browser -- "$RUNNER_TEMP/production-browser/layout-overlap"
 
-      - name: Chats native fetch and two-filter regression (built App, intercepted HTTP)
+      - name: Chats native fetch and project history regression (built App, intercepted HTTP)
         id: chats_native
         timeout-minutes: 3
         run: npm run check:chats-read:browser -- "$RUNNER_TEMP/production-browser/chats-read"
