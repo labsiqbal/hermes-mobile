@@ -15,7 +15,7 @@ try {
   const outfile = join(temp, 'workspace.mjs');
   buildSync({ entryPoints: [join(here, '../src/lib/workspace-client.ts')], outfile, bundle: true, format: 'esm', platform: 'node', logLevel: 'silent' });
   const { workspaceContext, WorkspaceClient, safeWorkspacePath, safePreviewUrl, WORKSPACE_LIMITS } = await import(pathToFileURL(outfile).href);
-  const conn = { id: 'gateway-a', url: 'https://gateway.example', label: 'A', username: '', password: '' };
+  const conn = { id: 'gateway-a', url: 'https://gateway.example', label: 'A', username: '' };
   const client = { url: conn.url, connectionState: 'open' };
   const session = { id: 's1', profile: 'builder', cwd: '/work/project', git_repo_root: '/work/project' };
   await test('context binds exact gateway/profile/session/cwd and rejects missing ownership', () => {
@@ -209,7 +209,7 @@ try {
       Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, value);
       input.dispatchEvent(new Event('input', { bubbles: true })); await pause();
     }
-    const conn = { id: 'a', label: 'A', url: 'https://gateway.example', username: '', password: '' };
+    const conn = { id: 'a', label: 'A', url: 'https://gateway.example', username: '' };
     const listeners = new Set();
     const client = { url: conn.url, connectionState: 'open', addStateHandler: handler => { listeners.add(handler); return () => listeners.delete(handler); } };
     let session = { id: 's1', profile: 'builder', cwd: '/work/project', git_repo_root: '/work/project' };

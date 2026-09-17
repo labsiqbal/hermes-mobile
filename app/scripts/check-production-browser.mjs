@@ -306,12 +306,18 @@ async function checkProduction(options) {
     const fixture = expression => browser.evaluate(`(()=>{const f=__productionFixture;${expression}})()`);
     const trace = () => fixture('return f.trace');
     await j.run('login-connect', async () => {
+      await browser.evaluate('document.cookie = "hm-qa-session=; Max-Age=0; Path=/"');
       await j.tap(FIXTURE.gateway.label, 'body', false);
+      await j.type(`input[aria-label=${q('Password for ' + FIXTURE.gateway.label)}]`, FIXTURE.gateway.password);
+      await j.tap(`Sign in to ${FIXTURE.gateway.label}`);
       await browser.waitFor(`__productionFixture.trace.some(t=>t.route==='GET /api/sessions')`);
       const wire = await trace();
       assert.ok(wire.some(t => t.route === 'POST /auth/password-login'), 'Real HermesConnection password-login fallback exercised');
       assert.ok(wire.filter(t => t.route === 'POST /api/auth/ws-ticket').length >= 2, 'Ticket -> rejected -> password -> ticket chain');
       assert.ok(wire.some(t => t.event === 'constructed'), 'Real client opened fixture WebSocket');
+      const stored = JSON.parse(await browser.evaluate('localStorage.getItem("hermes-mobile.connections.v1")'));
+      assert.equal(JSON.stringify(stored).includes(FIXTURE.gateway.password), false, 'Remembered connection must not persist the password');
+      assert.ok(stored.every(c => c.username === FIXTURE.gateway.username && c.url === FIXTURE.gateway.url && !('password' in c)));
       await j.text('QA Project conversation'); await j.shot('connected');
     });
     await j.run('root-navigation', async () => {

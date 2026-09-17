@@ -33,7 +33,7 @@ Tap a screenshot for the full-size image. Captured at 390 × 844 with 100% Stand
 
 The app has **Chats / Bots / Cronjobs / Manage**, with contextual Workspace tools and no Home tab. Connection management is under Settings; appearance controls are in Manage's Appearance & preferences. The multiline composer also supports optional browser dictation into the draft, never automatic sending. Dictation requests consent first and depends on browser support; the browser's speech service may process audio remotely ([SpeechRecognition](https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition)). It does not have complete Hermes Desktop feature parity or production certification. Gateway support varies by operation; unsupported routes fail visibly.
 
-Credentials currently live in plaintext browser `localStorage`. Use a trusted private device. Secure credential storage, native integrations and physical-device signoff remain open; see [security notes](#security-notes-v1).
+This browser remembers gateway host and username only. The gateway password is never written to `localStorage`, `sessionStorage`, or IndexedDB; after password login the session stays in the gateway cookie. Use a trusted private device. Native integrations and physical-device signoff remain open; see [security notes](#security-notes-v1).
 
 ## Requirements
 
@@ -166,7 +166,7 @@ Bot Mode (agent-to-agent delegation across gateways) normally relies on the Herm
 
 ## Security notes (v1)
 
-- Connection credentials are stored in plaintext `localStorage` in the browser profile. A private tailnet does **not** protect that storage from XSS, browser extensions, or another person using the same browser profile. Use only a trusted private browser/device; secure credential handling remains a production-hardening gap.
+- Gateway host and username may be remembered in this browser. The gateway password is not stored in JavaScript-readable storage (`localStorage`, `sessionStorage`, IndexedDB). After `POST /auth/password-login`, session/refresh tokens stay in the Secure HttpOnly SameSite cookie set by the gateway. A private tailnet does **not** protect this device from XSS, browser extensions, or another person using the same browser profile. Use only a trusted private browser/device.
 - Agent/API traffic targets configured gateways. Separately, explicit external-preview actions can open a user-reviewed URL in an isolated tab; normal browser cookie rules still apply.
 
 ## License

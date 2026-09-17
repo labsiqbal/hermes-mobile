@@ -209,7 +209,7 @@ async function browserCheck() {
     };
     let settings=0, bots=0, workspace=0;
     const root=createRoot(document.getElementById('root'));
-    const props={navigationViews:new ManageViews(),conn:{id:'device',url:client.url,label:'Test gateway',username:'',password:''},client,onSettings:()=>settings++,onBots:()=>bots++,onWorkspace:()=>workspace++};
+    const props={navigationViews:new ManageViews(),conn:{id:'device',url:client.url,label:'Test gateway',username:''},client,onSettings:()=>settings++,onBots:()=>bots++,onWorkspace:()=>workspace++};
     root.render(<Manage {...props}/>);
     const tick=()=>new Promise(r=>setTimeout(r,30));
     const check=(ok, label)=>{if(!ok)throw new Error(label)};

@@ -18,7 +18,7 @@ export function installProductionFixtures(fixture) {
   }
   const trace = [], violations = [], sockets = [], held = new Map();
   const control = {
-    trace, violations, mode: 'normal', authenticated: false, approval: false,
+    trace, violations, mode: 'normal', authenticated: true, approval: false,
     hold: [], errors: {}, unsupported: [], permits: {}, empty: [],
     currentProfiles: [], cronOwner: 'default', resume: persistedServer.resume || {},
     ownerBlocked: {}, historyBySession: persistedServer.historyBySession || {},
@@ -40,7 +40,8 @@ export function installProductionFixtures(fixture) {
   const preferences=f.preservePreferences ? Object.entries(localStorage).filter(([key])=>key.startsWith('hermes-mobile.chat-project-pins:') || key.startsWith('hermes-mobile.project-folders:')) : [];
   localStorage.clear();
   preferences.forEach(([key,value])=>localStorage.setItem(key,value));
-  localStorage.setItem('hermes-mobile.connections.v1', JSON.stringify([f.gateway]));
+  document.cookie = 'hm-qa-session=1; Path=/; SameSite=Lax';
+  localStorage.setItem('hermes-mobile.connections.v1', JSON.stringify([{ id: f.gateway.id, label: f.gateway.label, url: f.gateway.url, username: f.gateway.username }]));
   localStorage.setItem('hermes-mobile.api-server-key', 'FICTIONAL-RUNS-KEY');
   localStorage.setItem('hermes-mobile.tracked-runs.v1', JSON.stringify([{ id: 'qa-run', label: 'QA tracked run', added_at: 1700000000 }]));
   const room = { roomId: 'qa-room', name: 'QA Fixture group', members: [{ name: 'qa-bot', handle: 'qa-bot', connectionId: f.gateway.id, connectionLabel: f.gateway.label }], log: [{ kind: 'user', text: 'QA group history', at: 1700000000000, thread: 'qa-thread' }], revision: 1 };
@@ -91,10 +92,15 @@ export function installProductionFixtures(fixture) {
       const row=[...f.sessions,f.bot].find(s=>s.id===id && s.profile===profile);
       return row ? json({...row,system_prompt:'QA_DETAIL_NOT_FOR_PRESENTATION'}) : json({detail:'Session not found'},404);
     }
-    if (route === 'POST /api/auth/ws-ticket') return control.authenticated ? json({ ticket: 'FICTIONAL-ONE-USE-TICKET' }) : json({ error: 'fixture login required' }, 401);
+    if (route === 'POST /api/auth/ws-ticket') {
+      const session = document.cookie.split(';').some(part => part.trim() === 'hm-qa-session=1');
+      control.authenticated = session;
+      return session ? json({ ticket: 'FICTIONAL-ONE-USE-TICKET' }) : json({ error: 'fixture login required' }, 401);
+    }
     if (route === 'POST /auth/password-login') {
       const body = JSON.parse(init.body);
       if (body.username !== f.gateway.username || body.password !== f.gateway.password || body.provider !== 'basic') return fail('Unexpected fictional login payload');
+      document.cookie = 'hm-qa-session=1; Path=/; SameSite=Lax';
       control.authenticated = true; return json({ ok: true });
     }
     if (method === 'GET' && /^\/api\/sessions\/[^/]+\/messages$/.test(url.pathname)) {

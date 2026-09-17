@@ -116,7 +116,7 @@ export default function App() {
       if (!cancelled) setRestoreError(target ? '' : 'This saved gateway was removed or changed. Choose a device to continue.');
     });
     if (!target) return () => { cancelled = true; };
-    const fresh = new HermesConnection({url:target.url, username:target.username, password:target.password});
+    const fresh = new HermesConnection({url:target.url, username:target.username});
     fresh.connect().then(() => {
       if (cancelled) { fresh.disconnect(); return; }
       adopted = true;

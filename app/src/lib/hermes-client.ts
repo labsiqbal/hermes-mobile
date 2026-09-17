@@ -18,10 +18,12 @@
  *   4. RPC: {jsonrpc:"2.0", id, method, params} → response {id, result|error}
  *      Events: {method:"event", params:{type, session_id, payload}}.
  *
- * Credential storage note: ConnectionStore persists username+password in
- * `localStorage` (or an injected StorageLike). This is a deliberate v1
- * trade-off — the app is only meant to be reached over a private tailnet.
- * Encrypted secure storage is not implemented; use a trusted private device.
+ * Credential storage note: ConnectionStore remembers host URL and username
+ * only. The gateway password is never written to localStorage, sessionStorage,
+ * or IndexedDB. After POST /auth/password-login, the session stays in the
+ * gateway cookie (Secure, HttpOnly, SameSite) and is sent with credentials:
+ * include. Reconnect uses that cookie; a missing session asks for the password
+ * again instead of reading one from JS-readable storage.
  */
 
 import { GROUPS_META_KEY, type GroupRegistry } from "./group-store";
@@ -36,7 +38,6 @@ export interface SavedConnection {
   /** Base URL of the gateway, e.g. "https://node.tailnet.ts.net" or "http://100.x.x.x:9119". */
   url: string;
   username: string;
-  password: string;
 }
 
 export interface SessionSummary {
@@ -345,6 +346,17 @@ function defaultStorage(): StorageLike {
 
 const STORE_KEY = "hermes-mobile.connections.v1";
 
+/** Host + username identity only. Never copies a password or other extra keys. */
+function persistableConnection(value: unknown): SavedConnection | null {
+  if (!value || typeof value !== "object") return null;
+  const rec = value as Record<string, unknown>;
+  if (typeof rec.id !== "string" || rec.id.length === 0) return null;
+  if (typeof rec.url !== "string" || rec.url.length === 0) return null;
+  if (typeof rec.username !== "string") return null;
+  const label = typeof rec.label === "string" && rec.label.length > 0 ? rec.label : rec.url;
+  return { id: rec.id, label, url: rec.url, username: rec.username };
+}
+
 export class ConnectionStore {
   private storage: StorageLike;
 
@@ -356,15 +368,31 @@ export class ConnectionStore {
     try {
       const raw = this.storage.getItem(STORE_KEY);
       const parsed = raw ? JSON.parse(raw) : [];
-      return Array.isArray(parsed) ? (parsed as SavedConnection[]) : [];
+      if (!Array.isArray(parsed)) return [];
+      const cleaned: SavedConnection[] = [];
+      for (const item of parsed) {
+        const conn = persistableConnection(item);
+        if (conn) cleaned.push(conn);
+      }
+      const serialized = JSON.stringify(cleaned);
+      if (raw !== null && raw !== serialized) {
+        try {
+          this.storage.setItem(STORE_KEY, serialized);
+        } catch {
+          /* callers can still use the sanitized in-memory list */
+        }
+      }
+      return cleaned;
     } catch {
       return [];
     }
   }
 
   save(conn: SavedConnection): void {
-    const all = this.list().filter((c) => c.id !== conn.id);
-    all.push(conn);
+    const clean = persistableConnection(conn);
+    if (!clean) return;
+    const all = this.list().filter((c) => c.id !== clean.id);
+    all.push(clean);
     this.storage.setItem(STORE_KEY, JSON.stringify(all));
   }
 

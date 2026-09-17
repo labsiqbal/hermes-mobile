@@ -83,9 +83,9 @@ export function Settings({
         <div className="section-label">Storage</div>
         <div className="card">
           <div className="hint" style={{ padding: 0 }}>
-            Credentials (username &amp; password) are stored as plain text in
-            this browser's localStorage. This is a v1 limitation — encrypted
-            storage is still on the backlog. Don't use on shared devices.
+            This browser remembers gateway host and username only. The password
+            is not stored here; after sign-in the session stays in a cookie.
+            Don't use a shared browser.
           </div>
           <button
             className="btn btn-destructive"
@@ -132,7 +132,7 @@ export function Settings({
             <div className="sheet-grab" />
             <h2 id="wipe-title">Erase Hermes Mobile data?</h2>
             <div className="hint" style={{ margin: "8px 0 14px" }}>
-              Hermes Mobile connections, credentials, rooms, drafts and preferences on this browser will be erased, and the app will reload. Other applications on this origin and all remote gateway data are untouched. This cannot be undone.
+              Hermes Mobile connections, rooms, drafts and preferences on this browser will be erased, and the app will reload. Gateway session cookies and all remote gateway data are untouched. This cannot be undone.
             </div>
             {wipeError && <p role="alert" className="error-line">{wipeError}</p>}
             <div className="sheet-actions">

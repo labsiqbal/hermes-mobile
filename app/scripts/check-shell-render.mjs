@@ -21,7 +21,7 @@ buildSync({stdin:{contents:`
   import Home from './src/screens/Home';
   import ChatView from './src/screens/ChatView';
   import {ConversationViews} from './src/lib/shell-state';
-  const conn = {id:'fixture', label:'Fixture gateway', url:'https://fixture.example.invalid', username:'', password:''};
+  const conn = {id:'fixture', label:'Fixture gateway', url:'https://fixture.example.invalid', username:''};
   const emptyStore = {list:()=>[]};
   const store = {list:()=>[conn]};
   const no = () => {};
