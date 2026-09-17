@@ -257,7 +257,7 @@ async function browserCheck() {
       await click('Back to Manage');const before=requests.length;await click('WebhooksProfile transport unavailable · inspect the boundary');check(requests.length===before,'unscoped webhook must never be fetched');
       await click('Back to Manage');await click('KanbanOfficial bundled plugin · gateway-wide boards');await click('Workwork');check(content().includes('Read brief'),'real board card renders');
       check(requests.some(r=>r.url.includes('board=work')),'board must be explicit');
-      await click('Back to Manage');await click('Devices & gatewaysSaved connections and authentication');await click('Bots & routinesOpen the existing bot workspace');await click('Workspace toolsFiles and review in their conversation context');
+      await click('Back to Manage');await click('SettingsConnections and this device');await click('Bots & routinesOpen the existing bot workspace');await click('Workspace toolsFiles and review in their conversation context');
       check(settings===1&&bots===1&&workspace===1,'shared-shell callbacks remain functional');
       failRead=true;await click('Schedules & cronProfile-owned jobs, cadence and next run');check(content().includes('Authentication is required.') && !content().includes('No state changed.'),'401 read must show authentication guidance, not mutation copy');
       failRead=false;await click('Back to Manage');
