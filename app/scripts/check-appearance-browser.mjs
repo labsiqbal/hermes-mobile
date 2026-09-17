@@ -9,7 +9,7 @@ const app = path.resolve(process.argv[3] || '.');
 const output = path.resolve(process.argv[2] || '/tmp/hm-appearance-browser');
 await mkdir(output, { recursive:true });
 const host = await serveDist(app);
-const browser = new ProductionBrowser({ origin:host.origin, assetPaths:host.assetPaths, output, deadline:900000, timeout:30000, chrome:'/usr/bin/google-chrome' });
+const browser = new ProductionBrowser({ origin:host.origin, assetPaths:host.assetPaths, output, deadline:900000, timeout:5000, chrome:'/usr/bin/google-chrome' });
 const report = { evidence:'BUILT-APP-FICTIONAL-APPEARANCE', checks:[], layout:[], screenshots:[], artifact:host.hashes };
 const q = JSON.stringify;
 const fixture = structuredClone(FIXTURE);
@@ -31,7 +31,7 @@ try {
   };
   const settings = async () => { await j.root('Manage'); if(await browser.evaluate('!!__qaDOM.find("Back to Manage")')) await j.tap('Back to Manage'); await j.tap('Appearance & preferences','body',false); await j.text('UI scale'); };
   const auditLayout = async name => {
-    const metrics = await browser.evaluate(`(()=>{const items=[...document.querySelectorAll('button, a[href], summary, input:not([type="hidden"]):not([type="checkbox"]):not([type="color"]), textarea, select, [role="button"], [role="tab"]')].filter(el=>__qaDOM.visible(el)).map(el=>{const r=el.getBoundingClientRect();return{label:__qaDOM.label(el),x:r.x,y:r.y,w:r.width,h:r.height,disabled:!!el.disabled};}).filter(r=>r.x<innerWidth&&r.x+r.w>0&&r.y<innerHeight&&r.y+r.h>0); return{viewport:[innerWidth,innerHeight],pageWidth:document.documentElement.scrollWidth,bodyWidth:document.body.scrollWidth,controls:items};})()`);
+    const metrics = await browser.evaluate(`(()=>{const items=[...document.querySelectorAll('button, a[href], summary, input:not([type="hidden"]), textarea, select, [role="button"], [role="tab"]')].filter(el=>__qaDOM.visible(el)).map(el=>{const label=el.matches('input[type="checkbox"],input[type="radio"]')?[...el.labels].find(label=>label.control===el&&__qaDOM.visible(label)):null;const target=label||el,r=target.getBoundingClientRect();return{label:__qaDOM.label(el),target:label?'associated-label':'control',x:r.x,y:r.y,w:r.width,h:r.height,disabled:!!el.disabled};}).filter(r=>r.x<innerWidth&&r.x+r.w>0&&r.y<innerHeight&&r.y+r.h>0); return{viewport:[innerWidth,innerHeight],pageWidth:document.documentElement.scrollWidth,bodyWidth:document.body.scrollWidth,controls:items};})()`);
     report.layout.push({ name, ...metrics });
     assert.ok(metrics.pageWidth <= metrics.viewport[0] + 1 && metrics.bodyWidth <= metrics.viewport[0] + 1, `Horizontal page overflow: ${name}`);
     assert.ok(metrics.controls.length, `No reachable controls: ${name}`);
@@ -80,6 +80,17 @@ try {
       await resize(w,h);
       for(const root of ROOTS) { await j.root(root); await audit(`${tag}-${root}`,true); }
       await j.tap('Appearance & preferences','body',false); await audit(`${tag}-Appearance`,true);
+      await check(`${tag}-scratch-accent-label-target`,async()=>{
+        const target=await browser.evaluate(`(()=>{const input=document.querySelector('input[aria-label="Enable scratch accent"]'),label=input.labels[0];label.scrollIntoView({block:'center'});const r=label.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2,hit=document.elementFromPoint(x,y);return{x,y,w:r.width,h:r.height,checked:input.checked,associated:label.control===input,reachable:hit===label||label.contains(hit)};})()`);
+        assert.ok(target.associated&&target.reachable&&target.w>=44&&target.h>=44,q(target));
+        for(const checked of [!target.checked,target.checked]) {
+          await browser.command('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:target.x,y:target.y,radiusX:1,radiusY:1}]});
+          await browser.command('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+          await browser.settle();
+          assert.equal(await browser.evaluate('document.querySelector(\'input[aria-label="Enable scratch accent"]\').checked'),checked);
+          assert.equal(await browser.evaluate('!!document.documentElement.style.getPropertyValue("--scratch-accent")'),checked);
+        }
+      });
       await j.tap('Connection settings','body',false); await audit(`${tag}-Settings`,true);
       await j.tap('Erase Hermes Mobile data'); await audit(`${tag}-erase-confirmation`,detailShots); await j.tap('Cancel'); await j.tap('Back'); await j.tap('Back to Manage');
       for(const [section,expected,detail] of [

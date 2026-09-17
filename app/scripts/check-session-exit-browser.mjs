@@ -38,6 +38,7 @@ const bundle = buildSync({
         submitPrompt:async(sid,text)=>{trace.push({method:'prompt.submit',sid,text});return {status:'streaming'};},
         steerSession:async(sid,text)=>{trace.push({method:'session.steer',sid,text});return {status:'streaming'};},
         modelOptions:async sid=>{trace.push({method:'model.options',sid});if(next.modelError)throw Error(next.modelError);return {model:'fixture-model',provider:'fixture',providers:[{slug:'fixture',name:'Fixture',models:['fixture-model']}]};},
+        slashCatalog:async(sid,profile)=>{trace.push({method:'slash.catalog',sid,profile});return [];},
         configSet:async(...args)=>{trace.push({method:'config.set',args});return {};},
       };}
       async function render(){await act(async()=>{root.render(<ChatView conn={conn} client={client} session={options.group?undefined:{id:stored,title:'Fixture',profile}} group={options.group?{roomId:'fixture-group'}:undefined} state={state} onBack={()=>{}} onNewChat={()=>{}} onWorkspace={()=>{}} onSessionReady={x=>ready.push(x)} viewKey='fixture' views={views}/>);await settle();});}
@@ -86,6 +87,7 @@ try {
     await run('fixture.sendTap()');
     assert.deepEqual(await run('fixture.trace()'), [
       { method: 'session.resume', sid: 'stored-builder-99', opts: { omitMessages: true, profile: 'builder' } },
+      { method: 'slash.catalog', sid: 'runtime-builder-42', profile: 'builder' },
       { method: 'session.close', sid: 'runtime-builder-42' },
     ]);
     const view = await run('fixture.status()');
@@ -232,6 +234,10 @@ try {
   await check('slash palette shows commands, supports pointer/arrows/Escape/IME, and only Send executes', async () => {
     await run('fixture.mount()');
     await run("fixture.type('/',false)");
+    let baseline = await run('fixture.trace()');
+    assert.deepEqual(baseline.filter(x => x.method === 'slash.catalog'), [
+      { method: 'slash.catalog', sid: 'runtime-builder-42', profile: 'builder' },
+    ]);
     let view = await run('fixture.status()');
     assert.equal(view.slash.length, 2);
     assert.deepEqual(view.slash.map(x => x.text.startsWith('/exit') || x.text.startsWith('/model')), [true, true]);
@@ -245,7 +251,7 @@ try {
     view = await run('fixture.status()');
     assert.equal(view.value, '/exit');
     assert.equal(view.focused, true);
-    assert.equal((await run('fixture.trace()')).filter(x => x.method !== 'session.resume').length, 0);
+    assert.deepEqual(await run('fixture.trace()'), baseline);
     await run('fixture.sendTap()');
     const wire = await run('fixture.trace()');
     assert.equal(wire.filter(x => x.method === 'session.close').length, 1);
@@ -253,17 +259,19 @@ try {
 
     await run('fixture.mount()');
     await run("fixture.type('/ex',false)");
+    baseline = await run('fixture.trace()');
     await run("fixture.key('Enter')");
     assert.equal((await run('fixture.status()')).value, '/exit');
-    assert.equal((await run('fixture.trace()')).filter(x => x.method !== 'session.resume').length, 0);
+    assert.deepEqual(await run('fixture.trace()'), baseline);
   });
 
   await check('IME Enter leaves slash selection and RPC untouched; ordinary text still sends', async () => {
     await run('fixture.mount()');
     await run("fixture.type('/ex',false)");
+    const baseline = await run('fixture.trace()');
     await run("fixture.key('Enter',true)");
     assert.equal((await run('fixture.status()')).value, '/ex');
-    assert.equal((await run('fixture.trace()')).filter(x => x.method !== 'session.resume').length, 0);
+    assert.deepEqual(await run('fixture.trace()'), baseline);
     await run('fixture.mount()');
     await run("fixture.type('ordinary text',false)");
     await run("fixture.key('Enter')");

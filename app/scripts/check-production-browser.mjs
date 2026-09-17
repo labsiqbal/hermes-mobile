@@ -658,6 +658,12 @@ async function checkProduction(options) {
 
 async function selfTest(options) {
   const cases = [];
+  const transport = new ChromePipe({ output: options.output, timeout: 5000 });
+  transport.send = async (_method, _params, _sessionId, timeout) => timeout;
+  assert.equal(await transport.command('Page.navigate', { url: 'file:///fixture.html' }), 30000);
+  assert.equal(await transport.command('Runtime.evaluate', { expression: 'true' }), 5000);
+  assert.equal(await transport.command('Page.navigate', { url: 'file:///fixture.html' }, 100), 100);
+  cases.push({ name: 'cold navigation budget preserves ordinary and explicit deadlines', status: 'passed' });
   const reject = (name, fn) => { assert.throws(fn); cases.push({ name, status: 'passed' }); };
   assertRoots(ROOTS); cases.push({ name: 'positive exact-root control', status: 'passed' });
   reject('legacy roots rejected', () => assertRoots(['Board','Chats','Groups','Bots','Runs','Settings']));

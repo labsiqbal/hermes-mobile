@@ -13,7 +13,7 @@ const output = process.argv[2] ? path.resolve(process.argv[2]) : mkdtempSync(pat
 assert.ok(output !== path.join(app,'dist') && !output.startsWith(path.join(app,'dist') + path.sep));
 await mkdir(output, {recursive:true});
 const host = await serveDist(app);
-const browser = new ProductionBrowser({origin:host.origin,assetPaths:host.assetPaths,output,deadline:60000,timeout:30000,chrome:process.env.CHROME_BIN || '/usr/bin/google-chrome'});
+const browser = new ProductionBrowser({origin:host.origin,assetPaths:host.assetPaths,output,deadline:60000,timeout:5000,chrome:process.env.CHROME_BIN || '/usr/bin/google-chrome'});
 const report = {evidence:'BUILT-REACT-FICTIONAL-TRANSPORT-NAVIGATION-REGRESSION',journeys:[],layout:[],screenshots:[],artifact:host.hashes};
 try {
   await browser.start();
