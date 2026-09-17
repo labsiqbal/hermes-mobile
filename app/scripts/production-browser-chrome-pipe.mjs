@@ -73,7 +73,7 @@ export class ChromePipe {
       void this.close().catch(error => console.error(error.message));
     }, this.options.deadline);
     try {
-      // Cold browser startup on CI needs its own budget; page/RPC deadlines stay strict.
+      // Cold browser startup on CI needs a budget before a renderer session exists.
       this.version = await this.send('Browser.getVersion', {}, undefined,
         Math.max(30000, this.options.timeout));
     } catch (error) {
@@ -165,7 +165,13 @@ export class ChromePipe {
     });
   }
 
-  command(method, params = {}, timeout) { return this.send(method, params, this.sessionId, timeout); }
+  command(method, params = {}, timeout) {
+    // Cold renderer navigation can take ~25s even for local files. Give only
+    // navigation its startup budget, including callers that do not use open().
+    // Explicit deadlines and ordinary RPC/condition timeouts remain unchanged.
+    const budget = timeout ?? (method === 'Page.navigate' ? Math.max(30000, this.options.timeout) : this.options.timeout);
+    return this.send(method, params, this.sessionId, budget);
+  }
 
   async evaluate(expression, timeout) {
     const response = await this.command('Runtime.evaluate', {

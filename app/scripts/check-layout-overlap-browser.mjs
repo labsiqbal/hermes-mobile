@@ -57,7 +57,7 @@ try {
     await browser.waitFor("!!document.querySelector('.jump-btn')");
     await browser.settle();
   };
-  const shell = async (name, selectors) => {
+  const shell = async (name, selectors, gutter = 16) => {
     await measure(name, `(()=>{const m=document.querySelector('.manage'),r=m.getBoundingClientRect();return {header:__layout.rect(document.querySelector('header')),tab:__layout.rect(document.querySelector('.shell-tabbar')),container:__layout.rect(m),scrollable:getComputedStyle(m).overflowY,viewport:[innerWidth,innerHeight],pageWidth:document.documentElement.scrollWidth,headers:[...document.querySelectorAll('header')].filter(__qaDOM.visible).length,tabs:[...document.querySelectorAll('.shell-tabbar')].filter(__qaDOM.visible).length,children:${q(selectors)}.map(s=>{const e=m.querySelector(s),a=e.getBoundingClientRect();return {selector:s,left:a.left,right:innerWidth-a.right,width:a.width,relativeLeft:a.left-r.left};})};})()`, m => {
       assert.equal(m.pageWidth, m.viewport[0]);
       assert.equal(m.headers, 1);
@@ -66,7 +66,7 @@ try {
       assert.equal(m.tab.bottom, m.viewport[1]);
       assert.ok(m.container.top >= m.header.bottom && m.container.bottom <= m.tab.top + 1, q(m));
       assert.equal(m.scrollable, 'auto');
-      for (const child of m.children) { assert.equal(child.left, 16, q(child)); assert.equal(child.right, 16, q(child)); }
+      for (const child of m.children) { assert.equal(child.left, gutter, q(child)); assert.equal(child.right, gutter, q(child)); }
     });
   };
   await j.tap(fixture.gateway.label, 'body', false);
@@ -173,7 +173,7 @@ try {
   await j.text('QA Fixture Schedule');
   for (const width of [320, 360, 390, 430]) {
     await resize(width, 844);
-    await shell(`cronjobs-${width}`, ['.manage-section-heading', '.manage-field', '.manage-detail']);
+    await shell(`cronjobs-${width}`, ['.manage-section-heading', '.manage-field', '.manage-detail'], 24);
     await j.shot(`cronjobs-${width}`);
   }
   report.fixture = await browser.evaluate('({trace:__productionFixture.trace,violations:__productionFixture.violations,copied:window.__copied})');

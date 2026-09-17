@@ -20,9 +20,8 @@ try {
  await browser.command('Page.addScriptToEvaluateOnNewDocument',{source:`(${fixtures})(${q(FIXTURE)});(${domHelpers.toString()})();`});
  await browser.open(host.origin+'/');const j=new Journeys(browser,report,output);
  const change=async(selector,value)=>{await browser.evaluate(`(()=>{const e=document.querySelector(${q(selector)});const proto=e instanceof HTMLSelectElement?HTMLSelectElement.prototype:HTMLInputElement.prototype;Object.getOwnPropertyDescriptor(proto,'value').set.call(e,${q(String(value))});e.dispatchEvent(new Event('change',{bubbles:true}));e.dispatchEvent(new Event('input',{bubbles:true}));})()`);await browser.settle();};
- const key=async(key,code,virtual)=>{await browser.command('Input.dispatchKeyEvent',{type:'keyDown',key,code,windowsVirtualKeyCode:virtual});await browser.command('Input.dispatchKeyEvent',{type:'keyUp',key,code,windowsVirtualKeyCode:virtual});await browser.settle();};
  const resize=async(w,h=844)=>{await browser.viewport(w,h);await browser.waitFor(`innerWidth===${w}&&document.querySelector('#root').getBoundingClientRect().height===${h}`);await browser.settle();};
- const groups=async()=>{await j.root('Chats');await j.tap('Groups','body',false);await j.tap('+ New group');};
+ const groups=async()=>{await j.root('Bots');await j.tap('Groups','.bots-switch');await j.tap('+ New group');};
  const audit=async(tag,shot=false)=>{await check(tag,()=>j.auditLayout(tag));await check(tag+' shared header',async()=>{const m=await browser.evaluate(`(()=>{const hs=[...document.querySelectorAll('header')].filter(__qaDOM.visible);return hs.map(h=>({top:h.getBoundingClientRect().top,bottom:h.getBoundingClientRect().bottom}));})()`);assert.equal(m.length,1);assert.equal(m[0].top,0);});if(shot)await j.shot(tag);};
  await j.tap(FIXTURE.gateway.label,'body',false);await resize(390);await groups();
  await check('All eight profiles eligible, only one has bot metadata',async()=>{assert.equal(await browser.evaluate(`__productionFixture.profiles.filter(p=>p.ui_meta['hermes-bots']).length`),1);assert.equal(await browser.evaluate(`document.querySelectorAll('.body .rowcard').length`),8);});
@@ -39,7 +38,7 @@ try {
   await check('Disappeared selected profile fails before any write',async()=>{await browser.evaluate(`__productionFixture.removed=__productionFixture.profiles.splice(__productionFixture.profiles.findIndex(p=>p.name==='qa-plain-1'),1)[0];__productionFixture.trace.length=0;`);await j.tap('Create Group (2)');await j.text('no longer available');assert.equal(await browser.evaluate(`__productionFixture.trace.filter(t=>t.method==='profiles.configure').length`),0);await browser.evaluate(`__productionFixture.profiles.push(__productionFixture.removed);`);});
   await check('Exact members and gateway identity; verified registry before navigation',async()=>{await browser.evaluate(`__productionFixture.permits['profiles.configure']=3;__productionFixture.trace.length=0;`);await j.tap('Create Group (2)');await browser.waitFor(`location.hash==='#chat'`);const writes=await browser.evaluate(`__productionFixture.trace.filter(t=>t.method==='profiles.configure').map(t=>t.params)`);assert.equal(writes.length,3);assert.deepEqual(writes.slice(0,2).map(w=>w.name),['qa-plain-0','qa-plain-1']);const registry=writes[2].ui_meta['hermes-bots-groups'];const room=Object.values(registry.rooms).find(r=>r.roomId!=='qa-room');assert.deepEqual(room.members.map(m=>[m.name,m.connectionId,m.connectionLabel]),[['qa-plain-0',FIXTURE.gateway.id,FIXTURE.gateway.label],['qa-plain-1',FIXTURE.gateway.id,FIXTURE.gateway.label]]);assert.equal(writes[2].name,'default');assert.deepEqual(writes[2].ui_meta_expected_revisions,{'hermes-bots-groups':1});assert.ok((await browser.evaluate(`__productionFixture.trace.map(t=>t.method)`)).lastIndexOf('profiles.list')>2);});
   for(const scale of [75,100,125]) {
-   await j.root('Manage');if(await browser.evaluate(`!!__qaDOM.find('Back to Manage')`))await j.tap('Back to Manage');await j.tap('Devices & gateways','body',false);await j.tap('Appearance','body',false);await change('#ui-scale',scale);
+   await j.root('Manage');if(await browser.evaluate(`!!__qaDOM.find('Back to Manage')`))await j.tap('Back to Manage');await j.tap('Appearance & preferences','body',false);await change('#ui-scale',scale);await j.tap('Back to Manage');
    for(const [w,h] of [[320,844],[390,844],[320,480]]) {
     await resize(w,h);const tag=`${scale}-${w}-${h}`;
     for(const root of ['Home','Chats','Bots','Cronjobs','Manage']) {await j.root(root);await audit(root+'-'+tag,w===390&&h===844&&scale===100);}
@@ -52,21 +51,25 @@ try {
      if(section==='Kanban')await j.tap('QA Fixture Board','.manage',false);
      await audit(section+'-'+tag,w===390&&h===844&&scale===100);await j.tap('Back to Manage');
     }
-    await j.tap('Devices & gateways','body',false);await audit('Settings-'+tag,w===390&&scale===100);await j.tap('Appearance','body',false);await audit('Appearance-'+tag);
+    await j.tap('Appearance & preferences','body',false);await audit('Appearance-'+tag);await j.tap('Connection settings','body',false);await audit('Settings-'+tag,w===390&&scale===100);await j.tap('Back');await j.tap('Back to Manage');
     await groups();await audit('Groups-create-'+tag,w===390&&h===844||w===320&&h===480&&scale===125);
     await check('All roster rows retain height '+tag,async()=>assert.ok(await browser.evaluate(`[...document.querySelectorAll('.body .rowcard')].every(e=>e.getBoundingClientRect().height>=44)`)));
     await browser.evaluate(`__qaDOM.find('Create Group (0)').scrollIntoView({block:'center'})`);await browser.settle();await audit('Groups-actions-'+tag,w===390&&h===844||w===320&&h===480&&scale===125);
     await check('Create/Cancel targets and text width '+tag,async()=>{const m=await browser.evaluate(`[...document.querySelectorAll('.group-create-actions button')].map(e=>{const r=e.getBoundingClientRect();return{width:r.width,height:r.height,left:r.left,right:r.right}})`);assert.equal(m.length,2);assert.ok(m[0].width>=140&&m.every(r=>r.height>=44&&r.left>=0&&r.right<=w));});
     await j.tap('Cancel');await audit('Groups-list-'+tag);
-    await j.root('Chats');await browser.waitFor(`!document.querySelector('[aria-label="Refresh Chats"]').disabled`);await j.tap('Filter chats');await audit('Chats-filter-sheet-'+tag,true);
-    await check('Sheet select gutter '+tag,async()=>{const m=await browser.evaluate(`[...document.querySelectorAll('.chat-filters select')].map(e=>{const s=getComputedStyle(e);return{inset:s.backgroundPosition,padding:parseFloat(s.paddingRight),width:e.getBoundingClientRect().width,font:parseFloat(s.fontSize)}})`);assert.equal(m.length,2);for(const s of m){assert.match(s.inset,/100% - (12|15)px/);assert.ok(s.padding>=32&&s.width>=240&&s.font>=16);}});
-    await j.tap('Done');
+    await j.root('Chats');await browser.waitFor(`document.querySelector('[aria-label="Refresh projects"]')?.disabled===false`);await audit('Chats-projects-'+tag,true);
+    await check('Projects search and folder controls '+tag,async()=>{assert.equal(await browser.evaluate(`!!document.querySelector('[aria-label="Search conversations"]')`),true);await j.tap('Collapse all folders');assert.equal(await browser.evaluate('document.querySelectorAll(".tree-project-sessions").length'),0);await j.tap('Expand all folders');await j.text('QA Project conversation');});
    }
   }
-  await resize(390);await j.root('Chats');await j.tap('Filter chats');await change('[aria-label="Project filter"]','recent');await change('[aria-label="Profile filter"]','qa-bot');await j.tap('Done');
-  await check('Active summary count and exact two-filter semantics',async()=>{assert.ok(await browser.evaluate(`__qaDOM.find('Filter chats').innerText.includes('2')`));assert.deepEqual(await browser.evaluate(`[...document.querySelectorAll('[data-session-id]')].map(e=>e.dataset.sessionId)`),['qa-bot-session']);});
-  await j.tap('Clear filters');await j.tap('Filter chats');await key('Escape','Escape',27);await check('Escape closes and restores trigger focus',async()=>{assert.equal(await browser.evaluate(`!!document.querySelector('.chat-filter-sheet')`),false);assert.equal(await browser.evaluate(`document.activeElement.getAttribute('aria-label')`),'Filter chats');});
-  await j.tap('Filter chats');await j.back();await check('Browser Back closes filter sheet without leaving Chats',async()=>{assert.equal(await browser.evaluate('location.hash'),'#chats');assert.equal(await browser.evaluate(`!!document.querySelector('.chat-filter-sheet')`),false);});
+  await resize(390);await j.root('Chats');
+  await check('Search narrows conversations and clearing restores history',async()=>{
+   await j.type('[aria-label="Search conversations"]','QA Recent conversation');
+   assert.deepEqual(await browser.evaluate('[...document.querySelectorAll(".project-session")].map(e=>e.dataset.sessionId)'),['qa-recent-session']);
+   await j.type('[aria-label="Search conversations"]','No fictional match');
+   assert.equal(await browser.evaluate('document.querySelectorAll(".project-session").length'),0);
+   await j.type('[aria-label="Search conversations"]','');
+   assert.deepEqual(await browser.evaluate('[...document.querySelectorAll(".project-session")].map(e=>e.dataset.sessionId).sort()'),['qa-project-session','qa-recent-session']);
+  });
   await check('No real outbound, no prompts or session mutations',async()=>{assert.deepEqual(browser.diagnostics,[]);assert.deepEqual(host.rejected,[]);assert.deepEqual(await browser.evaluate('__productionFixture.violations'),[]);assert.equal(await browser.evaluate(`__productionFixture.trace.some(t=>['prompt.submit','session.create','session.delete','config.set'].includes(t.method))`),false);});
   report.status=report.checks.some(c=>c.status==='failed')?'failed':'passed';
  }
