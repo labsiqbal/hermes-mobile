@@ -29,7 +29,7 @@ try {
     await browser.settle();
     assert.equal(await browser.evaluate('document.documentElement.dataset.uiScale'),String(scale));
   };
-  const settings = async () => { await j.root('Manage'); if(await browser.evaluate('!!__qaDOM.find("Back to Manage")')) await j.tap('Back to Manage'); await j.tap('Devices & gateways','body',false); await j.tap('Appearance','body',false); await j.text('UI scale'); };
+  const settings = async () => { await j.root('Manage'); if(await browser.evaluate('!!__qaDOM.find("Back to Manage")')) await j.tap('Back to Manage'); await j.tap('Appearance & preferences','body',false); await j.text('UI scale'); };
   const audit = async (name, shot=false) => {
     await check(name,async()=>{
       await j.auditLayout(name);
@@ -48,34 +48,34 @@ try {
     await settings(); assert.equal(await browser.evaluate('document.querySelector("#ui-scale").value'),'100');
     assert.deepEqual(await browser.evaluate('[...document.querySelector("#ui-scale").options].map(o=>o.text)'),['75% Compact','100% Standard','125% Large']);
   });
-  await j.tap('Back');
+  await j.tap('Back to Manage');
   // Regression: change scale through Settings while a preserved chat is hidden.
   await check('semantic transcript anchor, draft and identity across Settings scale',async()=>{
     await j.root('Home'); await j.tap('QA Project conversation','body',false); await j.text('QA restored answer qa-project-session');
     await j.type('textarea','Appearance unsent draft');
     const before=await browser.evaluate(`(()=>{const b=document.querySelector('.chat-view .body'),p=[...b.querySelectorAll('p')].find(e=>e.textContent.startsWith('Appearance paragraph 12.'));b.scrollTop+=p.getBoundingClientRect().top-b.getBoundingClientRect().top-20;b.dispatchEvent(new Event('scroll'));window.__appearanceAnchor=p;return {offset:p.getBoundingClientRect().top-b.getBoundingClientRect().top,identity:JSON.stringify(history.state.route.conversation)};})()`);
-    await browser.settle(); await j.tap('Back'); await settings(); await select(75); await j.tap('Back'); await j.root('Home'); await j.tap('QA Project conversation','body',false);
+    await browser.settle(); await j.tap('Back'); await settings(); await select(75); await j.tap('Back to Manage'); await j.root('Home'); await j.tap('QA Project conversation','body',false);
     const after=await browser.evaluate(`({offset:[...document.querySelectorAll('.chat-view .body p')].find(e=>e.textContent.startsWith('Appearance paragraph 12.')).getBoundingClientRect().top-document.querySelector('.chat-view .body').getBoundingClientRect().top,identity:JSON.stringify(history.state.route.conversation),draft:document.querySelector('textarea').value})`);
     assert.equal(after.identity,before.identity); assert.equal(after.draft,'Appearance unsent draft'); assert.ok(Math.abs(after.offset-before.offset)<3,q({before,after}));
     await j.tap('Scroll to bottom');
     await browser.waitFor("!document.querySelector('.jump-btn') && (()=>{const b=document.querySelector('.chat-view .body');return b.scrollHeight-b.clientHeight-b.scrollTop<3})()");
-    await j.tap('Back'); await settings(); await select(125); await j.tap('Back'); await j.root('Home'); await j.tap('QA Project conversation','body',false);
+    await j.tap('Back'); await settings(); await select(125); await j.tap('Back to Manage'); await j.root('Home'); await j.tap('QA Project conversation','body',false);
     assert.ok(await browser.evaluate('(()=>{const b=document.querySelector(".chat-view .body");return b.scrollHeight-b.clientHeight-b.scrollTop<3})()'));
   });
   // Recover even if the anchor RED fails, then collect the complete matrix.
   for(const scale of [75,100,125]) {
     await settings(); await select(scale);
     await check(`persist-${scale}`,async()=>assert.equal(await browser.evaluate('localStorage.getItem("hermes-mobile.ui-scale")'),String(scale)));
-    await j.tap('Back');
+    await j.tap('Back to Manage');
     for(const [w,h] of [[320,844],[390,844],[430,844],[390,480]]) {
       const tag=`${scale}-${w}x${h}`, detailShots=w===390&&h===844;
       await resize(w,h);
       for(const root of ROOTS) { await j.root(root); await audit(`${tag}-${root}`,true); }
-      await j.tap('Devices & gateways','body',false); await audit(`${tag}-Settings`,true);
-      await j.tap('Appearance','body',false); await audit(`${tag}-Appearance`,true); await j.tap('Back');
-      await j.tap('Erase Hermes Mobile data'); await audit(`${tag}-erase-confirmation`,detailShots); await j.tap('Cancel'); await j.tap('Back');
+      await j.tap('Appearance & preferences','body',false); await audit(`${tag}-Appearance`,true);
+      await j.tap('Connection settings','body',false); await audit(`${tag}-Settings`,true);
+      await j.tap('Erase Hermes Mobile data'); await audit(`${tag}-erase-confirmation`,detailShots); await j.tap('Cancel'); await j.tap('Back'); await j.tap('Back to Manage');
       for(const [section,expected,detail] of [
-        ['Profiles','Profiles on this gateway','QA Fixture Bot'],['Capabilities','QA Fixture Skill'],['Memory','QA Fixture Memory','QA Fixture Memory'],['Schedules & cron','QA Fixture Schedule','QA Fixture Schedule'],['Messaging','QA Fixture Messaging','QA Fixture Messaging'],['Webhooks','No webhook request was sent'],['Kanban','QA Fixture Board','QA Fixture Board'],['Appearance & preferences','Model and reasoning controls'],['Native capabilities','SSH & cloud lifecycle'],
+        ['Profiles','Profiles on this gateway','QA Fixture Bot'],['Capabilities','QA Fixture Skill'],['Memory','QA Fixture Memory','QA Fixture Memory'],['Schedules & cron','QA Fixture Schedule','QA Fixture Schedule'],['Messaging','QA Fixture Messaging','QA Fixture Messaging'],['Webhooks','No webhook request was sent'],['Kanban','QA Fixture Board','QA Fixture Board'],['Appearance & preferences','UI scale'],['Native capabilities','SSH & cloud lifecycle'],
       ]) {
         await j.tap(section,'.manage',false);
         if(['Capabilities','Memory','Schedules & cron','Messaging'].includes(section)) { await browser.evaluate(`(()=>{const e=document.querySelector('select[aria-label="Management profile"]');e.value='default';e.dispatchEvent(new Event('change',{bubbles:true}));})()`); await browser.settle(); }
@@ -140,7 +140,7 @@ try {
   });
   await check('Settings erase removes appearance and keeps unrelated origin data',async()=>{
     await j.tap(fixture.gateway.label,'body',false); await settings(); await select(125);
-    await browser.evaluate('localStorage.setItem("unrelated-app","keep")'); await j.tap('Back'); await j.tap('Erase Hermes Mobile data'); await j.tap('Erase & reload'); await browser.waitFor('document.documentElement.dataset.uiScale === "100"');
+    await browser.evaluate('localStorage.setItem("unrelated-app","keep")'); await j.tap('Connection settings','body',false); await j.tap('Erase Hermes Mobile data'); await j.tap('Erase & reload'); await browser.waitFor('document.documentElement.dataset.uiScale === "100"');
     assert.equal(await browser.evaluate('localStorage.getItem("hermes-mobile.ui-scale")'),null); assert.equal(await browser.evaluate('localStorage.getItem("unrelated-app")'),'keep');
   });
   await check('storage unavailable still applies local appearance safely',async()=>{
