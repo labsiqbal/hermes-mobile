@@ -54,7 +54,6 @@ async function fetchRecentSessions(conn: SavedConnection): Promise<SessionSummar
   const client = new HermesConnection({
     url: conn.url,
     username: conn.username,
-    password: conn.password,
   });
   try {
     await client.connect();
@@ -160,7 +159,6 @@ export default function Home({ store, conn, client, state, onConnect, onOpenSess
     const fresh = new HermesConnection({
       url: target.url,
       username: target.username,
-      password: target.password,
     });
     fresh
       .connect()
@@ -177,7 +175,6 @@ export default function Home({ store, conn, client, state, onConnect, onOpenSess
       const fresh = new HermesConnection({
         url: target.url,
         username: target.username,
-        password: target.password,
       });
       await fresh.connect();
       onConnect(target, fresh);

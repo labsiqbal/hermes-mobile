@@ -306,12 +306,17 @@ async function checkProduction(options) {
     const fixture = expression => browser.evaluate(`(()=>{const f=__productionFixture;${expression}})()`);
     const trace = () => fixture('return f.trace');
     await j.run('login-connect', async () => {
+      await fixture('f.authenticated=false;');
       await j.tap(FIXTURE.gateway.label, 'body', false);
+      await j.type(`input[aria-label=${q('Password for ' + FIXTURE.gateway.label)}]`, FIXTURE.gateway.password);
+      await j.tap(`Sign in to ${FIXTURE.gateway.label}`);
       await browser.waitFor(`__productionFixture.trace.some(t=>t.route==='GET /api/sessions')`);
       const wire = await trace();
       assert.ok(wire.some(t => t.route === 'POST /auth/password-login'), 'Real HermesConnection password-login fallback exercised');
       assert.ok(wire.filter(t => t.route === 'POST /api/auth/ws-ticket').length >= 2, 'Ticket -> rejected -> password -> ticket chain');
       assert.ok(wire.some(t => t.event === 'constructed'), 'Real client opened fixture WebSocket');
+      const stored = JSON.parse(await browser.evaluate('localStorage.getItem("hermes-mobile.connections.v1")'));
+      assert.deepEqual(stored, [{ id: FIXTURE.gateway.id, label: FIXTURE.gateway.label, url: FIXTURE.gateway.url, username: FIXTURE.gateway.username }]);
       await j.text('QA Project conversation'); await j.shot('connected');
     });
     await j.run('root-navigation', async () => {
@@ -691,6 +696,7 @@ async function selfTest(options) {
     await browser.evaluate(`(${installProductionFixtures.toString()})(${q(FIXTURE)})`);
     const fixtureCanary = await browser.evaluate(`(async()=>{
       const f=__productionFixture;
+      f.authenticated=false;
       const ticket=await fetch(${q(FIXTURE.gateway.url + '/api/auth/ws-ticket')},{method:'POST'});
       const login=await fetch(${q(FIXTURE.gateway.url + '/auth/password-login')},{method:'POST',body:JSON.stringify({provider:'basic',username:'fixture-user',password:'NOT-A-REAL-PASSWORD'})});
       const schema=await fetch(${q(FIXTURE.gateway.url + '/openapi.json')});

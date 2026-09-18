@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import {
+  AuthError,
   ConnectionStore,
   HermesConnection,
   newConnectionId,
@@ -13,6 +14,7 @@ interface Props {
   /** Rendered inside the app shell (header already shows title) — skip the
    *  internal appbar. Standalone (pre-connect picker) keeps it. */
   embedded?: boolean;
+  initialUnlockId?: string;
 }
 
 type TestResult = { ok: boolean; text: string } | null;
@@ -43,14 +45,15 @@ function DeviceGlyph({ label }: { label: string }) {
   );
 }
 
-export default function Connections({ store, onConnect, embedded }: Props) {
+export default function Connections({ store, onConnect, embedded, initialUnlockId }: Props) {
   const [connections, setConnections] = useState<SavedConnection[]>(() => store.list());
   const [showForm, setShowForm] = useState(connections.length === 0);
   const [label, setLabel] = useState("");
   const [url, setUrl] = useState("");
   const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
   const [testing, setTesting] = useState(false);
+  const [unlockId, setUnlockId] = useState<string | null>(initialUnlockId ?? null);
+  const [unlockPassword, setUnlockPassword] = useState("");
   const [testResult, setTestResult] = useState<TestResult>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -86,23 +89,14 @@ export default function Connections({ store, onConnect, embedded }: Props) {
     };
   }, [connections]);
 
-  async function testConnection(target: {
-    url: string;
-    username: string;
-    password: string;
-  }): Promise<void> {
-    const client = new HermesConnection(target);
-    const status = await client.status();
-    const version = typeof status.version === "string" ? status.version : "?";
-    await client.login();
-    setTestResult({ ok: true, text: `OK — Hermes ${version}, login accepted` });
-  }
-
   async function handleTest() {
     setTesting(true);
     setTestResult(null);
     try {
-      await testConnection({ url: url.trim(), username: username.trim(), password });
+      const client = new HermesConnection({ url: url.trim() });
+      const status = await client.status();
+      const version = typeof status.version === "string" ? status.version : "?";
+      setTestResult({ ok: true, text: `OK - Hermes ${version}` });
     } catch (err) {
       setTestResult({ ok: false, text: err instanceof Error ? err.message : String(err) });
     } finally {
@@ -110,13 +104,12 @@ export default function Connections({ store, onConnect, embedded }: Props) {
     }
   }
 
-  async function handleAdd() {
+  function handleAdd() {
     const conn: SavedConnection = {
       id: newConnectionId(),
       label: label.trim() || url.trim(),
       url: url.trim().replace(/\/+$/, ""),
       username: username.trim(),
-      password,
     };
     store.save(conn);
     refresh();
@@ -124,28 +117,35 @@ export default function Connections({ store, onConnect, embedded }: Props) {
     setLabel("");
     setUrl("");
     setUsername("");
-    setPassword("");
     setTestResult(null);
   }
 
-  async function handleConnect(conn: SavedConnection) {
+  async function handleConnect(conn: SavedConnection, password?: string) {
     setBusyId(conn.id);
     setError("");
+    setUnlockPassword("");
+    const client = new HermesConnection({ url: conn.url, username: conn.username });
     try {
-      const client = new HermesConnection({
-        url: conn.url,
-        username: conn.username,
-        password: conn.password,
-      });
+      if (password) await client.login(conn.username, password);
       await client.connect();
       try {
         localStorage.setItem(LAST_CONN_KEY, conn.id);
       } catch {
-        /* private mode — the default chip just won't persist */
+        /* private mode - the default chip just won't persist */
       }
       setLastConnId(conn.id);
+      setUnlockId(null);
+      setUnlockPassword("");
       onConnect(conn, client);
     } catch (err) {
+      client.disconnect();
+      const needsPassword =
+        !password && err instanceof AuthError && (err.status === 401 || err.status === 403);
+      if (needsPassword) {
+        setUnlockId(conn.id);
+        setUnlockPassword("");
+        return;
+      }
       setError(err instanceof Error ? err.message : String(err));
     } finally {
       setBusyId(null);
@@ -162,23 +162,22 @@ export default function Connections({ store, onConnect, embedded }: Props) {
         const probe = probes[conn.id];
         const busy = busyId === conn.id;
         return (
+          <Fragment key={conn.id}>
           <div
-            key={conn.id}
-            className="rowcard"
+            className="rowcard connection-row"
             role="button"
             tabIndex={0}
             onClick={() => {
-                if (busyId === null) void handleConnect(conn);
+                if (busyId === null && unlockId !== conn.id) void handleConnect(conn);
               }}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && busyId === null) void handleConnect(conn);
+                if (e.key === "Enter" && busyId === null && unlockId !== conn.id) void handleConnect(conn);
               }}
             >
               <DeviceGlyph label={conn.label} />
               <div className="rowcard-main">
                 <div className="title-row">
                   <div className="rowcard-title">{conn.label}</div>
-                  {conn.id === lastConnId && <span className="chip chip-green">default</span>}
                 </div>
                 <div className="rowcard-meta">
                   {conn.url}
@@ -190,6 +189,7 @@ export default function Connections({ store, onConnect, embedded }: Props) {
                   busy ? "conn-st-busy" : probe?.online ? "conn-st-on" : "conn-st-off"
                 }`}
               >
+                {conn.id === lastConnId && <span className="chip chip-green">default</span>}
                 {busy ? "connecting…" : probe ? (probe.online ? "Reachable" : "Unavailable") : "…"}
               </span>
               <button
@@ -206,9 +206,37 @@ export default function Connections({ store, onConnect, embedded }: Props) {
                 ×
               </button>
             </div>
+            {unlockId === conn.id && (
+              <form className="card form-stack" onSubmit={(event) => {
+                event.preventDefault();
+                if (unlockPassword && busyId === null) void handleConnect(conn, unlockPassword);
+              }}>
+                <p className="hint">Sign in as {conn.username}. Your password is not saved by this app.</p>
+                <input type="text" name="username" autoComplete="username" defaultValue={conn.username} readOnly hidden />
+                <input
+                  className="field"
+                  aria-label={`Password for ${conn.label}`}
+                  autoComplete="current-password"
+                  placeholder="Password"
+                  type="password"
+                  name="password"
+                  value={unlockPassword}
+                  onChange={(e) => setUnlockPassword(e.target.value)}
+                />
+                <button
+                  className="btn btn-primary"
+                  aria-label={`Sign in to ${conn.label}`}
+                  disabled={!unlockPassword || busyId !== null}
+                  type="submit"
+                >
+                  {busy ? "Signing in…" : "Sign in"}
+                </button>
+              </form>
+            )}
+          </Fragment>
           );
         })}
-        {error && <div className="error-line">{error}</div>}
+        {error && <div className="error-line" role="alert">{error}</div>}
 
         {!showForm ? (
           <button className="btn btn-ghost btn-icon" onClick={() => setShowForm(true)}>
@@ -246,15 +274,6 @@ export default function Connections({ store, onConnect, embedded }: Props) {
                 autoCapitalize="off"
                 autoCorrect="off"
               />
-              <input
-                className="field"
-                aria-label="Gateway password"
-                autoComplete="current-password"
-                placeholder="Password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
               <div style={{ display: "flex", gap: "var(--space-8)" }}>
                 <button
                   className="btn btn-ghost"
@@ -265,8 +284,8 @@ export default function Connections({ store, onConnect, embedded }: Props) {
                 </button>
                 <button
                   className="btn btn-primary"
-                  disabled={!url.trim() || !username.trim() || !password}
-                  onClick={() => void handleAdd()}
+                  disabled={!url.trim() || !username.trim()}
+                  onClick={() => handleAdd()}
                 >
                   Save
                 </button>
@@ -276,7 +295,7 @@ export default function Connections({ store, onConnect, embedded }: Props) {
               )}
             </div>
             <div className="hint">
-              Credentials are stored unencrypted in this browser. Use a trusted, private device and your private tailnet; do not use a shared browser.
+              This browser remembers host and username only. The password is asked at sign-in and is not stored; the session stays in a cookie. Use a trusted, private device.
             </div>
           </>
         )}

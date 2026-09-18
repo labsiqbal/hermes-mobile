@@ -39,10 +39,19 @@ HERMES_BACKEND=http://your-gateway-host:9119 npm run dev -- --host 127.0.0.1
 
 1. Open the PWA.
 2. Tap **Add device**.
-3. Enter a label, the gateway URL (`https://node.tailnet.ts.net:8451` or a LAN URL), username, and password.
-4. Save, then tap the device to connect.
+3. Enter a label, the gateway URL (`https://node.tailnet.ts.net:8451` or a LAN URL), and username.
+4. Save, then tap the device. Enter your password when **Sign in** appears.
 
-Use a trusted private phone. Credentials are stored in plaintext in this browser's `localStorage`; a private tailnet does not protect them from XSS, browser extensions, or other users of the same browser profile.
+**Test** checks reachability and version, not login. Reload and reconnect reuse the gateway session cookie. A missing or expired session prompts sign-in again; signing in to the same device preserves the destination conversation. Temporary gateway failures remain retryable.
+
+## Security notes (v1)
+
+- Saved connections contain host URL, username, local ID and display label only. The app does not persist gateway passwords, session/refresh tokens or WebSocket tickets in `localStorage`, `sessionStorage` or IndexedDB. A typed password is used for the sign-in request, then discarded from the client; browser password-manager behavior is separate.
+- Existing connection records are sanitized on read. Legacy passwords and extra fields are removed while valid metadata survives. If replacement fails, the app attempts to remove the old connection key; corrupt records are also removed. When the browser denies both writes and removal, the app can sanitize only its in-memory view. Clear site data manually in that case.
+- Authentication remains same-origin: `POST /auth/password-login` establishes the gateway cookie; `POST /api/auth/ws-ticket` uses it to obtain a one-use WebSocket ticket. Cookies are browser-managed. The **gateway**, not this PWA, owns `Set-Cookie`, expiry/refresh behavior, `HttpOnly`, `Secure`, `SameSite`, domain and path. Operators must verify those attributes for their HTTPS installation. Browser JavaScript cannot set `HttpOnly`; this client adds no refresh endpoint or auth provider.
+- Offline tests verify cookie restoration against fictional HTTP responses, not the deployed gateway's cookie attributes or refresh behavior. Live gateway verification requires separate operator approval.
+- Settings' **Erase Hermes Mobile data** does not clear gateway session cookies or remote data. Clear the site's cookies in the browser to remove that session.
+- The separate tracked-runs API key still lives in plaintext `localStorage` under `hermes-mobile.api-server-key`; it is not a gateway session/refresh token. Use a trusted private browser. A tailnet and HttpOnly cookies do not protect an active session from XSS, extensions, or another user of the same browser profile.
 
 ## Tabs
 
@@ -62,6 +71,6 @@ Open a chat to compose, attach files, pick a model, and stream a reply. See the 
 
 ## Limitations
 
-Unofficial and self-hosted only. Not Hermes Desktop parity and not a hosted SaaS. Missing gateway routes fail visibly. Optional dictation asks for consent and adds text to the draft without sending it; the browser may process audio remotely. Secure credential storage is not implemented.
+Unofficial and self-hosted only. Not Hermes Desktop parity and not a hosted SaaS. Missing gateway routes fail visibly. Optional dictation asks for consent and adds text to the draft without sending it; the browser may process audio remotely. See [security notes](#security-notes-v1) for credential handling and remaining limitations.
 
 MIT - see [LICENSE](LICENSE). Hermes Agent is upstream at NousResearch/hermes-agent.
