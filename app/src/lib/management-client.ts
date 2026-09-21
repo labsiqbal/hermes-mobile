@@ -257,7 +257,7 @@ export class ManagementClient {
             throw new ManagementError('invalid','An unpinned session repeated across pages. Refresh Chats.');
           }
           seen.add(id);
-          pageRows.push({id,profile,title:text(row.title),preview:text(row.preview),source:text(row.source),started_at:typeof row.started_at==='number' ? row.started_at : 0,message_count:count(row.message_count) || 0,resolved_id:text(row.resolved_id) || undefined,cwd:text(row.cwd) || null,git_repo_root:text(row.git_repo_root) || null,git_branch:text(row.git_branch) || null});
+          pageRows.push({id,profile,title:text(row.title),preview:text(row.preview),source:text(row.source),started_at:typeof row.started_at==='number' ? row.started_at : 0,last_active:typeof row.last_active==='number'&&Number.isFinite(row.last_active)?row.last_active:undefined,input_tokens:count(row.input_tokens),output_tokens:count(row.output_tokens),message_count:count(row.message_count) || 0,resolved_id:text(row.resolved_id) || undefined,cwd:text(row.cwd) || null,git_repo_root:text(row.git_repo_root) || null,git_branch:text(row.git_branch) || null});
         }
         rows.push(...pageRows);
         if(offset+100>=total) return rows;
