@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Delivered mobile PWA and optional relay for a self-hosted Hermes gateway. PR #27 merged on 2026-09-18. Remaining Orca/Treehouse checkouts are historical task artifacts and must be closed through their harness after checking local evidence.
+Mobile PWA and optional relay for a self-hosted Hermes gateway.
 
 ## Routing
 
