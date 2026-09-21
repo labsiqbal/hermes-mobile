@@ -87,7 +87,7 @@ export default function ProjectBrowser({conn,client,onOpenChat,onNewFolderChat,s
     if(!rows.length)continue;
     if(project.isNoProject){tree.push({id:project.id,name:project.label,path:'',profile:project.profile,rows,home:true});continue;}
     const path=rows.find(row=>row.git_repo_root)?.git_repo_root || rows.find(row=>row.cwd)?.cwd || '';
-    if(tree.some(folder=>folder.id===project.id || folders.some(local=>local.id===folder.id) && folder.profile===project.profile && folder.path===path))continue;
+    if(tree.some(folder=>folder.id===project.id))continue;
     tree.push({id:project.id,name:project.label,path,profile:project.profile,rows:ordinary([...opened.filter(row=>row.profile===project.profile && folderContains(path,row.cwd)),...rows]),remoteId:project.sourceId});
   }
   tree.sort((a,b)=>{const home=Number(!!b.home)-Number(!!a.home),pin=Number(pinned.has(b.id))-Number(pinned.has(a.id));const ai=order.indexOf(a.id),bi=order.indexOf(b.id);return home || pin || (ai<0?Number.MAX_SAFE_INTEGER:ai)-(bi<0?Number.MAX_SAFE_INTEGER:bi);});
@@ -118,7 +118,10 @@ export default function ProjectBrowser({conn,client,onOpenChat,onNewFolderChat,s
     </div>;
   }
   return <div className={`project-browser${view.cards?' inbox-style':''}`}>
-    <button ref={viewTrigger} className="inbox-view-trigger" aria-haspopup="dialog" onClick={()=>setViewOpen(true)}><SlidersHorizontal size={16}/>View</button>
+    <div className="inbox-toolbar">
+      <button ref={viewTrigger} className="inbox-view-trigger" aria-haspopup="dialog" onClick={()=>setViewOpen(true)}><SlidersHorizontal size={16}/>View</button>
+      <label className="project-search"><Search size={16}/><input aria-label="Search conversations" placeholder="Search" value={query} onChange={e=>{setQuery(e.target.value);setSearchExpanded(true);}}/></label>
+    </div>
     {viewOpen&&<dialog ref={viewDialog} className="project-dialog inbox-view-dialog" aria-label="Chat view" onClose={()=>{setViewOpen(false);viewTrigger.current?.focus();}}>
       <div className="project-section-title"><h2>Chat view</h2><button className="iconbtn" aria-label="Close chat view" onClick={()=>viewDialog.current?.close()}><X size={18}/></button></div>
       <label>Grouping<select value={view.grouping} onChange={e=>changeView({...view,grouping:e.target.value as InboxView['grouping']})}><option value="project">Project</option><option value="date">Updated</option><option value="profile">Profile</option></select></label>
@@ -126,7 +129,6 @@ export default function ProjectBrowser({conn,client,onOpenChat,onNewFolderChat,s
       <label className="inbox-switch"><input type="checkbox" checked={view.cards} onChange={e=>changeView({...view,cards:e.target.checked})}/>Inbox style</label>
       <button className="btn btn-ghost" onClick={()=>changeView({...defaultInboxView})}>Reset to defaults</button>
     </dialog>}
-    <label className="project-search"><Search size={16}/><input aria-label="Search conversations" placeholder="Search" value={query} onChange={e=>{setQuery(e.target.value);setSearchExpanded(true);}}/></label>
     <div className="project-section-title"><h2>Projects</h2><button className="iconbtn" title={bulkLabel} aria-label={bulkLabel} disabled={loading || !tree.length} onClick={toggleAll}>{hasOpenFolders?<ListCollapse size={17}/>:<ListTree size={17}/>}</button><button className="iconbtn" title="Refresh projects" aria-label="Refresh projects" disabled={loading} onClick={()=>void load()}><RefreshCw size={15}/></button><button className="iconbtn" title="Add project" aria-label="Add project" onClick={()=>setAdding(true)}><Plus size={17}/></button></div>
     {error && <p className="error-line" role="alert">{error}</p>}
     {!!data?.readFailures.length && <p className="hint" role="status">Some history is unavailable. Refresh to retry.</p>}
@@ -141,7 +143,7 @@ export default function ProjectBrowser({conn,client,onOpenChat,onNewFolderChat,s
           onPointerMove={e=>{const state=touchDrag.current;if(!state)return;const scroller=e.currentTarget.closest<HTMLElement>('.project-browser');if(!state.active){const delta=state.y-e.clientY;if(state.scrolling||Math.abs(delta)>6){clearTimeout(state.timer);state.scrolling=true;if(scroller)scroller.scrollTop+=delta;state.y=e.clientY;}return;}e.preventDefault();if(scroller){const bounds=scroller.getBoundingClientRect();if(e.clientY<bounds.top+40)scroller.scrollTop-=12;else if(e.clientY>bounds.bottom-40)scroller.scrollTop+=12;}const target=document.elementFromPoint(e.clientX,e.clientY)?.closest<HTMLElement>('[data-folder-id]');setDropTarget(target?.dataset.folderId || null);}}
           onPointerUp={e=>{const state=touchDrag.current;if(!state)return;clearTimeout(state.timer);if(state.active){const target=document.elementFromPoint(e.clientX,e.clientY)?.closest<HTMLElement>('[data-folder-id]')?.dataset.folderId;if(target)reorder(state.id,target);}suppressClick.current=state.active||state.scrolling;touchDrag.current=null;setDragging(null);setDropTarget(null);}}
           onPointerCancel={()=>{if(touchDrag.current)clearTimeout(touchDrag.current.timer);touchDrag.current=null;setDragging(null);setDropTarget(null);}}>
-          <button className="tree-project-toggle" aria-expanded={open} aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown" title={folder.path || folder.name} onKeyDown={e=>{if(e.altKey&&(e.key==='ArrowUp'||e.key==='ArrowDown')){e.preventDefault();const target=tree[tree.findIndex(p=>p.id===folder.id)+(e.key==='ArrowUp'?-1:1)];if(target)reorder(folder.id,target.id);}}} onClick={()=>{if(suppressClick.current){suppressClick.current=false;return;}toggle(folder.id);}}>{folder.home?<Home size={17}/>:open?<FolderOpen size={17} style={{color:color||undefined}}/>:<Folder size={17} style={{color:color||undefined}}/>}<span>{folder.name}</span>{pinned.has(folder.id)&&<Pin size={12}/>}</button>
+          <button className="tree-project-toggle" aria-expanded={open} aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown" title={folder.home?`${folder.name} · ${folder.profile}`:folder.path || folder.name} onKeyDown={e=>{if(e.altKey&&(e.key==='ArrowUp'||e.key==='ArrowDown')){e.preventDefault();const target=tree[tree.findIndex(p=>p.id===folder.id)+(e.key==='ArrowUp'?-1:1)];if(target)reorder(folder.id,target.id);}}} onClick={()=>{if(suppressClick.current){suppressClick.current=false;return;}toggle(folder.id);}}>{folder.home?<Home size={17}/>:open?<FolderOpen size={17} style={{color:color||undefined}}/>:<Folder size={17} style={{color:color||undefined}}/>}<span>{folder.name}</span>{folder.home&&<small className="tree-project-profile">· {folder.profile}</small>}{pinned.has(folder.id)&&<Pin size={12}/>}</button>
           {!folder.home&&<><button className="iconbtn tree-action" aria-label={`Project actions for ${folder.name}`} aria-haspopup="menu" title="Project actions" onClick={e=>{menuAnchor.current=e.currentTarget;setMenu(folder);}}><MoreHorizontal size={16}/></button>
           <button className="iconbtn tree-action" aria-label={`New session in ${folder.name}`} title="New session" disabled={!safeServerFolder(folder.path) || folder.profile!=='default' || client.connectionState!=='open'} onClick={()=>onNewFolderChat(folder)}><SquarePen size={16}/></button></>}
         </div>

@@ -17,6 +17,7 @@
 .tree-project-toggle { display:flex; align-items:center; gap:7px; min-width:0; flex:1; padding:0 4px; min-height:36px; color:var(--fg-dim); background:transparent; border:0; font:inherit; text-align:left; cursor:pointer; }
 .tree-project-toggle svg { flex:none; }
 .tree-project-toggle>span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.tree-project-profile { flex:none; color:var(--fg-faint); font-size:12px; white-space:nowrap; }
 .project-session { display:flex; align-items:center; min-height:34px; width:100%; padding:7px 10px 7px 34px; border:0; border-radius:7px; color:var(--fg-dim); background:transparent; text-align:left; font:400 14px/1.4 var(--font-sans); }
 .project-session span { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .project-session-wrap { display:flex; align-items:center; border-radius:7px; min-width:0; }
