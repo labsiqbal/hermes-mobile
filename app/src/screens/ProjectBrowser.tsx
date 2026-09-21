@@ -110,7 +110,7 @@ export default function ProjectBrowser({conn,client,onOpenChat,onNewFolderChat,s
   function changeView(next:InboxView){setView(next);save(':view',next);}
   function renderRow(row:SessionSummary) {
     return <div key={chatKey(row)} className="project-session-wrap">
-      <button className="project-session" aria-current={selectedId===row.id?'page':undefined} title={row.title || 'Untitled'} data-session-id={row.id} onClick={()=>onOpenChat(row)}>
+      <button className="project-session" aria-label={row.title || 'Untitled'} aria-current={selectedId===row.id?'page':undefined} title={row.title || 'Untitled'} data-session-id={row.id} onClick={()=>onOpenChat(row)}>
         <span>{row.title || 'Untitled'}</span>
         {view.cards&&<><small className="inbox-preview">{row.preview}</small><small className="inbox-meta">{row.profile} · {row.message_count} messages{updatedTime(row)>0&&` · ${new Date(updatedTime(row)*1000).toLocaleDateString(undefined,{month:'short',day:'numeric'})}`}</small></>}
       </button>
