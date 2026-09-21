@@ -108,6 +108,10 @@ jobs:
         timeout-minutes: 2
         run: npm run check:session-exit:browser
 
+      - name: Slash commands and goal kickoff (built React, fictional transport)
+        timeout-minutes: 2
+        run: npm run check:slash-catalog:browser
+
       - name: Browser harness self-test
         id: browser_self_test
         timeout-minutes: 2
