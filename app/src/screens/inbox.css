@@ -1,4 +1,6 @@
-.inbox-view-trigger { display:flex; align-items:center; gap:8px; align-self:flex-end; min-height:44px; padding:0 12px; background:transparent; color:var(--fg-dim); border:1px solid var(--line-soft); border-radius:8px; font:inherit; }
+.inbox-toolbar { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+.inbox-toolbar .project-search { flex:1; min-width:0; margin:0; }
+.inbox-view-trigger { display:flex; align-items:center; gap:8px; flex:none; min-height:44px; padding:0 12px; background:transparent; color:var(--fg-dim); border:1px solid var(--line-soft); border-radius:8px; font:inherit; }
 .inbox-view-dialog label { display:flex; flex-direction:column; gap:8px; margin:16px 0; color:var(--fg-dim); }
 .inbox-view-dialog select { min-height:44px; width:100%; color:var(--fg); background:var(--card); border:1px solid var(--line-soft); border-radius:8px; padding:8px; font:inherit; }
 .inbox-view-dialog .inbox-switch { flex-direction:row; align-items:center; min-height:44px; }

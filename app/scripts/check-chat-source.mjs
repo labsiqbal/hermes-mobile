@@ -27,6 +27,18 @@ try {
  await test('context cancellation during preflight cannot dispatch',async()=>{const controller=new AbortController();calls=[];const bad=new ChatSource(client,{...manager,sessionIdentity:async(profile,id)=>{controller.abort();return {profile,id};}});await assert.rejects(()=>bad.delete(target,true,controller.signal),/confirmation changed/);assert.equal(calls.filter(c=>c[0]==='delete').length,0);});
  await test('disconnected review cannot dispatch',async()=>{client.connectionState='closed';await assert.rejects(()=>source.delete(target,true),/connection/);client.connectionState='open';});
  await test('project failure preserves verified profile history',async()=>{rows=[target];const bad=new ChatSource({...client,projectTree:async()=>{throw Error('unsupported projects');}},manager);const data=await bad.load();assert.deepEqual(data.sessions,[target]);assert.equal(data.warnings.length,2);});
+ await test('Home hydration failure preserves every verified project across profiles',async()=>{
+  const profiles=[{name:'builder'},{name:'default'}];
+  const tree=profile=>({projects:[
+    {id:`project-${profile}`,label:`Project ${profile}`,sessionCount:1,previewSessions:[row(`project-${profile}`,profile)]},
+    {id:'__no_project__',label:'Home',isNoProject:true,sessionCount:1,previewSessions:[row(`home-${profile}`,profile)]},
+  ],scoped_session_ids:[]});
+  const bad=new ChatSource({...client,profilesList:async()=>profiles,projectTree:async(_limit,profile)=>tree(profile),projectSessions:async(id,profile)=>{if(id==='__no_project__')throw Error('Home unavailable');return tree(profile).projects[0];}},{...manager,sessions:async profile=>[row(`recent-${profile}`,profile)]});
+  const data=await bad.load();
+  assert.deepEqual(data.projects.map(project=>[project.profile,project.sourceId]),[['builder','project-builder'],['builder','__no_project__'],['default','project-default'],['default','__no_project__']]);
+  assert.deepEqual(data.sessions.map(session=>session.id),['recent-builder','recent-default']);
+  assert.deepEqual(data.failedProfiles,['builder','default']);
+ });
  await test('ownerless project rows are rejected without discarding REST history',async()=>{const bad=new ChatSource({...client,projectTree:async()=>({projects:[{id:'p',sessionCount:1,previewSessions:[{id:'same'}]}]})},manager);const data=await bad.load();assert.equal(data.projects.length,0);assert.equal(data.sessions.length,1);});
  const fetchPage=(fn)=>new ManagementClient(client,async input=>{const url=new URL(input);assert.equal(url.pathname,'/api/sessions');assert.equal(url.searchParams.get('profile'),'builder');return Response.json(fn(Number(url.searchParams.get('offset'))));});
  await test('pinned backfill beyond 100 rows deduplicates across offset pages',async()=>{const batch=Array.from({length:100},(_,i)=>row(String(i)));const pin={...row('old-pin'),pinned:true};const offsets=[];const adapter=fetchPage(offset=>{offsets.push(offset);return {sessions:offset===0?[...batch,pin]:[pin],total:101,limit:100,offset};});assert.equal((await adapter.sessions('builder')).length,101);assert.deepEqual(offsets,[0,100]);});

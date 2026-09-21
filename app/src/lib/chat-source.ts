@@ -44,13 +44,18 @@ export class ChatSource {
         const tree=await this.client.projectTree(3,owner.name);
         const projects=tree.projects.filter(project=>project.sessionCount>0).map(project=>this.owned(project,owner.name));
         operation = 'RPC projects.project_sessions';
-        const homes=await Promise.all(projects.filter(project=>project.isNoProject).map(project=>this.project(project.sourceId,owner.name)));
+        const homeReads=await Promise.allSettled(projects.filter(project=>project.isNoProject).map(project=>this.project(project.sourceId,owner.name)));
+        const homes: OwnedProject[]=[];
+        for(const read of homeReads) {
+          if(read.status==='fulfilled') homes.push(read.value);
+          else readFailures.push(chatReadFailure(read.reason,owner.name,operation));
+        }
         for(const home of homes) projects[projects.findIndex(project=>project.id===home.id)]=home;
         const homeRows=homes.flatMap(rowsOf);
         const homeIds=new Set(homeRows.flatMap(row=>[row.id,row.resolved_id].filter(Boolean)));
         sessions=uniqueChats([...sessions,...homeRows]);
         if(version===this.loadVersion) this.verified.set(owner.name,sessions);
-        return {sessions,projects,scoped:(tree.scoped_session_ids || []).filter(id=>!homeIds.has(id)).map(id=>chatKey({id,profile:owner.name})),error:''};
+        return {sessions,projects,scoped:(tree.scoped_session_ids || []).filter(id=>!homeIds.has(id)).map(id=>chatKey({id,profile:owner.name})),error:homeReads.some(read=>read.status==='rejected')?owner.name:''};
       } catch(error) {
         if(error instanceof SessionReadError) sessions=error.sessions;
         const failure=chatReadFailure(error,owner.name,operation);
