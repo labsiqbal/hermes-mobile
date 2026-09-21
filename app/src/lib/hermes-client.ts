@@ -42,6 +42,9 @@ export interface SessionSummary {
   title: string;
   preview: string;
   started_at: number;
+  last_active?: number;
+  input_tokens?: number | null;
+  output_tokens?: number | null;
   message_count: number;
   source: string;
   /** Profile-owned state.db scope; required for cross-profile Bot Chat resume. */

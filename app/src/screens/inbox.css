@@ -1,0 +1,11 @@
+.inbox-view-trigger { display:flex; align-items:center; gap:8px; align-self:flex-end; min-height:44px; padding:0 12px; background:transparent; color:var(--fg-dim); border:1px solid var(--line-soft); border-radius:8px; font:inherit; }
+.inbox-view-dialog label { display:flex; flex-direction:column; gap:8px; margin:16px 0; color:var(--fg-dim); }
+.inbox-view-dialog select { min-height:44px; width:100%; color:var(--fg); background:var(--card); border:1px solid var(--line-soft); border-radius:8px; padding:8px; font:inherit; }
+.inbox-view-dialog .inbox-switch { flex-direction:row; align-items:center; min-height:44px; }
+.inbox-view-dialog input { width:20px; height:20px; }
+.inbox-style .project-session-wrap { margin:4px 0; background:var(--card); }
+.inbox-style .project-session { display:flex; flex-direction:column; align-items:stretch; gap:5px; padding:12px; }
+.inbox-style .project-session>span { color:var(--fg); }
+.inbox-preview { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--fg-dim); font:inherit; font-size:var(--text-13); }
+.inbox-meta { color:var(--fg-faint); font-size:var(--text-12); overflow-wrap:anywhere; }
+.inbox-group-label { color:var(--fg-dim); font-size:var(--text-13); font-weight:500; margin:12px 0; }

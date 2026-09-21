@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Folder, FolderOpen, ListCollapse, ListTree, MoreHorizontal, Pin, Palette, Plus, RefreshCw, Search, SquarePen, Trash2, X } from 'lucide-react';
+import { Folder, FolderOpen, Home, SlidersHorizontal, ListCollapse, ListTree, MoreHorizontal, Pin, Palette, Plus, RefreshCw, Search, SquarePen, Trash2, X } from 'lucide-react';
 import { DeleteDialog } from './ChatList';
 import { isActive } from '../lib/active-sessions';
 import type { HermesConnection, SavedConnection, SessionSummary } from '../lib/hermes-client';
@@ -7,14 +7,21 @@ import { ChatSource } from '../lib/chat-source';
 import { chatKey, isBotThread, readBotThreads, readIds, uniqueChats } from '../lib/chat-browser';
 import { folderContains, folderKey, moveProject, readFolders, type ProjectFolder } from '../lib/project-folders';
 import { absolutePathCompletions, pathCompletionContext, safeServerFolder } from './ChatView';
+import { defaultInboxView, inboxDate, orderInbox, readInboxView, updatedTime, type InboxView } from '../lib/inbox-view';
+import './inbox.css';
 
 interface Props { conn: SavedConnection; client: HermesConnection; onOpenChat: (row:SessionSummary|null)=>void; onNewFolderChat:(folder:ProjectFolder)=>void; selectedId?:string; openedSessions?:SessionSummary[] }
 type Snapshot=Awaited<ReturnType<ChatSource['load']>>;
-type TreeFolder=ProjectFolder & { rows:SessionSummary[]; remoteId?:string };
+type TreeFolder=ProjectFolder & { rows:SessionSummary[]; remoteId?:string; home?:boolean };
 
 export default function ProjectBrowser({conn,client,onOpenChat,onNewFolderChat,selectedId,openedSessions=[]}:Props) {
   const source=useMemo(()=>new ChatSource(client),[client]);
   const key=folderKey(conn);
+  const [view,setView]=useState(()=>readInboxView(key+':view'));
+  const viewDialog=useRef<HTMLDialogElement>(null);
+  const viewTrigger=useRef<HTMLButtonElement>(null);
+  const [viewOpen,setViewOpen]=useState(false);
+  useEffect(()=>{if(viewOpen)viewDialog.current?.showModal();},[viewOpen]);
   const [folders,setFolders]=useState(()=>readFolders(key));
   const [order,setOrder]=useState(()=>[...readIds(key+':order')]);
   const [collapsed,setCollapsed]=useState(()=>readIds(key+':collapsed'));
@@ -73,19 +80,22 @@ export default function ProjectBrowser({conn,client,onOpenChat,onNewFolderChat,s
   const stored=[...(data?.sessions || []),...(data?.projects.flatMap(p=>p.previewSessions || []) || []),...Object.values(hydrated).flat()];
   const opened=openedSessions.map(row=>{const saved=stored.find(item=>chatKey(item)===chatKey(row));return {...row,title:row.title || saved?.title || '',preview:row.preview || saved?.preview || ''};});
   const all=ordinary([...opened,...stored]);
-  const tree:TreeFolder[]=folders.map(folder=>({...folder,rows:all.filter(row=>row.profile===folder.profile && folderContains(folder.path,row.cwd))}));
+  const homeIds=new Set((data?.projects || []).filter(project=>project.isNoProject).flatMap(project=>project.repos?.flatMap(repo=>repo.groups?.flatMap(group=>group.sessions || []) || []) || []).flatMap(row=>[chatKey(row),...(row.resolved_id?[chatKey({...row,id:row.resolved_id})]:[])]));
+  const tree:TreeFolder[]=folders.map(folder=>({...folder,rows:all.filter(row=>!homeIds.has(chatKey(row)) && !(row.resolved_id&&homeIds.has(chatKey({...row,id:row.resolved_id}))) && row.profile===folder.profile && folderContains(folder.path,row.cwd))}));
   for(const project of data?.projects || []) {
-    if(project.isNoProject)continue;
-    const rows=ordinary(hydrated[project.id] || project.previewSessions || []);
+    const rows=ordinary(hydrated[project.id] || (project.isNoProject ? project.repos?.flatMap(repo=>repo.groups?.flatMap(group=>group.sessions || []) || []) : undefined) || project.previewSessions || []);
     if(!rows.length)continue;
+    if(project.isNoProject){tree.push({id:project.id,name:project.label,path:'',profile:project.profile,rows,home:true});continue;}
     const path=rows.find(row=>row.git_repo_root)?.git_repo_root || rows.find(row=>row.cwd)?.cwd || '';
-    if(tree.some(folder=>folder.id===project.id || folder.profile===project.profile && folder.path===path))continue;
+    if(tree.some(folder=>folder.id===project.id || folders.some(local=>local.id===folder.id) && folder.profile===project.profile && folder.path===path))continue;
     tree.push({id:project.id,name:project.label,path,profile:project.profile,rows:ordinary([...opened.filter(row=>row.profile===project.profile && folderContains(path,row.cwd)),...rows]),remoteId:project.sourceId});
   }
-  for(let i=tree.length-1;i>=0;i--)if(hidden.has(tree[i].id))tree.splice(i,1);
-  tree.sort((a,b)=>{const pin=Number(pinned.has(b.id))-Number(pinned.has(a.id));const ai=order.indexOf(a.id),bi=order.indexOf(b.id);return pin || (ai<0?Number.MAX_SAFE_INTEGER:ai)-(bi<0?Number.MAX_SAFE_INTEGER:bi);});
-  const assigned=new Set(tree.flatMap(p=>p.rows.map(chatKey)));
-  const recent=all.filter(row=>!assigned.has(chatKey(row)));
+  tree.sort((a,b)=>{const home=Number(!!b.home)-Number(!!a.home),pin=Number(pinned.has(b.id))-Number(pinned.has(a.id));const ai=order.indexOf(a.id),bi=order.indexOf(b.id);return home || pin || (ai<0?Number.MAX_SAFE_INTEGER:ai)-(bi<0?Number.MAX_SAFE_INTEGER:bi);});
+  for(let i=tree.length-1;i>=0;i--)if(!tree[i].home&&hidden.has(tree[i].id))tree.splice(i,1);
+  const assigned=new Set(tree.flatMap(p=>p.rows.flatMap(row=>[chatKey(row),...(row.resolved_id?[chatKey({...row,id:row.resolved_id})]:[])])));
+  const recent=all.filter(row=>!assigned.has(chatKey(row)) && !(row.resolved_id&&assigned.has(chatKey({...row,id:row.resolved_id}))));
+  const groups=new Map<string,SessionSummary[]>();
+  if(view.grouping!=='project')for(const row of orderInbox(all,view.ordering)){const label=view.grouping==='profile'?row.profile || 'Unknown profile':inboxDate(row);groups.set(label,[...(groups.get(label)||[]),row]);}
   const match=(row:SessionSummary)=>`${row.title} ${row.preview}`.toLocaleLowerCase().includes(query.toLocaleLowerCase());
   function reorder(from:string,to:string) {const next=moveProject(tree.map(p=>p.id),from,to);setOrder(next);save(':order',next);}
   function toggle(id:string){const next=new Set(collapsed);if(next.has(id))next.delete(id);else next.add(id);setCollapsed(next);save(':collapsed',[...next]);}
@@ -97,14 +107,31 @@ export default function ProjectBrowser({conn,client,onOpenChat,onNewFolderChat,s
     setSearchExpanded(false);setCollapsed(next);save(':collapsed',[...next]);
   }
   const canDelete=(row:SessionSummary)=>!loading && !!data && !data.failedProfiles.includes(row.profile || '') && row.profile===data.profile && client.connectionState==='open' && ![row.id,row.resolved_id].filter(Boolean).includes(selectedId) && !isActive(conn.id,row.id,row.resolved_id);
-  function renderRow(row:SessionSummary) {return <div key={chatKey(row)} className="project-session-wrap"><button className="project-session" aria-current={selectedId===row.id?'page':undefined} title={row.title || 'Untitled'} data-session-id={row.id} onClick={()=>onOpenChat(row)}><span>{row.title || 'Untitled'}</span></button><button className="iconbtn session-trash" title={canDelete(row)?'Delete session':'Only inactive sessions in the running profile can be deleted'} aria-label={`Delete session ${row.title || 'Untitled'}`} disabled={!canDelete(row)} onClick={()=>setPendingDelete(row)}><Trash2 size={15}/></button></div>;}
-  return <div className="project-browser">
+  function changeView(next:InboxView){setView(next);save(':view',next);}
+  function renderRow(row:SessionSummary) {
+    return <div key={chatKey(row)} className="project-session-wrap">
+      <button className="project-session" aria-current={selectedId===row.id?'page':undefined} title={row.title || 'Untitled'} data-session-id={row.id} onClick={()=>onOpenChat(row)}>
+        <span>{row.title || 'Untitled'}</span>
+        {view.cards&&<><small className="inbox-preview">{row.preview}</small><small className="inbox-meta">{row.profile} · {row.message_count} messages{updatedTime(row)>0&&` · ${new Date(updatedTime(row)*1000).toLocaleDateString(undefined,{month:'short',day:'numeric'})}`}</small></>}
+      </button>
+      <button className="iconbtn session-trash" title={canDelete(row)?'Delete session':'Only inactive sessions in the running profile can be deleted'} aria-label={`Delete session ${row.title || 'Untitled'}`} disabled={!canDelete(row)} onClick={()=>setPendingDelete(row)}><Trash2 size={15}/></button>
+    </div>;
+  }
+  return <div className={`project-browser${view.cards?' inbox-style':''}`}>
+    <button ref={viewTrigger} className="inbox-view-trigger" aria-haspopup="dialog" onClick={()=>setViewOpen(true)}><SlidersHorizontal size={16}/>View</button>
+    {viewOpen&&<dialog ref={viewDialog} className="project-dialog inbox-view-dialog" aria-label="Chat view" onClose={()=>{setViewOpen(false);viewTrigger.current?.focus();}}>
+      <div className="project-section-title"><h2>Chat view</h2><button className="iconbtn" aria-label="Close chat view" onClick={()=>viewDialog.current?.close()}><X size={18}/></button></div>
+      <label>Grouping<select value={view.grouping} onChange={e=>changeView({...view,grouping:e.target.value as InboxView['grouping']})}><option value="project">Project</option><option value="date">Updated</option><option value="profile">Profile</option></select></label>
+      <label>Ordering<select value={view.ordering} onChange={e=>changeView({...view,ordering:e.target.value as InboxView['ordering']})}><option value="updated">Updated</option><option value="created">Created</option><option value="tokens">Tokens</option></select></label>
+      <label className="inbox-switch"><input type="checkbox" checked={view.cards} onChange={e=>changeView({...view,cards:e.target.checked})}/>Inbox style</label>
+      <button className="btn btn-ghost" onClick={()=>changeView({...defaultInboxView})}>Reset to defaults</button>
+    </dialog>}
     <label className="project-search"><Search size={16}/><input aria-label="Search conversations" placeholder="Search" value={query} onChange={e=>{setQuery(e.target.value);setSearchExpanded(true);}}/></label>
     <div className="project-section-title"><h2>Projects</h2><button className="iconbtn" title={bulkLabel} aria-label={bulkLabel} disabled={loading || !tree.length} onClick={toggleAll}>{hasOpenFolders?<ListCollapse size={17}/>:<ListTree size={17}/>}</button><button className="iconbtn" title="Refresh projects" aria-label="Refresh projects" disabled={loading} onClick={()=>void load()}><RefreshCw size={15}/></button><button className="iconbtn" title="Add project" aria-label="Add project" onClick={()=>setAdding(true)}><Plus size={17}/></button></div>
     {error && <p className="error-line" role="alert">{error}</p>}
     {!!data?.readFailures.length && <p className="hint" role="status">Some history is unavailable. Refresh to retry.</p>}
     {loading && !data && <p className="hint" role="status">Loading projects...</p>}
-    <div className="project-tree">{tree.map(folder=>{
+    <div className="project-tree">{(view.grouping==='project'?tree:[]).map(folder=>{
       const rows=folder.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()) ? folder.rows : folder.rows.filter(match);
       if(query && !rows.length && !folder.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()))return null;
       const open=!collapsed.has(folder.id) || (!!query && searchExpanded);
@@ -114,14 +141,15 @@ export default function ProjectBrowser({conn,client,onOpenChat,onNewFolderChat,s
           onPointerMove={e=>{const state=touchDrag.current;if(!state)return;const scroller=e.currentTarget.closest<HTMLElement>('.project-browser');if(!state.active){const delta=state.y-e.clientY;if(state.scrolling||Math.abs(delta)>6){clearTimeout(state.timer);state.scrolling=true;if(scroller)scroller.scrollTop+=delta;state.y=e.clientY;}return;}e.preventDefault();if(scroller){const bounds=scroller.getBoundingClientRect();if(e.clientY<bounds.top+40)scroller.scrollTop-=12;else if(e.clientY>bounds.bottom-40)scroller.scrollTop+=12;}const target=document.elementFromPoint(e.clientX,e.clientY)?.closest<HTMLElement>('[data-folder-id]');setDropTarget(target?.dataset.folderId || null);}}
           onPointerUp={e=>{const state=touchDrag.current;if(!state)return;clearTimeout(state.timer);if(state.active){const target=document.elementFromPoint(e.clientX,e.clientY)?.closest<HTMLElement>('[data-folder-id]')?.dataset.folderId;if(target)reorder(state.id,target);}suppressClick.current=state.active||state.scrolling;touchDrag.current=null;setDragging(null);setDropTarget(null);}}
           onPointerCancel={()=>{if(touchDrag.current)clearTimeout(touchDrag.current.timer);touchDrag.current=null;setDragging(null);setDropTarget(null);}}>
-          <button className="tree-project-toggle" aria-expanded={open} aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown" title={folder.path || folder.name} onKeyDown={e=>{if(e.altKey&&(e.key==='ArrowUp'||e.key==='ArrowDown')){e.preventDefault();const target=tree[tree.findIndex(p=>p.id===folder.id)+(e.key==='ArrowUp'?-1:1)];if(target)reorder(folder.id,target.id);}}} onClick={()=>{if(suppressClick.current){suppressClick.current=false;return;}toggle(folder.id);}}>{open?<FolderOpen size={17} style={{color:color||undefined}}/>:<Folder size={17} style={{color:color||undefined}}/>}<span>{folder.name}</span>{pinned.has(folder.id)&&<Pin size={12}/>}</button>
-          <button className="iconbtn tree-action" aria-label={`Project actions for ${folder.name}`} aria-haspopup="menu" title="Project actions" onClick={e=>{menuAnchor.current=e.currentTarget;setMenu(folder);}}><MoreHorizontal size={16}/></button>
-          <button className="iconbtn tree-action" aria-label={`New session in ${folder.name}`} title="New session" disabled={!safeServerFolder(folder.path) || folder.profile!=='default' || client.connectionState!=='open'} onClick={()=>onNewFolderChat(folder)}><SquarePen size={16}/></button>
+          <button className="tree-project-toggle" aria-expanded={open} aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown" title={folder.path || folder.name} onKeyDown={e=>{if(e.altKey&&(e.key==='ArrowUp'||e.key==='ArrowDown')){e.preventDefault();const target=tree[tree.findIndex(p=>p.id===folder.id)+(e.key==='ArrowUp'?-1:1)];if(target)reorder(folder.id,target.id);}}} onClick={()=>{if(suppressClick.current){suppressClick.current=false;return;}toggle(folder.id);}}>{folder.home?<Home size={17}/>:open?<FolderOpen size={17} style={{color:color||undefined}}/>:<Folder size={17} style={{color:color||undefined}}/>}<span>{folder.name}</span>{pinned.has(folder.id)&&<Pin size={12}/>}</button>
+          {!folder.home&&<><button className="iconbtn tree-action" aria-label={`Project actions for ${folder.name}`} aria-haspopup="menu" title="Project actions" onClick={e=>{menuAnchor.current=e.currentTarget;setMenu(folder);}}><MoreHorizontal size={16}/></button>
+          <button className="iconbtn tree-action" aria-label={`New session in ${folder.name}`} title="New session" disabled={!safeServerFolder(folder.path) || folder.profile!=='default' || client.connectionState!=='open'} onClick={()=>onNewFolderChat(folder)}><SquarePen size={16}/></button></>}
         </div>
-        {open && <div className="tree-project-sessions">{rows.sort((a,b)=>b.started_at-a.started_at).map(renderRow)}{!rows.length && <span className="tree-empty">No sessions</span>}</div>}
+        {open && <div className="tree-project-sessions">{orderInbox(rows,view.ordering).map(renderRow)}{!rows.length && <span className="tree-empty">No sessions</span>}</div>}
       </section>;
     })}</div>
-    {recent.filter(match).length>0 && <section className="tree-recent"><div className="project-section-title"><h2>Chats</h2><button className="iconbtn" title="New chat" aria-label="New chat" onClick={()=>onOpenChat(null)}><SquarePen size={17}/></button></div>{recent.filter(match).map(renderRow)}</section>}
+    {view.grouping==='project'&&recent.filter(match).length>0 && <section className="tree-recent"><div className="project-section-title"><h2>Chats</h2><button className="iconbtn" title="New chat" aria-label="New chat" onClick={()=>onOpenChat(null)}><SquarePen size={17}/></button></div>{orderInbox(recent.filter(match),view.ordering).map(renderRow)}</section>}
+    {[...groups].map(([label,rows])=>rows.some(match)&&<section key={label}><h2 className="inbox-group-label">{label}</h2>{rows.filter(match).map(renderRow)}</section>)}
     {adding && <FolderDialog client={client} onClose={()=>setAdding(false)} onSave={folder=>{const existing=folders.find(p=>p.path===folder.path&&p.profile===folder.profile);if(existing){if(hidden.has(existing.id)){const next=new Set(hidden);next.delete(existing.id);setHidden(next);save(':hidden',[...next]);setAdding(false);}else setError('That folder is already in Projects.');return;}const next=[...folders,folder];setFolders(next);save('',next);setAdding(false);}}/>}
     {editing && <FolderDialog client={client} initial={editing} onClose={()=>setEditing(null)} onSave={folder=>{const next=[...folders.filter(p=>p.id!==folder.id),folder];setFolders(next);save('',next);setEditing(null);}}/>}
     {pendingDelete&&<DeleteDialog target={pendingDelete} device={conn.label} source={source} available={()=>canDelete(pendingDelete)} onClose={()=>setPendingDelete(null)} onFinished={message=>{const success=message.startsWith('Deletion acknowledged');if(success)setDeleted(previous=>new Set([...previous,chatKey(pendingDelete)]));setPendingDelete(null);void load().then(()=>{if(!success)setError(message);});}}/>}
