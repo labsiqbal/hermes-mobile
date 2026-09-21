@@ -1098,6 +1098,17 @@ export class HermesConnection {
     return result.output;
   }
 
+  async goalCommand(sessionId: string, profile: string, command: string): Promise<{output: string; message?: string; display?: string}> {
+    if (!/^\/goal(?:\s|$)/.test(command)) throw new Error('Invalid goal command.');
+    const result = await this.rpc<{type?: unknown; output?: unknown; notice?: unknown; message?: unknown; display?: unknown; warning?: unknown}>('slash.exec', {session_id: sessionId, profile, command});
+    const warning = typeof result.warning === 'string' ? `\n${result.warning}` : '';
+    if (result.type === 'send' && typeof result.message === 'string' && result.message.trim()) {
+      return {output: (typeof result.notice === 'string' ? result.notice : '') + warning, message: result.message, display: typeof result.display === 'string' ? result.display : command};
+    }
+    if ((result.type === undefined || result.type === 'exec') && typeof result.output === 'string') return {output: result.output + warning};
+    throw new Error('Unsupported goal response. Check /goal status before retrying.');
+  }
+
   /** Resolve the connected device's configured working directory, without creating a session. */
   async defaultWorkingFolder(signal?: AbortSignal): Promise<string> {
     const path = "/api/fs/default-cwd";

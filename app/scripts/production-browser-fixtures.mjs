@@ -160,6 +160,9 @@ export function installProductionFixtures(fixture) {
         return {pairs:[['/status','Show runtime status'],['/help','Show help'],['/review','Review changes'],['/fixture-skill','Fixture skill'],...Array.from({length:60},(_,i)=>['/fixture-'+i,'Fictional command '+i]),['/plugin:review','Plugin command'],['/tool.run','Tool command'],['/skills/review','Namespaced skill']],commands:{},skills:{}};
       }
       case 'slash.exec': {
+        if (/^\/goal(?:\s|$)/.test(params.command) && params.session_id && params.profile) {
+          return control.goalResult || {type:'exec',output:'Fixture goal status: inactive'};
+        }
         if(params.command!=='/status' || !params.session_id || !params.profile)return fail('Unexpected slash execution');
         return {output:'Fixture runtime status: ready'};
       }
@@ -254,6 +257,11 @@ export function installProductionFixtures(fixture) {
         if (typeof params.description === 'string') { profile.description = params.description; return { applied: { description: true } }; }
         Object.assign(profile.ui_meta, params.ui_meta);
         return { applied: { ui_meta: true, ui_meta_revisions: { 'hermes-bots-groups': 2 } } };
+      }
+      case 'prompt.submit': {
+        if (!(control.permits[method] > 0)) return fail('Prompt without harness permit');
+        control.permits[method]--;
+        return {status:'accepted'};
       }
       default: return fail(`Unregistered RPC: ${method}`);
     }

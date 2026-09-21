@@ -1520,7 +1520,8 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
 
   async function send() {
     if (state !== "open") return;
-    const text = input.trim();
+    let text = input.trim();
+    let displayText = text;
     if (!text) return;
     if (isGroup && text === "/exit") {
       setComposerStatus("/exit is unavailable in group chats. No message was sent.");
@@ -1555,7 +1556,30 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
       return;
     }
     const command = slashCommand(text) || gatewayCommands.find(option=>option.command===text.split(/\s/,1)[0])?.command.slice(1);
-    if (command) {
+    if (command === 'goal') {
+      if (isGroup || streaming || awaiting || released || closing || runActionBusy || approval || attachBusy || catalogBusy || modelBusy || runtimeUnavailableRef.current || !sidRef.current) {
+        setComposerStatus('/goal requires an idle, active conversation. No command was sent.');
+        return;
+      }
+      const sid = sidRef.current;
+      const commandText = text;
+      setRunActionBusy(true);
+      setComposerStatus('Running command...');
+      try {
+        const result = await client.goalCommand(sid, profileRef.current || commandProfile, commandText);
+        setComposerStatus(result.output);
+        if (sid !== sidRef.current || runtimeUnavailableRef.current) return;
+        setInput(current => current.trim() === commandText ? '' : current);
+        if (!result.message) return;
+        displayText = result.display || commandText;
+        text = result.message;
+      } catch (error) {
+        setComposerStatus(error instanceof Error ? error.message : 'Goal command failed.');
+        return;
+      } finally {
+        setRunActionBusy(false);
+      }
+    } else if (command) {
       if(!isGroup && !streaming && !released && !closing && !runActionBusy && state==='open' && sidRef.current && ['/help','/status','/version','/whoami','/usage','/commands'].includes(text)) {
         setRunActionBusy(true);setComposerStatus('Running command...');setInput('');
         try {const output=await client.slashInfo(sidRef.current,profileRef.current || commandProfile,text);setComposerStatus(output);}
@@ -1587,12 +1611,12 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
     }
     const sid = sidRef.current;
     if (!sid) return;
-    setInput("");
+    if (command !== 'goal') setInput("");
     setMention(null);
     // Attachments staged on the gateway are consumed by this submit.
     setAttachments(null);
     stickRef.current = true; // the sender wants to see their own message
-    setItems((prev) => [...prev, { kind: "user", id: nextItemId(), text, entering: true }]);
+    setItems((prev) => [...prev, { kind: "user", id: nextItemId(), text: displayText, entering: true }]);
     setStreaming(true);
     setAwaiting(true);
     try {
