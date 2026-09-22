@@ -54,13 +54,14 @@ export function installProductionFixtures(fixture) {
   const history = sid => control.historyBySession[sid] ?? f.historyBySession?.[sid] ?? (sid === 'qa-created-session' ? control.createdHistory : sid === f.privateBot.id ? [] : [{ role: 'user', content: `QA restored question ${sid}` }, { role: 'assistant', content: (sid === 'qa-project-session' ? Array.from({length: 24}, (_, n) => `Fictional history paragraph ${n + 1}. This long transcript exercises real scroll restoration, without sending a prompt.`).join('\n\n') + '\n\n' : '') + `QA restored answer ${sid}` }]);
   const info = profile => ({ model: 'fixture-model', provider: 'fixture', profile_name: profile || 'default', cwd: profile === 'qa-bot' ? '/fictional/qa-bot' : '/fictional/qa-project', reasoning_effort: 'medium' });
   const sessionInfos = {};
-  const project = { id: 'qa-project', label: 'QA Project', sessionCount: 1, previewSessions: [f.sessions[0]], repos: [{ id: 'qa-repo', label: 'QA Repo', groups: [{ id: 'qa-lane', label: 'fixture-branch', sessions: [f.sessions[0]] }] }] };
-  const projectCatalog = f.projects || [{...project,profile:'default'}];
+  const project = { id: 'qa-project', label: 'QA Project', path:'/fictional/qa-project', sessionCount: 1, previewSessions: [f.sessions[0]], repos: [{ id: 'qa-repo', label: 'QA Repo', groups: [{ id: 'qa-lane', label: 'fixture-branch', sessions: [f.sessions[0]] }] }] };
+  const projectCatalog = persistedServer.projects || f.projects || [{...project,profile:'default'}];
+  control.projects=projectCatalog;
   const projectRows = profile => projectCatalog.filter(p=>p.profile===profile).map(p=>{
     const alive = row => [...f.sessions,f.bot].some(s=>s.id===row.id && s.profile===profile);
     const repos=p.repos.map(repo=>({...repo,groups:repo.groups.map(group=>({...group,sessions:group.sessions.filter(alive)}))}));
     const sessions=repos.flatMap(repo=>repo.groups.flatMap(group=>group.sessions));
-    return {...p,repos,sessionCount:sessions.length,previewSessions:sessions.slice(0,3)};
+    return {...p,repos,sessionIds:sessions.map(s=>s.id),sessionCount:sessions.length,previewSessions:sessions.slice(0,3)};
   });
   const run = { object: 'hermes.run', run_id: 'qa-run', status: 'completed', session_id: 'qa-recent-session', created_at: 1700000000, model: 'fixture-model', output: 'QA fixture run output' };
   const fail = message => { violations.push(message); throw new Error(message); };
@@ -199,6 +200,23 @@ export function installProductionFixtures(fixture) {
         const rows=projectRows(params.profile || 'default');
         const visible=rows.map(p=>({...p,repos:p.repos.map(r=>({...r,groups:r.groups.map(g=>({...g,sessions:g.sessions.filter(s=>!(f.overviewOmitIds || []).includes(s.id))}))}))}));
         return {projects:visible,scoped_session_ids:visible.flatMap(p=>p.repos.flatMap(r=>r.groups.flatMap(g=>g.sessions.map(s=>s.id))))};
+      }
+      case 'projects.create':
+      case 'projects.update': {
+        if(!(control.permits[method]>0))return fail('Project mutation without harness permit');
+        control.permits[method]--;
+        if(params.profile!=='default')return fail('Unexpected project write profile');
+        let p=projectCatalog.find(p=>p.id===params.id && p.profile===params.profile);
+        if(method==='projects.create'){
+          if(params.use!==false || params.folders.length!==1 || params.primary_path!==params.folders[0])return fail('Unexpected project create payload');
+          p={id:'p_fixture_'+projectCatalog.length,label:params.name,path:params.primary_path,profile:params.profile,repos:[],sessionCount:0};projectCatalog.push(p);
+        }else {if(!p)return fail('Unknown project update');p.label=params.name;}
+        localStorage.setItem('hermes-mobile.qa-inflight-resume',JSON.stringify({...persistedServer,projects:projectCatalog}));
+        return {project:{id:p.id}};
+      }
+      case 'projects.get': {
+        const p=projectCatalog.find(p=>p.id===params.id && p.profile===params.profile);
+        return {project:p?{id:p.id,name:p.label,folders:[{path:p.path}]}:null};
       }
       case 'projects.project_sessions': {
         const selected=projectRows(params.profile || 'default').find(p=>p.id===params.project_id);

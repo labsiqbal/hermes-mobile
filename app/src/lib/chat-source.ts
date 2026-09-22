@@ -42,7 +42,7 @@ export class ChatSource {
         // An empty tree is not evidence of exhaustive project coverage.
         operation = 'RPC projects.tree';
         const tree=await this.client.projectTree(3,owner.name);
-        const projects=tree.projects.filter(project=>project.sessionCount>0).map(project=>this.owned(project,owner.name));
+        const projects=tree.projects.map(project=>this.owned(project,owner.name));
         operation = 'RPC projects.project_sessions';
         const homeReads=await Promise.allSettled(projects.filter(project=>project.isNoProject).map(project=>this.project(project.sourceId,owner.name)));
         const homes: OwnedProject[]=[];
@@ -78,6 +78,23 @@ export class ChatSource {
     const owned=this.owned(project,profile);
     if(version===this.loadVersion) this.verified.set(profile,uniqueChats([...(this.verified.get(profile) || []),...rowsOf(owned)]));
     return owned;
+  }
+  async saveProject(input:{name:string;path:string;profile:string;id?:string}) {
+    if(!input.name.trim() || !input.path.startsWith('/') || !input.profile) throw new Error('Project name, absolute folder and profile are required.');
+    const roster=await this.client.profilesList({includeSessions:false});
+    if(!roster.some(owner=>owner.name===input.profile) || this.client.connectionState!=='open') throw new Error('Project profile is unavailable. No write was sent.');
+    if(await this.manager.runningProfile()!==input.profile) throw new Error('Project writes require the verified running profile. No write was sent.');
+    if(this.client.connectionState!=='open') throw new Error('Connection changed. No write was sent.');
+    try {
+      const result=await this.client.rpc<{project?:{id:string}}>(input.id?'projects.update':'projects.create',input.id
+        ? {id:input.id,name:input.name,profile:input.profile}
+        : {name:input.name,folders:[input.path],primary_path:input.path,use:false,profile:input.profile});
+      if(!result.project?.id || (input.id && result.project.id!==input.id)) throw new Error('Invalid acknowledgment');
+      const read=await this.client.rpc<{project?:{id:string;name:string;folders:{path:string}[]}}>('projects.get',{id:result.project.id,profile:input.profile});
+      if(read.project?.id!==result.project.id || read.project.name!==input.name || (!input.id && !read.project.folders.some(folder=>folder.path===input.path))) throw new Error('Readback mismatch');
+    } catch {
+      throw new Error('Project save outcome is unknown. Refresh before trying again.');
+    }
   }
   async delete(target: BrowserChat, confirmed: boolean, signal?: AbortSignal) {
     const valid = () => { if(signal?.aborted || this.client.connectionState!=='open') throw new Error('The connection or confirmation changed. No write was sent.'); };

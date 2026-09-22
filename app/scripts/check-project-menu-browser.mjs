@@ -13,15 +13,15 @@ try{
  await j.tap('QA Project','.tree-project-heading',false);assert.equal(await b.evaluate("document.querySelector('.tree-project-toggle svg').classList.contains('lucide-folder')"),true);await j.tap('QA Project','.tree-project-heading',false);
  await j.tap('Project actions for QA Project');await b.waitFor("!!document.querySelector('.project-popover:popover-open')");await j.shot('menu-mobile');
  assert.equal(await b.evaluate("document.querySelector('.project-popover').innerText.includes('Move up')"),false);
- await j.tap('Pin','[role=menu]',true);await j.tap('Project actions for QA Project');await j.tap('Edit','[role=menu]');await j.type('input[aria-label="Project name"]','Renamed project');await j.tap('Save changes','dialog');await j.text('Renamed project');
+ await j.tap('Pin','[role=menu]',true);await j.tap('Project actions for QA Project');await j.tap('Edit','[role=menu]');await j.type('input[aria-label="Project name"]','Renamed project');await b.evaluate("__productionFixture.permits['projects.update']=1");await j.tap('Save changes','dialog');await j.text('Renamed project');
  await j.tap('Project actions for Renamed project');await j.tap('Connection color...','[role=menu]');await j.tap('Blue','[role=menu]');
- await j.tap('Project actions for Renamed project');await j.tap('Edit','[role=menu]');await j.type('input[aria-label="Project folder"]','/fictional/qa-project/new');await j.tap('Save changes','dialog');
+ await j.tap('Project actions for Renamed project');await j.tap('Edit','[role=menu]');assert.equal(await b.evaluate("document.querySelector('[aria-label=\"Project folder\"]').disabled"),true);await j.tap('Cancel','dialog');
  assert.equal(await b.evaluate("document.querySelectorAll('.tree-project').length"),1);
- await j.tap('Project actions for Renamed project');await j.tap('Edit','[role=menu]');await j.type('input[aria-label="Project folder"]','/fictional/qa-project');await j.tap('Save changes','dialog');
+
  await j.tap('Delete session QA Recent conversation');await j.tap('Cancel','dialog');assert.equal(await b.evaluate("__productionFixture.trace.filter(t=>t.method==='session.delete').length"),0);
  await j.tap('Delete session QA Recent conversation');await b.evaluate("__productionFixture.permits['session.delete']=1");await j.tap('Delete','dialog');await b.waitFor("!document.querySelector('[data-session-id=qa-recent-session]')");assert.equal(await b.evaluate("__productionFixture.trace.filter(t=>t.method==='session.delete').length"),1);
  await j.tap('Project actions for Renamed project');await j.tap('Unpin','[role=menu]');
- await j.tap('Add project');await j.type('input[aria-label="Project folder"]','/fictional/second');await j.type('input[aria-label="Project name"]','Second');await j.tap('Add project','dialog',false);
+ await j.tap('Add project');await j.type('input[aria-label="Project folder"]','/fictional/second');await j.type('input[aria-label="Project name"]','Second');await b.evaluate("__productionFixture.permits['projects.create']=1");await j.tap('Add project','dialog',false);await b.waitFor("!document.querySelector('dialog')");await j.text('Second');
  await j.tap('Collapse all folders');
  assert.equal(await b.evaluate("document.querySelectorAll('.tree-project-toggle[aria-expanded=true]').length"),0);
  await b.command('Page.reload');await b.waitFor("!!document.querySelector('[aria-label=\"Expand all folders\"]:not(:disabled)')");

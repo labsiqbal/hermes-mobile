@@ -92,5 +92,22 @@ try {
   const adapter=new ManagementClient(client,async()=>Response.json({detail:'PRIVATE_BODY'},{status:503}));
   await assert.rejects(()=>adapter.sessionIdentity('builder','PRIVATE_ID'),e=>e.status===503&&e.operation==='GET /api/sessions/:id'&&!e.message.includes('PRIVATE')&&!e.message.includes('No state changed.'));
  });
+ await test('empty gateway projects remain visible with canonical paths',async()=>{
+  const empty={id:'p_empty',label:'Empty',path:'/fictional/empty',sessionCount:0,previewSessions:[]};
+  const result=await new ChatSource({...client,projectTree:async()=>({projects:[empty]})},manager).load();
+  assert.equal(result.projects.length,2);assert.equal(result.projects[0].path,empty.path);
+ });
+ await test('project create and rename use gateway registry and exact readback',async()=>{
+  const wire=[];let project;
+  const rpc=async(method,params)=>{wire.push([method,params]);if(method==='projects.create')project={id:'p_new',name:params.name,folders:[{path:params.primary_path}]};if(method==='projects.update')project.name=params.name;return {project};};
+  const shared=new ChatSource({...client,rpc},manager);
+  await shared.saveProject({name:'Shared',path:'/fictional/shared',profile:'builder'});
+  assert.deepEqual(wire.map(x=>x[0]),['projects.create','projects.get']);assert.equal(wire[0][1].use,false);assert.ok(wire.every(x=>x[1].profile==='builder'));
+  await shared.saveProject({id:'p_new',name:'Renamed',path:'/fictional/shared',profile:'builder'});
+  assert.deepEqual(wire[2],['projects.update',{id:'p_new',name:'Renamed',profile:'builder'}]);
+  await assert.rejects(()=>shared.saveProject({name:'Wrong',path:'/fictional/shared',profile:'default'}),/running profile/);
+  const bad=new ChatSource({...client,rpc:async()=>({project:null})},manager);
+  await assert.rejects(()=>bad.saveProject({name:'Shared',path:'/fictional/shared',profile:'builder'}),/outcome is unknown/);
+ });
  console.log(`chat source: ${checks} checks PASS`);
 } finally {rmSync(out,{recursive:true,force:true});}

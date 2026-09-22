@@ -72,6 +72,9 @@ export interface ProjectRepo {
 export interface ProjectTreeItem {
   id: string;
   label: string;
+  path?: string | null;
+  isAuto?: boolean;
+  sessionIds?: string[];
   sessionCount: number;
   previewSessions?: SessionSummary[];
   repos?: ProjectRepo[];
