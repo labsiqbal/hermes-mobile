@@ -4,7 +4,7 @@ import "./chat-view.css";
 import { acceptLiveEvent, allowSmoothAutoScroll, freshHistoryMessages, historyMessageKey, preservedScrollTop, resumeCatchupEvents, shouldFetchSessionHistory } from "./chat-resume-utils";
 import Header from "../components/Header";
 import SubagentActivity from '../components/SubagentActivity';
-import { activityKey, getActivity, linkActivity, readActivity, subscribeActivity } from '../lib/session-activity';
+import { activityKey, getActivity, linkActivity, readActivity, reconcileRunning, subscribeActivity } from '../lib/session-activity';
 import { DictationButton } from '../components/DictationButton';
 import { MoreHorizontal, SquarePen } from 'lucide-react';
 import type { ConversationViews } from "../lib/shell-state";
@@ -783,6 +783,9 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
           historyItems(m as Record<string, unknown>),
         );
         const running = opened.running === true || opened.status === "streaming";
+        const activityTarget=activityKey(conn.id,conn.url,opened.session_id);
+        linkActivity(activityTarget,...[session?.id,session?.resolved_id,storedSid].filter((id):id is string=>!!id).map(id=>activityKey(conn.id,conn.url,id)));
+        reconcileRunning(activityTarget,running);
         resumeRunningRef.current = running;
         resumeReplayRef.current = cached;
         const inflightText = opened.inflight?.assistant?.trim() ?? "";

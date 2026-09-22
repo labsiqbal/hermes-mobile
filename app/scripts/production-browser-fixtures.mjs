@@ -192,6 +192,8 @@ export function installProductionFixtures(fixture) {
         f.sessions.push(session);
         return { session_id: session.id, stored_session_id: session.id, info: info('default') };
       }
+      case 'subagent.list': return {subagents:[],delegations:[]};
+      case 'session.active_list': return {sessions:[]};
       case 'session.list': return { sessions: params.title === 'Bot Chat' ? (params.profile===f.bot.profile ? [f.bot] : []) : f.sessions.filter(s=>s.profile===(params.profile || 'default')) };
       case 'projects.tree': {
         const rows=projectRows(params.profile || 'default');

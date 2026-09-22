@@ -47,6 +47,9 @@ jobs:
       - name: Unit and transport contracts (fixtures only)
         run: npm run test:unit
 
+      - name: Session activity state and expandable logs (fictional transport)
+        run: node scripts/check-session-activity.mjs && node scripts/check-session-activity-browser.mjs
+
       - name: Static publisher unit contracts (temporary trees, no deployment)
         working-directory: .
         run: |

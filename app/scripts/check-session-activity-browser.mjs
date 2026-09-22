@@ -9,7 +9,7 @@ buildSync({entryPoints:['scripts/fixtures/session-activity.tsx'],outfile:join(ou
 writeFileSync(join(output,'fixture.html'),`<!doctype html><style>${readFileSync('src/components/session-activity.css','utf8')}</style><div id="root"></div><script>${readFileSync(join(output,'fixture.js'),'utf8').replaceAll('</script','<\\/script')}</script>`);
 const browser=new ChromePipe({output,deadline:60000});
 try{
- await browser.start();await browser.open('file://'+join(output,'fixture.html'));
+ await browser.start();await browser.command('Page.navigate',{url:'data:text/html;base64,'+readFileSync(join(output,'fixture.html')).toString('base64')});
  await browser.waitFor("!!document.querySelector('summary')");
  assert.equal(await browser.evaluate("fixture.calls.some(c=>c.method==='subagent.tail')"),false);
  await browser.evaluate("document.querySelector('summary').click()");
@@ -20,4 +20,4 @@ try{
  await browser.evaluate("document.querySelector('summary').click()");await browser.waitFor("!document.querySelector('details').open");
  assert.deepEqual(browser.diagnostics,[]);
  console.log('Browser: expandable log, selected-only scoped tail, completed status, retained activity and collapse passed.');
-}finally{await browser.close();}
+}catch(error){writeFileSync(join(output,'failure.json'),JSON.stringify({error:String(error),stderr:browser.stderr,diagnostics:browser.diagnostics},null,2));console.error('Browser evidence:',output);throw error;}finally{await browser.close();}
