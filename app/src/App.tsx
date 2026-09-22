@@ -2,6 +2,8 @@ import { Component, lazy, Suspense, useCallback, useEffect, useMemo, useState, u
 import { AuthError, ConnectionStore, HermesConnection, type SavedConnection, type SessionSummary } from './lib/hermes-client';
 import { ConversationViews, ManageViews, ShellNavigation, conversationKey, type ShellRoute, type ShellScreen } from './lib/shell-state';
 import { markActive, markInactive, recordSessionEvent } from './lib/active-sessions';
+import { activityKey, recordActivity } from './lib/session-activity';
+import './components/session-activity.css';
 import { rememberBotThread } from './lib/chat-browser';
 import Connections from './screens/Connections';
 import ProjectBrowser from './screens/ProjectBrowser';
@@ -148,6 +150,7 @@ export default function App() {
     return client.addEventHandler(event => {
       const sid = event.session_id;
       if (!sid) return;
+      recordActivity(activityKey(activeConn.id,activeConn.url,sid),event);
       if (event.type === 'message.start') markActive(activeConn.id, sid);
       recordSessionEvent(client, event, client.replayGeneration);
       if (event.type === 'message.complete' || event.type === 'error') markInactive(activeConn.id, sid);

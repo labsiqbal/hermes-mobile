@@ -1,0 +1,12 @@
+.session-signal{display:inline-block;width:10px;height:10px;flex:none;margin-right:8px;border-radius:50%;vertical-align:middle;background:#3b82f6}
+.session-signal.processing{background:transparent;border:2px solid currentColor;border-right-color:transparent;animation:session-spin 1s linear infinite}
+.session-signal.failed{background:var(--danger,#dc2626)}
+@keyframes session-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.session-signal.processing{animation:none}}
+.subagent-activity{width:100%;flex:none;min-width:0}
+.subagent-activity summary{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer;list-style:revert;padding:8px 0}
+.subagent-activity summary>span:nth-child(2){flex:1;overflow-wrap:anywhere}
+.subagent-activity summary small{flex:none}
+.subagent-activity summary:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+.subagent-log{max-height:320px;overflow:auto;padding:8px 12px;border-left:2px solid var(--line,#888)}
+.subagent-log pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;font-family:monospace;font-size:.85em}
