@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { activityKey, getActivity, subscribeActivity } from '../lib/session-activity';
 import { Folder, FolderOpen, Home, SlidersHorizontal, ListCollapse, ListTree, MoreHorizontal, Pin, Palette, Plus, RefreshCw, Search, SquarePen, Trash2, X } from 'lucide-react';
 import { DeleteDialog } from './ChatList';
 import { isActive } from '../lib/active-sessions';
@@ -13,6 +14,12 @@ import './inbox.css';
 interface Props { conn: SavedConnection; client: HermesConnection; onOpenChat: (row:SessionSummary|null)=>void; onNewFolderChat:(folder:ProjectFolder)=>void; selectedId?:string; openedSessions?:SessionSummary[] }
 type Snapshot=Awaited<ReturnType<ChatSource['load']>>;
 type TreeFolder=ProjectFolder & { rows:SessionSummary[]; remoteId?:string; home?:boolean };
+
+function SessionSignal({conn,row}:{conn:SavedConnection;row:SessionSummary}) {
+  const activity=useSyncExternalStore(subscribeActivity,()=>getActivity(activityKey(conn.id,conn.url,row.resolved_id || row.id)));
+  const state=activity.running || activity.children.some(child=>child.status==='running')?'processing':activity.failed?'failed':activity.unread?'complete':'';
+  return state?<span className={`session-signal ${state}`} role="img" aria-label={state==='processing'?'Processing':state==='failed'?'Failed':'New unread result'} title={state==='complete'?'New unread result':state}/>:null;
+}
 
 export default function ProjectBrowser({conn,client,onOpenChat,onNewFolderChat,selectedId,openedSessions=[]}:Props) {
   const source=useMemo(()=>new ChatSource(client),[client]);
@@ -111,7 +118,7 @@ export default function ProjectBrowser({conn,client,onOpenChat,onNewFolderChat,s
   function renderRow(row:SessionSummary) {
     return <div key={chatKey(row)} className="project-session-wrap">
       <button className="project-session" aria-label={row.title || 'Untitled'} aria-current={selectedId===row.id?'page':undefined} title={row.title || 'Untitled'} data-session-id={row.id} onClick={()=>onOpenChat(row)}>
-        <span>{row.title || 'Untitled'}</span>
+        <span><SessionSignal conn={conn} row={row}/>{row.title || 'Untitled'}</span>
         {view.cards&&<><small className="inbox-preview">{row.preview}</small><small className="inbox-meta">{row.profile} · {row.message_count} messages{updatedTime(row)>0&&` · ${new Date(updatedTime(row)*1000).toLocaleDateString(undefined,{month:'short',day:'numeric'})}`}</small></>}
       </button>
       <button className="iconbtn session-trash" title={canDelete(row)?'Delete session':'Only inactive sessions in the running profile can be deleted'} aria-label={`Delete session ${row.title || 'Untitled'}`} disabled={!canDelete(row)} onClick={()=>setPendingDelete(row)}><Trash2 size={15}/></button>

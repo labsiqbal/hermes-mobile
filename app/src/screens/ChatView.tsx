@@ -3,6 +3,8 @@ import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useStat
 import "./chat-view.css";
 import { acceptLiveEvent, allowSmoothAutoScroll, freshHistoryMessages, historyMessageKey, preservedScrollTop, resumeCatchupEvents, shouldFetchSessionHistory } from "./chat-resume-utils";
 import Header from "../components/Header";
+import SubagentActivity from '../components/SubagentActivity';
+import { activityKey, getActivity, linkActivity, readActivity, reconcileRunning, subscribeActivity } from '../lib/session-activity';
 import { DictationButton } from '../components/DictationButton';
 import { MoreHorizontal, SquarePen } from 'lucide-react';
 import type { ConversationViews } from "../lib/shell-state";
@@ -427,6 +429,14 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
   useLayoutEffect(() => { sessionReadyRef.current = onSessionReady; }, [onSessionReady]);
   const isGroup = Boolean(group?.roomId);
   const [liveSid, setLiveSid] = useState("");
+  const activityId=activityKey(conn.id,conn.url,liveSid || session?.resolved_id || session?.id || '');
+  useEffect(()=>{
+    if(liveSid && session)linkActivity(activityId,...[session.id,session.resolved_id].filter((id):id is string=>!!id).map(id=>activityKey(conn.id,conn.url,id)));
+    if(!visible)return;
+    const read=()=>{if(document.visibilityState==='visible' && getActivity(activityId).unread)readActivity(activityId);};
+    read();const stop=subscribeActivity(read);document.addEventListener('visibilitychange',read);
+    return()=>{stop();document.removeEventListener('visibilitychange',read);};
+  },[activityId,visible,liveSid,session,conn.id,conn.url]);
   const [info, setInfo] = useState<SessionInfo | undefined>();
   const [items, setItems] = useState<TimelineItem[]>([]);
   const [input, setInput] = useState(savedView.draft);
@@ -773,6 +783,9 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
           historyItems(m as Record<string, unknown>),
         );
         const running = opened.running === true || opened.status === "streaming";
+        const activityTarget=activityKey(conn.id,conn.url,opened.session_id);
+        linkActivity(activityTarget,...[session?.id,session?.resolved_id,storedSid].filter((id):id is string=>!!id).map(id=>activityKey(conn.id,conn.url,id)));
+        reconcileRunning(activityTarget,running);
         resumeRunningRef.current = running;
         resumeReplayRef.current = cached;
         const inflightText = opened.inflight?.assistant?.trim() ?? "";
@@ -1879,6 +1892,7 @@ export default function ChatView({ conn, client, session, group, state, onBack, 
         )}
         {fatal && <div className="error-line">{fatal}</div>}
         {timeline}
+        {!isGroup && liveSid && <SubagentActivity key={activityId} client={client} sid={liveSid} activityId={activityId} visible={visible}/>}
         {awaiting && (
           <div className={`typing-bubble${initializing ? "" : " msg-enter"}`} aria-label="Agent is thinking">
             <span className="typing-dot" />

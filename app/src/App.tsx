@@ -2,6 +2,8 @@ import { Component, lazy, Suspense, useCallback, useEffect, useMemo, useState, u
 import { AuthError, ConnectionStore, HermesConnection, type SavedConnection, type SessionSummary } from './lib/hermes-client';
 import { ConversationViews, ManageViews, ShellNavigation, conversationKey, type ShellRoute, type ShellScreen } from './lib/shell-state';
 import { markActive, markInactive, recordSessionEvent } from './lib/active-sessions';
+import { activityKey, activityRevision, invalidateActivity, linkActivity, reconcileRunning, recordActivity } from './lib/session-activity';
+import './components/session-activity.css';
 import { rememberBotThread } from './lib/chat-browser';
 import Connections from './screens/Connections';
 import ProjectBrowser from './screens/ProjectBrowser';
@@ -148,11 +150,40 @@ export default function App() {
     return client.addEventHandler(event => {
       const sid = event.session_id;
       if (!sid) return;
+      recordActivity(activityKey(activeConn.id,activeConn.url,sid),event);
       if (event.type === 'message.start') markActive(activeConn.id, sid);
       recordSessionEvent(client, event, client.replayGeneration);
       if (event.type === 'message.complete' || event.type === 'error') markInactive(activeConn.id, sid);
     });
   }, [client, activeConn]);
+
+  useEffect(()=>{
+    if(!client || !activeConn)return;
+    let cancelled=false;let timer:ReturnType<typeof setTimeout>;let generation=0;
+    async function poll(){
+      const version=generation;
+      const revision=activityRevision();
+      try {
+        const result=await client!.rpc<{sessions:unknown}>('session.active_list',{});
+        if(!Array.isArray(result?.sessions))throw new Error('Invalid live sessions');
+        const rows=result.sessions.map(row=>{
+          if(!row || typeof row.id!=='string' || typeof row.session_key!=='string' || !['idle','starting','waiting','working','streaming','resuming'].includes(row.status))throw new Error('Invalid live session');
+          return row;
+        });
+        if(cancelled || version!==generation)return;
+        if(revision!==activityRevision()){timer=setTimeout(poll,5000);return;}
+        for(const row of rows){
+          const key=activityKey(activeConn!.id,activeConn!.url,row.id);
+          linkActivity(key,activityKey(activeConn!.id,activeConn!.url,row.session_key));
+          reconcileRunning(key,row.status!=='idle');
+        }
+      } catch { /* A failed read is not evidence of completion. */ }
+      if(!cancelled && version===generation)timer=setTimeout(poll,5000);
+    }
+    const stop=client.addStateHandler(state=>{generation++;clearTimeout(timer);invalidateActivity(activeConn.id,activeConn.url);if(state==='open')void poll();});
+    if(client.connectionState==='open')void poll();
+    return()=>{cancelled=true;generation++;clearTimeout(timer);stop();};
+  },[client,activeConn]);
 
   function adopt(conn: SavedConnection, connected: HermesConnection) {
     if (client !== connected) client?.disconnect();

@@ -1,0 +1,11 @@
+import { createRoot } from 'react-dom/client';
+import SubagentActivity from '../../src/components/SubagentActivity';
+import {activityKey,recordActivity} from '../../src/lib/session-activity';
+import type {HermesConnection} from '../../src/lib/hermes-client';
+const key=activityKey('fixture','https://fixture.invalid','session');
+const calls:unknown[]=[];
+const client={rpc:async(method:string,params:unknown)=>{calls.push({method,params});if(method==='subagent.list')return {subagents:[]};if(method==='subagent.tail')return {subagent_id:'child',available:true,text:'Fictional terminal output: PASS',truncated:false};throw new Error('Unexpected RPC');}} as HermesConnection;
+recordActivity(key,{type:'subagent.start',session_id:'session',payload:{subagent_id:'child',goal:'Check fictional fixture'}});
+recordActivity(key,{type:'subagent.tool',session_id:'session',payload:{subagent_id:'child',tool_name:'terminal',text:'Checking fixture'}});
+Object.assign(window,{fixture:{calls,complete:()=>recordActivity(key,{type:'subagent.complete',session_id:'session',payload:{subagent_id:'child',status:'completed',summary:'Fixture passed'}})}});
+createRoot(document.getElementById('root')!).render(<SubagentActivity client={client} sid="session" activityId={key} visible/>);
