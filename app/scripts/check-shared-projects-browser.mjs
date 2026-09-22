@@ -26,8 +26,9 @@ try{
  assert.equal(await b.evaluate('__productionFixture.projects[0].label'),'Shared name');
  await j.tap('Add project');await j.type('[aria-label="Project folder"]','/fictional/empty');await j.type('[aria-label="Project name"]','Empty shared');await b.evaluate("__productionFixture.permits['projects.create']=1");await j.tap('Add project','dialog',false);await b.waitFor("!document.querySelector('dialog')");await j.text('Empty shared');
  await b.evaluate("__productionFixture.projects[0].label='Desktop rename'");await j.tap('Refresh projects');await j.text('Desktop rename');
- await b.evaluate("__productionFixture.projects.push({id:'__no_project__',label:'Home',isNoProject:true,profile:'default',repos:[{id:'home',groups:[{id:'home',sessions:[{id:'qa-recent-session',profile:'default',title:'QA Recent conversation',message_count:2}]}]}]})");await j.tap('Refresh projects');await b.waitFor("!!document.querySelector('.tree-project-toggle .lucide-house') || [...document.querySelectorAll('.tree-project-toggle')].some(e=>e.textContent.includes('Home'))");
- assert.equal(await b.evaluate("document.querySelector('[data-session-id=qa-recent-session]').closest('section').querySelector('.tree-project-toggle').textContent.includes('Home')"),true);
+ await b.evaluate("__productionFixture.projects.push({id:'__no_project__',label:'Home',isNoProject:true,profile:'default',repos:[{id:'home',groups:[{id:'home',sessions:[{id:'qa-recent-session',profile:'default',title:'QA Recent conversation',message_count:2}]}]}]})");await j.tap('Refresh projects');await b.waitFor("!document.querySelector('[aria-label=\"Refresh projects\"]').disabled");
+ assert.equal(await b.evaluate("[...document.querySelectorAll('.tree-project-toggle')].some(e=>e.textContent.includes('Home'))"),false);
+ assert.equal(await b.evaluate("!!document.querySelector('.tree-recent [data-session-id=qa-recent-session]')"),true);
  assert.equal(await b.evaluate("document.querySelectorAll('[data-session-id=qa-recent-session]').length"),1);
  await j.shot('shared-projects');
  assert.deepEqual(await b.evaluate('__productionFixture.violations'),[]);assert.deepEqual(b.diagnostics,[]);
