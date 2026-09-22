@@ -68,6 +68,9 @@ jobs:
           fi
           /usr/bin/google-chrome --version
 
+      - name: Shared gateway projects (built App, fictional registry)
+        run: node scripts/check-shared-projects-browser.mjs
+
       - name: Credential storage and cookie restoration (built App, fictional auth HTTP)
         id: auth
         timeout-minutes: 3

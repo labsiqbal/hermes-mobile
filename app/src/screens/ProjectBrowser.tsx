@@ -6,7 +6,7 @@ import { isActive } from '../lib/active-sessions';
 import type { HermesConnection, SavedConnection, SessionSummary } from '../lib/hermes-client';
 import { ChatSource } from '../lib/chat-source';
 import { chatKey, isBotThread, readBotThreads, readIds, uniqueChats } from '../lib/chat-browser';
-import { folderContains, folderKey, moveProject, readFolders, type ProjectFolder } from '../lib/project-folders';
+import { folderKey, moveProject, type ProjectFolder } from '../lib/project-folders';
 import { absolutePathCompletions, pathCompletionContext, safeServerFolder } from './ChatView';
 import { defaultInboxView, inboxDate, orderInbox, readInboxView, updatedTime, type InboxView } from '../lib/inbox-view';
 import './inbox.css';
@@ -29,7 +29,7 @@ export default function ProjectBrowser({conn,client,onOpenChat,onNewFolderChat,s
   const viewTrigger=useRef<HTMLButtonElement>(null);
   const [viewOpen,setViewOpen]=useState(false);
   useEffect(()=>{if(viewOpen)viewDialog.current?.showModal();},[viewOpen]);
-  const [folders,setFolders]=useState(()=>readFolders(key));
+
   const [order,setOrder]=useState(()=>[...readIds(key+':order')]);
   const [collapsed,setCollapsed]=useState(()=>readIds(key+':collapsed'));
   const [data,setData]=useState<Snapshot>();
@@ -45,7 +45,7 @@ export default function ProjectBrowser({conn,client,onOpenChat,onNewFolderChat,s
   const menuAnchor=useRef<HTMLElement|null>(null);
   const [editing,setEditing]=useState<TreeFolder|null>(null);
   const [pinned,setPinned]=useState(()=>readIds(key+':pinned'));
-  const [hidden,setHidden]=useState(()=>readIds(key+':hidden'));
+  const [hidden,setHidden]=useState(()=>readIds(key+':shared-hidden'));
   const [color,setColor]=useState(()=>{try{return localStorage.getItem(key+':color') || '';}catch{return '';}});
   const touchDrag=useRef<{id:string;pointer:number;timer:ReturnType<typeof setTimeout>;active:boolean;y:number;scrolling:boolean}|null>(null);
   const suppressClick=useRef(false);
@@ -65,9 +65,12 @@ export default function ProjectBrowser({conn,client,onOpenChat,onNewFolderChat,s
     // oxlint-disable-next-line react/set-state-in-effect -- Read the gateway's project registry.
     void load();
     const stop=client.addStateHandler(state=>{if(state==='open')void load();});
+    const refresh=()=>{if(document.visibilityState==='visible' && client.connectionState==='open')void load();};
+    const timer=setInterval(refresh,10000);
+    document.addEventListener('visibilitychange',refresh);
     return ()=>{
       // oxlint-disable-next-line react-hooks/exhaustive-deps -- Generation counter, not a DOM ref.
-      generation.current++;stop();
+      generation.current++;stop();clearInterval(timer);document.removeEventListener('visibilitychange',refresh);
     };
   },[client,load]);
   useEffect(()=>{
@@ -87,15 +90,14 @@ export default function ProjectBrowser({conn,client,onOpenChat,onNewFolderChat,s
   const stored=[...(data?.sessions || []),...(data?.projects.flatMap(p=>p.previewSessions || []) || []),...Object.values(hydrated).flat()];
   const opened=openedSessions.map(row=>{const saved=stored.find(item=>chatKey(item)===chatKey(row));return {...row,title:row.title || saved?.title || '',preview:row.preview || saved?.preview || ''};});
   const all=ordinary([...opened,...stored]);
-  const homeIds=new Set((data?.projects || []).filter(project=>project.isNoProject).flatMap(project=>project.repos?.flatMap(repo=>repo.groups?.flatMap(group=>group.sessions || []) || []) || []).flatMap(row=>[chatKey(row),...(row.resolved_id?[chatKey({...row,id:row.resolved_id})]:[])]));
-  const tree:TreeFolder[]=folders.map(folder=>({...folder,rows:all.filter(row=>!homeIds.has(chatKey(row)) && !(row.resolved_id&&homeIds.has(chatKey({...row,id:row.resolved_id}))) && row.profile===folder.profile && folderContains(folder.path,row.cwd))}));
+  const tree:TreeFolder[]=[];
   for(const project of data?.projects || []) {
-    const rows=ordinary(hydrated[project.id] || (project.isNoProject ? project.repos?.flatMap(repo=>repo.groups?.flatMap(group=>group.sessions || []) || []) : undefined) || project.previewSessions || []);
-    if(!rows.length)continue;
+    const members=new Set(project.sessionIds || []);
+    const rows=ordinary([...(hydrated[project.id] || (project.isNoProject ? project.repos?.flatMap(repo=>repo.groups?.flatMap(group=>group.sessions || []) || []) : undefined) || project.previewSessions || []),...all.filter(row=>row.profile===project.profile && (members.has(row.id) || !!row.resolved_id&&members.has(row.resolved_id)))]);
     if(project.isNoProject){tree.push({id:project.id,name:project.label,path:'',profile:project.profile,rows,home:true});continue;}
-    const path=rows.find(row=>row.git_repo_root)?.git_repo_root || rows.find(row=>row.cwd)?.cwd || '';
+    const path=project.path || '';
     if(tree.some(folder=>folder.id===project.id))continue;
-    tree.push({id:project.id,name:project.label,path,profile:project.profile,rows:ordinary([...opened.filter(row=>row.profile===project.profile && folderContains(path,row.cwd)),...rows]),remoteId:project.sourceId});
+    tree.push({id:project.id,name:project.label,path,profile:project.profile,rows,remoteId:project.isAuto?undefined:project.sourceId});
   }
   tree.sort((a,b)=>{const home=Number(!!b.home)-Number(!!a.home),pin=Number(pinned.has(b.id))-Number(pinned.has(a.id));const ai=order.indexOf(a.id),bi=order.indexOf(b.id);return home || pin || (ai<0?Number.MAX_SAFE_INTEGER:ai)-(bi<0?Number.MAX_SAFE_INTEGER:bi);});
   for(let i=tree.length-1;i>=0;i--)if(!tree[i].home&&hidden.has(tree[i].id))tree.splice(i,1);
@@ -159,24 +161,26 @@ export default function ProjectBrowser({conn,client,onOpenChat,onNewFolderChat,s
     })}</div>
     {view.grouping==='project'&&recent.filter(match).length>0 && <section className="tree-recent"><div className="project-section-title"><h2>Chats</h2><button className="iconbtn" title="New chat" aria-label="New chat" onClick={()=>onOpenChat(null)}><SquarePen size={17}/></button></div>{orderInbox(recent.filter(match),view.ordering).map(renderRow)}</section>}
     {[...groups].map(([label,rows])=>rows.some(match)&&<section key={label}><h2 className="inbox-group-label">{label}</h2>{rows.filter(match).map(renderRow)}</section>)}
-    {adding && <FolderDialog client={client} onClose={()=>setAdding(false)} onSave={folder=>{const existing=folders.find(p=>p.path===folder.path&&p.profile===folder.profile);if(existing){if(hidden.has(existing.id)){const next=new Set(hidden);next.delete(existing.id);setHidden(next);save(':hidden',[...next]);setAdding(false);}else setError('That folder is already in Projects.');return;}const next=[...folders,folder];setFolders(next);save('',next);setAdding(false);}}/>}
-    {editing && <FolderDialog client={client} initial={editing} onClose={()=>setEditing(null)} onSave={folder=>{const next=[...folders.filter(p=>p.id!==folder.id),folder];setFolders(next);save('',next);setEditing(null);}}/>}
+    {adding && <FolderDialog client={client} onClose={()=>setAdding(false)} onSave={async folder=>{await source.saveProject(folder);setAdding(false);await load();}}/>}
+    {editing && <FolderDialog client={client} initial={editing} onClose={()=>setEditing(null)} onSave={async folder=>{await source.saveProject({...folder,id:editing.remoteId});setEditing(null);await load();}}/>}
     {pendingDelete&&<DeleteDialog target={pendingDelete} device={conn.label} source={source} available={()=>canDelete(pendingDelete)} onClose={()=>setPendingDelete(null)} onFinished={message=>{const success=message.startsWith('Deletion acknowledged');if(success)setDeleted(previous=>new Set([...previous,chatKey(pendingDelete)]));setPendingDelete(null);void load().then(()=>{if(!success)setError(message);});}}/>}
-    {menu && <ProjectMenu anchor={menuAnchor.current!} pinned={pinned.has(menu.id)} onClose={()=>setMenu(null)} onPin={()=>{const next=new Set(pinned);if(next.has(menu.id))next.delete(menu.id);else next.add(menu.id);setPinned(next);save(':pinned',[...next]);setMenu(null);}} onEdit={()=>{setEditing(menu);setMenu(null);}} onColor={value=>{setColor(value);try{localStorage.setItem(key+':color',value);}catch{setError('Could not save color.');}setMenu(null);}} onRemove={()=>{const next=new Set(hidden);next.add(menu.id);setHidden(next);save(':hidden',[...next]);setMenu(null);}}/>}
+    {menu && <ProjectMenu anchor={menuAnchor.current!} pinned={pinned.has(menu.id)} onClose={()=>setMenu(null)} onPin={()=>{const next=new Set(pinned);if(next.has(menu.id))next.delete(menu.id);else next.add(menu.id);setPinned(next);save(':pinned',[...next]);setMenu(null);}} onEdit={()=>{if(menu.remoteId)setEditing(menu);else setError('This discovered folder is not a registered project. Add it as a project before renaming.');setMenu(null);}} onColor={value=>{setColor(value);try{localStorage.setItem(key+':color',value);}catch{setError('Could not save color.');}setMenu(null);}} onRemove={()=>{const next=new Set(hidden);next.add(menu.id);setHidden(next);save(':shared-hidden',[...next]);setMenu(null);}}/>}
   </div>;
 }
 
-function FolderDialog({client,onClose,onSave,initial}:{client:HermesConnection;onClose:()=>void;onSave:(p:ProjectFolder)=>void;initial?:ProjectFolder}) {
+function FolderDialog({client,onClose,onSave,initial}:{client:HermesConnection;onClose:()=>void;onSave:(p:Omit<ProjectFolder,'id'>)=>Promise<void>;initial?:ProjectFolder}) {
   const dialog=useRef<HTMLDialogElement>(null),edited=useRef(false);
+  const [saving,setSaving]=useState(false);
   const [path,setPath]=useState(initial?.path || ''),[name,setName]=useState(initial?.name || ''),[suggestions,setSuggestions]=useState<string[]>([]),[error,setError]=useState('');
   useEffect(()=>{dialog.current?.showModal();const controller=new AbortController();if(!initial)void client.defaultWorkingFolder(controller.signal).then(p=>{if(!edited.current&&!controller.signal.aborted)setPath(p);}).catch(()=>{});return()=>controller.abort();},[client,initial]);
   useEffect(()=>{const context=pathCompletionContext(path);if(!context)return;let cancelled=false;const timer=setTimeout(()=>{void client.completePath(context.word,context.cwd).then(items=>{if(!cancelled)setSuggestions(absolutePathCompletions(path,items));}).catch(()=>{if(!cancelled)setSuggestions([]);});},200);return()=>{cancelled=true;clearTimeout(timer);};},[path,client]);
-  return <dialog ref={dialog} className="project-dialog" aria-labelledby="project-dialog-title" onCancel={onClose}><form onSubmit={e=>{e.preventDefault();const normalized=path.trim().replace(/\/+$/,'') || '/';if(!safeServerFolder(normalized)){setError('Choose an absolute server folder path.');return;}onSave({id:initial?.id || crypto.randomUUID(),name:name.trim() || normalized.split('/').filter(Boolean).pop() || '/',path:normalized,profile:initial?.profile || 'default'});}}>
-    <div className="project-section-title"><h2 id="project-dialog-title">{initial?'Edit project':'Add project'}</h2><button type="button" className="iconbtn" aria-label="Close project dialog" onClick={onClose}><X size={18}/></button></div>
-    <label>Folder on server<input className="field" autoFocus value={path} aria-label="Project folder" onChange={e=>{edited.current=true;setPath(e.target.value);setSuggestions([]);}}/></label>
-    {suggestions.length>0 && <div className="project-folder-options">{suggestions.map(value=><button type="button" key={value} onClick={()=>{edited.current=true;setPath(value);setSuggestions([]);}}><Folder size={16}/><span>{value}</span></button>)}</div>}
+  return <dialog ref={dialog} className="project-dialog" aria-labelledby="project-dialog-title" onCancel={e=>{if(saving)e.preventDefault();else onClose();}}><form onSubmit={async e=>{e.preventDefault();if(saving)return;const normalized=path.trim().replace(/\/+$/,'') || '/';if(!safeServerFolder(normalized)){setError('Choose an absolute server folder path.');return;}setSaving(true);setError('');try{await onSave({name:name.trim() || normalized.split('/').filter(Boolean).pop() || '/',path:normalized,profile:initial?.profile || 'default'});}catch(error){setError(error instanceof Error?error.message:'Project save failed.');}finally{setSaving(false);}}}>
+    <div className="project-section-title"><h2 id="project-dialog-title">{initial?'Edit project':'Add project'}</h2><button type="button" className="iconbtn" disabled={saving} aria-label="Close project dialog" onClick={onClose}><X size={18}/></button></div>
+    <label>Folder on server<input className="field" autoFocus disabled={!!initial || saving} value={path} aria-label="Project folder" onChange={e=>{edited.current=true;setPath(e.target.value);setSuggestions([]);}}/></label>
+    {!initial && !saving && suggestions.length>0 && <div className="project-folder-options">{suggestions.map(value=><button type="button" key={value} onClick={()=>{edited.current=true;setPath(value);setSuggestions([]);}}><Folder size={16}/><span>{value}</span></button>)}</div>}
     <label>Name<input className="field" value={name} aria-label="Project name" placeholder={path.split('/').filter(Boolean).pop() || 'Project'} onChange={e=>setName(e.target.value)}/></label>
-    {error&&<p role="alert" className="error-line">{error}</p>}<div className="sheet-actions"><button type="button" className="btn btn-ghost" onClick={onClose}>Cancel</button><button className="btn btn-primary" type="submit" disabled={!safeServerFolder(path.trim())}>{initial?'Save changes':'Add project'}</button></div>
+    <p className="hint">Saved to the gateway for Desktop and Mobile. Existing session folders are not moved.</p>
+    {error&&<p role="alert" className="error-line">{error}</p>}<div className="sheet-actions"><button type="button" className="btn btn-ghost" disabled={saving} onClick={onClose}>Cancel</button><button className="btn btn-primary" type="submit" disabled={saving || !safeServerFolder(path.trim())}>{saving?'Saving…':initial?'Save changes':'Add project'}</button></div>
   </form></dialog>;
 }
 function ProjectMenu({anchor,pinned,onClose,onPin,onEdit,onColor,onRemove}:{anchor:HTMLElement;pinned:boolean;onClose:()=>void;onPin:()=>void;onEdit:()=>void;onColor:(value:string)=>void;onRemove:()=>void}) {
