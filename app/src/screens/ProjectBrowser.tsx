@@ -94,7 +94,7 @@ export default function ProjectBrowser({conn,client,onOpenChat,onNewFolderChat,s
   for(const project of data?.projects || []) {
     const members=new Set(project.sessionIds || []);
     const rows=ordinary([...(hydrated[project.id] || (project.isNoProject ? project.repos?.flatMap(repo=>repo.groups?.flatMap(group=>group.sessions || []) || []) : undefined) || project.previewSessions || []),...all.filter(row=>row.profile===project.profile && (members.has(row.id) || !!row.resolved_id&&members.has(row.resolved_id)))]);
-    if(project.isNoProject){tree.push({id:project.id,name:project.label,path:'',profile:project.profile,rows,home:true});continue;}
+    if(project.isNoProject)continue;
     const path=project.path || '';
     if(tree.some(folder=>folder.id===project.id))continue;
     tree.push({id:project.id,name:project.label,path,profile:project.profile,rows,remoteId:project.isAuto?undefined:project.sourceId});

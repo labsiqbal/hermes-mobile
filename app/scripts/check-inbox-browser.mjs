@@ -18,8 +18,8 @@ try{
  await b.start();await b.command('Page.addScriptToEvaluateOnNewDocument',{source:`(${installProductionFixtures.toString()})(${JSON.stringify(fixture)});(${domHelpers.toString()})();`});
  await b.open(host.origin);const j=new Journeys(b,report,output);await j.tap(fixture.gateway.label,'body',false);
  await b.waitFor("document.querySelectorAll('[data-session-id^=home-]:not([data-session-id=home-builder]):not([data-session-id=home-reviewer])').length===6");
- assert.deepEqual(await b.evaluate("[...document.querySelectorAll('.tree-project-toggle')].filter(node=>node.querySelector('span')?.textContent==='Home').map(node=>node.textContent.trim())"),['Home· default','Home· builder','Home· reviewer']);
- assert.equal(await b.evaluate("document.querySelector('.tree-recent')?.innerText.includes('Home conversation') || false"),false);
+ assert.deepEqual(await b.evaluate("[...document.querySelectorAll('.tree-project-toggle')].filter(node=>node.querySelector('span')?.textContent==='Home').map(node=>node.textContent.trim())"),[]);
+ assert.equal(await b.evaluate("document.querySelector('.tree-recent')?.innerText.includes('Home conversation') || false"),true);
  assert.equal(await b.evaluate("document.querySelector('[data-session-id^=home-]:not([data-session-id=home-builder]):not([data-session-id=home-reviewer])').dataset.sessionId"),'home-0');
  for(const width of [320,390,430]){await b.viewport(width,844);await b.settle();assert.equal(await b.evaluate("(()=>{const toolbar=document.querySelector('.inbox-toolbar').getBoundingClientRect(),view=document.querySelector('.inbox-view-trigger').getBoundingClientRect(),search=document.querySelector('.project-search').getBoundingClientRect();return Math.abs(view.top-search.top)<=1&&search.left-view.right>=12&&view.height>=44&&search.height>=44&&Math.abs(toolbar.width-(view.width+12+search.width))<=1;})()"),true);assert.ok(await b.evaluate('document.documentElement.scrollWidth<=innerWidth'));await j.shot('inbox-'+width);}
  await j.shot('inbox-home');await j.tap('View');await j.shot('inbox-menu');
@@ -29,7 +29,8 @@ try{
  assert.equal(await b.evaluate("document.querySelectorAll('[data-session-id^=home-]:not([data-session-id=home-builder]):not([data-session-id=home-reviewer])').length"),6);
  await j.tap('View');await j.clickCSS('.inbox-switch input');await j.tap('Close chat view');assert.equal(await b.evaluate("!!document.querySelector('.inbox-preview')"),false);
  await b.command('Page.reload');await b.waitFor("document.querySelectorAll('[data-session-id^=home-]:not([data-session-id=home-builder]):not([data-session-id=home-reviewer])').length===6");assert.equal(await b.evaluate("!!document.querySelector('.inbox-style')"),false);
- await j.tap('View');await j.tap('Reset to defaults');await j.tap('Close chat view');await j.tap('Home','.tree-project-heading',false);assert.equal(await b.evaluate("document.querySelectorAll('[data-session-id^=home-]:not([data-session-id=home-builder]):not([data-session-id=home-reviewer])').length"),0);await j.tap('Home','.tree-project-heading',false);
+ assert.equal(await b.evaluate("document.querySelector('[data-session-id=home-0]').closest('section').querySelector('h2').textContent"),'default');
+ await j.tap('View');await j.tap('Reset to defaults');await j.tap('Close chat view');assert.equal(await b.evaluate("document.querySelectorAll('.tree-recent [data-session-id^=home-]').length"),8);
  for(const width of [320,390,430]){await b.viewport(width,844);await b.settle();assert.ok(await b.evaluate('document.documentElement.scrollWidth<=innerWidth'));await j.shot('inbox-'+width);}
  assert.deepEqual(await b.evaluate('__productionFixture.violations'),[]);assert.deepEqual(b.diagnostics,[]);
  assert.equal(await b.evaluate("__productionFixture.trace.some(t=>['session.create','session.delete','prompt.submit','projects.set_active'].includes(t.method))"),false);
