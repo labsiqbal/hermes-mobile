@@ -26,10 +26,12 @@ try{
  const select=async(index,value)=>{await b.evaluate(`(()=>{const e=document.querySelectorAll('.inbox-view-dialog select')[${index}];e.value=${JSON.stringify(value)};e.dispatchEvent(new Event('change',{bubbles:true}));})()`);await b.settle();};
  await select(1,'created');await j.tap('Close chat view');assert.equal(await b.evaluate("document.querySelector('[data-session-id^=home-]:not([data-session-id=home-builder]):not([data-session-id=home-reviewer])').dataset.sessionId"),'home-5');
  await j.tap('View');await select(1,'tokens');await select(0,'profile');await j.tap('Close chat view');
+ assert.equal(await b.evaluate("document.querySelectorAll('[data-session-id]').length"),0);
+ await j.tap('default','section',false);
  assert.equal(await b.evaluate("document.querySelectorAll('[data-session-id^=home-]:not([data-session-id=home-builder]):not([data-session-id=home-reviewer])').length"),6);
  await j.tap('View');await j.clickCSS('.inbox-switch input');await j.tap('Close chat view');assert.equal(await b.evaluate("!!document.querySelector('.inbox-preview')"),false);
  await b.command('Page.reload');await b.waitFor("document.querySelectorAll('[data-session-id^=home-]:not([data-session-id=home-builder]):not([data-session-id=home-reviewer])').length===6");assert.equal(await b.evaluate("!!document.querySelector('.inbox-style')"),false);
- assert.equal(await b.evaluate("document.querySelector('[data-session-id=home-0]').closest('section').querySelector('h2').textContent"),'default');
+ assert.equal(await b.evaluate("document.querySelector('[data-session-id=home-0]').closest('section').querySelector('button').getAttribute('aria-expanded')"),'true');
  await j.tap('View');await j.tap('Reset to defaults');await j.tap('Close chat view');assert.equal(await b.evaluate("document.querySelectorAll('.tree-recent [data-session-id^=home-]').length"),8);
  for(const width of [320,390,430]){await b.viewport(width,844);await b.settle();assert.ok(await b.evaluate('document.documentElement.scrollWidth<=innerWidth'));await j.shot('inbox-'+width);}
  assert.deepEqual(await b.evaluate('__productionFixture.violations'),[]);assert.deepEqual(b.diagnostics,[]);
