@@ -1,4 +1,4 @@
-import type { HermesConnection, ProjectTreeItem, SessionSummary } from './hermes-client';
+import { RpcError, type HermesConnection, type ProjectTreeItem, type SessionSummary } from './hermes-client';
 import { ManagementClient, ManagementError, SessionReadError } from './management-client';
 import { canonicalChats, chatKey, uniqueChats, type BrowserChat } from './chat-browser';
 
@@ -7,7 +7,7 @@ export interface ChatReadFailure { profile: string; operation: string; code: str
 export function chatReadFailure(error: unknown, profile: string, operation: string): ChatReadFailure {
   return error instanceof ManagementError
     ? {profile,operation:error.operation || operation,code:error.code,status:error.status,message:error.message.replace(/ No state changed\.$/, '')}
-    : {profile,operation,code:'unavailable',message:'This history read could not be completed.'};
+    : {profile,operation,code:error instanceof RpcError?String(error.code):'unavailable',message:'This history read could not be completed.'};
 }
 const rowsOf = (project:ProjectTreeItem) => project.repos?.flatMap(repo=>repo.groups?.flatMap(group=>group.sessions || []) || []) || project.previewSessions || [];
 
@@ -24,7 +24,7 @@ export class ChatSource {
   }
   private owned(project: ProjectTreeItem, profile: string): OwnedProject {
     const rows=[...(project.previewSessions || []),...rowsOf(project)];
-    if (rows.some(row=>row.profile!==profile) || (project.sessionCount>0 && !rows.length)) throw new Error('Project session ownership was not reported for the requested profile. Results were not displayed.');
+    if (rows.some(row=>row.profile!==profile) || (project.sessionCount>0 && !rows.length)) throw new ManagementError('scope','Project session ownership was not reported for the requested profile. Results were not displayed.');
     return {...project,id:JSON.stringify([profile,project.id]),sourceId:project.id,profile};
   }
   async load() {
