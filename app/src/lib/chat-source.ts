@@ -24,7 +24,7 @@ export class ChatSource {
   }
   private owned(project: ProjectTreeItem, profile: string): OwnedProject {
     const rows=[...(project.previewSessions || []),...rowsOf(project)];
-    if (rows.some(row=>row.profile!==profile) || (project.sessionCount>0 && !rows.length)) throw new ManagementError('scope','Project session ownership was not reported for the requested profile. Results were not displayed.');
+    if (rows.some(row=>row.profile!==profile)) throw new ManagementError('scope','Project session ownership was not reported for the requested profile. Results were not displayed.');
     return {...project,id:JSON.stringify([profile,project.id]),sourceId:project.id,profile};
   }
   async load() {
@@ -42,7 +42,16 @@ export class ChatSource {
         // An empty tree is not evidence of exhaustive project coverage.
         operation = 'RPC projects.tree';
         const tree=await this.client.projectTree(3,owner.name);
-        const projects=tree.projects.map(project=>this.owned(project,owner.name));
+        const projectReads=await Promise.allSettled(tree.projects.map(async project=>{
+          // Overview counts can include sessions omitted from the preview window.
+          if(project.sessionCount>0 && !(project.previewSessions?.length || rowsOf(project).length)) return this.project(project.id,owner.name);
+          return this.owned(project,owner.name);
+        }));
+        const projects:OwnedProject[]=[];
+        for(const read of projectReads) {
+          if(read.status==='fulfilled')projects.push(read.value);
+          else readFailures.push(chatReadFailure(read.reason,owner.name,'RPC projects.project_sessions'));
+        }
         operation = 'RPC projects.project_sessions';
         const homeReads=await Promise.allSettled(projects.filter(project=>project.isNoProject).map(project=>this.project(project.sourceId,owner.name)));
         const homes: OwnedProject[]=[];
@@ -55,7 +64,7 @@ export class ChatSource {
         const homeIds=new Set(homeRows.flatMap(row=>[row.id,row.resolved_id].filter(Boolean)));
         sessions=uniqueChats([...sessions,...homeRows]);
         if(version===this.loadVersion) this.verified.set(owner.name,sessions);
-        return {sessions,projects,scoped:(tree.scoped_session_ids || []).filter(id=>!homeIds.has(id)).map(id=>chatKey({id,profile:owner.name})),error:homeReads.some(read=>read.status==='rejected')?owner.name:''};
+        return {sessions,projects,scoped:(tree.scoped_session_ids || []).filter(id=>!homeIds.has(id)).map(id=>chatKey({id,profile:owner.name})),error:[...homeReads,...projectReads].some(read=>read.status==='rejected')?owner.name:''};
       } catch(error) {
         if(error instanceof SessionReadError) sessions=error.sessions;
         const failure=chatReadFailure(error,owner.name,operation);
