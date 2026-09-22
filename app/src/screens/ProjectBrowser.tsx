@@ -140,7 +140,7 @@ export default function ProjectBrowser({conn,client,onOpenChat,onNewFolderChat,s
     </dialog>}
     <div className="project-section-title"><h2>Projects</h2><button className="iconbtn" title={bulkLabel} aria-label={bulkLabel} disabled={loading || !tree.length} onClick={toggleAll}>{hasOpenFolders?<ListCollapse size={17}/>:<ListTree size={17}/>}</button><button className="iconbtn" title="Refresh projects" aria-label="Refresh projects" disabled={loading} onClick={()=>void load()}><RefreshCw size={15}/></button><button className="iconbtn" title="Add project" aria-label="Add project" onClick={()=>setAdding(true)}><Plus size={17}/></button></div>
     {error && <p className="error-line" role="alert">{error}</p>}
-    {!!data?.readFailures.length && <p className="hint" role="status">Some history is unavailable. Refresh to retry.</p>}
+    {!!data?.readFailures.length && <div className="hint" role="status">Some history is unavailable. Refresh to retry.{data.readFailures.map((failure,index)=><div key={index}>{failure.profile} · {failure.operation} · {failure.code}{failure.status?` (${failure.status})`:''}: {failure.message}</div>)}</div>}
     {loading && !data && <p className="hint" role="status">Loading projects...</p>}
     <div className="project-tree">{(view.grouping==='project'?tree:[]).map(folder=>{
       const rows=folder.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()) ? folder.rows : folder.rows.filter(match);
