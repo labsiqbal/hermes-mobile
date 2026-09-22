@@ -109,5 +109,16 @@ try {
   const bad=new ChatSource({...client,rpc:async()=>({project:null})},manager);
   await assert.rejects(()=>bad.saveProject({name:'Shared',path:'/fictional/shared',profile:'builder'}),/outcome is unknown/);
  });
+ await test('count-only project is hydrated without erasing valid siblings',async()=>{
+  const good={id:'good',label:'Good',sessionCount:1,previewSessions:[row('good')]};
+  const countOnly={id:'count-only',label:'Count only',sessionCount:5,previewSessions:[],repos:[]};
+  let reads=0;
+  const adapter=new ChatSource({...client,profilesList:async()=>[{name:'builder'}],projectTree:async()=>({projects:[good,countOnly]}),projectSessions:async(id)=>{reads++;return {...countOnly,id};}},manager);
+  const data=await adapter.load();assert.equal(reads,1);assert.deepEqual(data.projects.map(p=>p.sourceId),['good','count-only']);assert.deepEqual(data.failedProfiles,[]);
+ });
+ await test('foreign row rejects only its project, never valid siblings',async()=>{
+  const adapter=new ChatSource({...client,profilesList:async()=>[{name:'builder'}],projectTree:async()=>({projects:[{id:'good',sessionCount:1,previewSessions:[row('good')]},{id:'bad',sessionCount:1,previewSessions:[row('foreign','default')]}]})},manager);
+  const data=await adapter.load();assert.deepEqual(data.projects.map(p=>p.sourceId),['good']);assert.deepEqual(data.failedProfiles,['builder']);assert.equal(data.readFailures[0].code,'scope');
+ });
  console.log(`chat source: ${checks} checks PASS`);
 } finally {rmSync(out,{recursive:true,force:true});}
