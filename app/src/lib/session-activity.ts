@@ -29,7 +29,7 @@ export function linkActivity(target:string,...keys:string[]){
   persist();listeners.forEach(notify=>notify());
 }
 export const readActivity=(key:string)=>{const value=getActivity(key);if(value.unread)publish(key,{...value,unread:false});};
-export function reconcileRunning(key:string,running:boolean){const old=getActivity(key);if(old.running!==running)publish(key,{...old,running});}
+export function reconcileRunning(key:string,running:boolean){const old=getActivity(key);if(old.running!==running)publish(key,{...old,running,unread:running?false:old.unread || old.running&&!old.failed,failed:running?false:old.failed});}
 export function reconcileChildren(key:string,rows:ChildActivity[],baseline:Activity){
   const old=getActivity(key);
   // Events received while the read was pending outrank that snapshot.

@@ -21,6 +21,14 @@ function SessionSignal({conn,row}:{conn:SavedConnection;row:SessionSummary}) {
   return state?<span className={`session-signal ${state}`} role="img" aria-label={state==='processing'?'Processing':state==='failed'?'Failed':'New unread result'} title={state==='complete'?'New unread result':state}/>:null;
 }
 
+function ProfileSignal({conn,rows}:{conn:SavedConnection;rows:SessionSummary[]}) {
+  const state=useSyncExternalStore(subscribeActivity,()=>{
+    const states=rows.map(row=>getActivity(activityKey(conn.id,conn.url,row.resolved_id || row.id)));
+    return states.some(s=>s.running || s.children.some(c=>c.status==='running'))?'processing':states.some(s=>s.failed)?'failed':states.some(s=>s.unread)?'complete':'';
+  });
+  return state?<span className={`session-signal ${state}`} role="img" aria-label={state==='processing'?'Processing':state==='failed'?'Failed':'New unread result'}/>:null;
+}
+
 export default function ProjectBrowser({conn,client,onOpenChat,onNewFolderChat,selectedId,openedSessions=[]}:Props) {
   const source=useMemo(()=>new ChatSource(client),[client]);
   const key=folderKey(conn);
@@ -32,6 +40,7 @@ export default function ProjectBrowser({conn,client,onOpenChat,onNewFolderChat,s
 
   const [order,setOrder]=useState(()=>[...readIds(key+':order')]);
   const [collapsed,setCollapsed]=useState(()=>readIds(key+':collapsed'));
+  const [expandedProfiles,setExpandedProfiles]=useState(()=>readIds(key+':expanded-profiles'));
   const [data,setData]=useState<Snapshot>();
   const [hydrated,setHydrated]=useState<Record<string,SessionSummary[]>>({});
   const [error,setError]=useState('');
@@ -108,9 +117,10 @@ export default function ProjectBrowser({conn,client,onOpenChat,onNewFolderChat,s
   const match=(row:SessionSummary)=>`${row.title} ${row.preview}`.toLocaleLowerCase().includes(query.toLocaleLowerCase());
   function reorder(from:string,to:string) {const next=moveProject(tree.map(p=>p.id),from,to);setOrder(next);save(':order',next);}
   function toggle(id:string){const next=new Set(collapsed);if(next.has(id))next.delete(id);else next.add(id);setCollapsed(next);save(':collapsed',[...next]);}
-  const hasOpenFolders=tree.some(folder=>!collapsed.has(folder.id) || (!!query && searchExpanded));
+  const hasOpenFolders=view.grouping==='profile'?[...groups.keys()].some(label=>expandedProfiles.has(label)):tree.some(folder=>!collapsed.has(folder.id) || (!!query && searchExpanded));
   const bulkLabel=hasOpenFolders?'Collapse all folders':'Expand all folders';
   function toggleAll() {
+    if(view.grouping==='profile'){const next=new Set<string>(hasOpenFolders?[]:groups.keys());setExpandedProfiles(next);save(':expanded-profiles',[...next]);return;}
     const next=new Set(collapsed);
     for(const folder of tree) {if(hasOpenFolders)next.add(folder.id);else next.delete(folder.id);}
     setSearchExpanded(false);setCollapsed(next);save(':collapsed',[...next]);
@@ -138,7 +148,7 @@ export default function ProjectBrowser({conn,client,onOpenChat,onNewFolderChat,s
       <label className="inbox-switch"><input type="checkbox" checked={view.cards} onChange={e=>changeView({...view,cards:e.target.checked})}/>Inbox style</label>
       <button className="btn btn-ghost" onClick={()=>changeView({...defaultInboxView})}>Reset to defaults</button>
     </dialog>}
-    <div className="project-section-title"><h2>Projects</h2><button className="iconbtn" title={bulkLabel} aria-label={bulkLabel} disabled={loading || !tree.length} onClick={toggleAll}>{hasOpenFolders?<ListCollapse size={17}/>:<ListTree size={17}/>}</button><button className="iconbtn" title="Refresh projects" aria-label="Refresh projects" disabled={loading} onClick={()=>void load()}><RefreshCw size={15}/></button><button className="iconbtn" title="Add project" aria-label="Add project" onClick={()=>setAdding(true)}><Plus size={17}/></button></div>
+    <div className="project-section-title"><h2>{view.grouping==='profile'?'Profiles':view.grouping==='project'?'Projects':'Chats'}</h2><button className="iconbtn" title={bulkLabel} aria-label={bulkLabel} disabled={loading || (view.grouping==='profile'?!groups.size:view.grouping!=='project'||!tree.length)} onClick={toggleAll}>{hasOpenFolders?<ListCollapse size={17}/>:<ListTree size={17}/>}</button><button className="iconbtn" title="Refresh projects" aria-label="Refresh projects" disabled={loading} onClick={()=>void load()}><RefreshCw size={15}/></button><button className="iconbtn" title="Add project" aria-label="Add project" onClick={()=>setAdding(true)}><Plus size={17}/></button></div>
     {error && <p className="error-line" role="alert">{error}</p>}
     {!!data?.readFailures.length && <div className="hint" role="status">Some history is unavailable. Refresh to retry.{data.readFailures.map((failure,index)=><div key={index}>{failure.profile} · {failure.operation} · {failure.code}{failure.status?` (${failure.status})`:''}: {failure.message}</div>)}</div>}
     {loading && !data && <p className="hint" role="status">Loading projects...</p>}
@@ -160,7 +170,12 @@ export default function ProjectBrowser({conn,client,onOpenChat,onNewFolderChat,s
       </section>;
     })}</div>
     {view.grouping==='project'&&recent.filter(match).length>0 && <section className="tree-recent"><div className="project-section-title"><h2>Chats</h2><button className="iconbtn" title="New chat" aria-label="New chat" onClick={()=>onOpenChat(null)}><SquarePen size={17}/></button></div>{orderInbox(recent.filter(match),view.ordering).map(renderRow)}</section>}
-    {[...groups].map(([label,rows])=>rows.some(match)&&<section key={label}><h2 className="inbox-group-label">{label}</h2>{rows.filter(match).map(renderRow)}</section>)}
+    {[...groups].map(([label,rows])=>{
+      if(!rows.some(match))return null;
+      if(view.grouping!=='profile')return <section key={label}><h2 className="inbox-group-label">{label}</h2>{rows.filter(match).map(renderRow)}</section>;
+      const open=expandedProfiles.has(label) || !!query;
+      return <section key={label}><button className="tree-project-toggle" aria-expanded={open} onClick={()=>{const next=new Set(expandedProfiles);if(next.has(label))next.delete(label);else next.add(label);setExpandedProfiles(next);save(':expanded-profiles',[...next]);}}><span aria-hidden="true">{open?'▾':'▸'}</span><span>{label}</span><small>{rows.length}</small><ProfileSignal conn={conn} rows={rows}/></button>{open&&rows.filter(match).map(renderRow)}</section>;
+    })}
     {adding && <FolderDialog client={client} onClose={()=>setAdding(false)} onSave={async folder=>{await source.saveProject(folder);setAdding(false);await load();}}/>}
     {editing && <FolderDialog client={client} initial={editing} onClose={()=>setEditing(null)} onSave={async folder=>{await source.saveProject({...folder,id:editing.remoteId});setEditing(null);await load();}}/>}
     {pendingDelete&&<DeleteDialog target={pendingDelete} device={conn.label} source={source} available={()=>canDelete(pendingDelete)} onClose={()=>setPendingDelete(null)} onFinished={message=>{const success=message.startsWith('Deletion acknowledged');if(success)setDeleted(previous=>new Set([...previous,chatKey(pendingDelete)]));setPendingDelete(null);void load().then(()=>{if(!success)setError(message);});}}/>}
