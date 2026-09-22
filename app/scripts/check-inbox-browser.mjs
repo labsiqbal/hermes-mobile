@@ -27,7 +27,7 @@ try{
  await select(1,'created');await j.tap('Close chat view');assert.equal(await b.evaluate("document.querySelector('[data-session-id^=home-]:not([data-session-id=home-builder]):not([data-session-id=home-reviewer])').dataset.sessionId"),'home-5');
  await j.tap('View');await select(1,'tokens');await select(0,'profile');await j.tap('Close chat view');
  assert.equal(await b.evaluate("document.querySelectorAll('[data-session-id]').length"),0);
- await j.tap('default','.tree-project-toggle',false);
+ await j.tap('default','section',false);
  assert.equal(await b.evaluate("document.querySelectorAll('[data-session-id^=home-]:not([data-session-id=home-builder]):not([data-session-id=home-reviewer])').length"),6);
  await j.tap('View');await j.clickCSS('.inbox-switch input');await j.tap('Close chat view');assert.equal(await b.evaluate("!!document.querySelector('.inbox-preview')"),false);
  await b.command('Page.reload');await b.waitFor("document.querySelectorAll('[data-session-id^=home-]:not([data-session-id=home-builder]):not([data-session-id=home-reviewer])').length===6");assert.equal(await b.evaluate("!!document.querySelector('.inbox-style')"),false);
